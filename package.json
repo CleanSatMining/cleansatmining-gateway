@@ -1,0 +1,28 @@
+{
+  "name": "gateway",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@graphql-hive/gateway": "^1.0.5",
+    "@graphql-mesh/compose-cli": "^1.0.2",
+    "@omnigraph/openapi": "^0.106.8",
+    "next": "14.2.11",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@graphql-hive/cli": "^0.43.0",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.11",
+    "typescript": "^5"
+  }
+}

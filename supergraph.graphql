@@ -1,0 +1,2702 @@
+
+schema
+  @link(url: "https://specs.apollo.dev/link/v1.0")
+  @link(url: "https://specs.apollo.dev/join/v0.3", for: EXECUTION)
+  
+  
+  
+  
+  
+  @link(
+  url: "https://the-guild.dev/graphql/mesh/spec/v1.0"
+  import: ["@httpOperation", "@transport", "@merge", "@extraSchemaDefinitionDirective"]
+)
+{
+  query: Query
+  mutation: Mutation
+  
+}
+
+
+  directive @join__enumValue(graph: join__Graph!) repeatable on ENUM_VALUE
+
+  directive @join__field(
+    graph: join__Graph
+    requires: join__FieldSet
+    provides: join__FieldSet
+    type: String
+    external: Boolean
+    override: String
+    usedOverridden: Boolean
+  ) repeatable on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
+  directive @join__graph(name: String!, url: String!) on ENUM_VALUE
+
+  directive @join__implements(
+    graph: join__Graph!
+    interface: String!
+  ) repeatable on OBJECT | INTERFACE
+
+  directive @join__type(
+    graph: join__Graph!
+    key: join__FieldSet
+    extension: Boolean! = false
+    resolvable: Boolean! = true
+    isInterfaceObject: Boolean! = false
+  ) repeatable on OBJECT | INTERFACE | UNION | ENUM | INPUT_OBJECT | SCALAR
+
+  directive @join__unionMember(graph: join__Graph!, member: String!) repeatable on UNION
+
+  scalar join__FieldSet
+
+
+  directive @link(
+    url: String
+    as: String
+    for: link__Purpose
+    import: [link__Import]
+  ) repeatable on SCHEMA
+
+  scalar link__Import
+
+  enum link__Purpose {
+    """
+    `SECURITY` features provide metadata necessary to securely resolve fields.
+    """
+    SECURITY
+
+    """
+    `EXECUTION` features provide metadata necessary for operation execution.
+    """
+    EXECUTION
+  }
+
+
+
+
+
+
+
+enum join__Graph {
+  CSM @join__graph(name: "CSM", url: "https://zlczywhctfaosxqtjwee.supabase.co/rest/v1") 
+}
+
+directive @httpOperation(
+  subgraph: String
+  path: String
+  operationSpecificHeaders: [[String]]
+  httpMethod: HTTPMethod
+  isBinary: Boolean
+  requestBaseBody: ObjMap
+  queryParamArgMap: ObjMap
+  queryStringOptionsByParam: ObjMap
+  jsonApiFields: Boolean
+  queryStringOptions: ObjMap
+) repeatable on FIELD_DEFINITION
+
+directive @transport(
+  subgraph: String
+  kind: String
+  location: String
+  headers: [[String]]
+  queryStringOptions: ObjMap
+  queryParams: [[String]]
+) repeatable on SCHEMA
+
+directive @merge(
+  subgraph: String
+  argsExpr: String
+  keyArg: String
+  keyField: String
+  key: [String!]
+  additionalArgs: String
+) repeatable on FIELD_DEFINITION
+
+directive @extraSchemaDefinitionDirective(directives: _DirectiveExtensions)  repeatable on OBJECT
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON @join__type(graph: CSM)  @specifiedBy(
+  url: "http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf"
+)
+
+"""
+Represents empty values
+"""
+scalar Void @join__type(graph: CSM) 
+
+scalar ObjMap @join__type(graph: CSM) 
+
+scalar _DirectiveExtensions @join__type(graph: CSM) 
+
+type Query @extraSchemaDefinitionDirective(
+  directives: {transport: [{subgraph: "CSM", kind: "rest", location: "https://zlczywhctfaosxqtjwee.supabase.co/rest/v1", headers: [["apikey", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsY3p5d2hjdGZhb3N4cXRqd2VlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQ2NTg2MTQsImV4cCI6MjA0MDIzNDYxNH0.aJeUHh1j4ZT8mUVwUhuvx2P4gMmrZDDyM920XhD0p-c"]]}]}
+) @join__type(graph: CSM)  {
+  """
+  OpenAPI description (this document)
+  """
+  _: JSON @httpOperation(subgraph: "CSM", path: "/", httpMethod: GET) 
+  """
+  CSM society bitcoin vault
+  """
+  vaults(
+    id: String
+    created_at: String
+    xpub: String
+    farmId: String
+    """
+    Filtering Columns
+    """
+    select: String
+    """
+    Ordering
+    """
+    order: String
+    """
+    Limiting and Pagination
+    """
+    offset: String
+    """
+    Limiting and Pagination
+    """
+    limit: String
+  ): [vaults] @httpOperation(
+    subgraph: "CSM"
+    path: "/vaults"
+    operationSpecificHeaders: [["accept", "application/json"]]
+    httpMethod: GET
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"xpub\":\"xpub\",\"farmId\":\"farmId\",\"select\":\"select\",\"order\":\"order\",\"offset\":\"offset\",\"limit\":\"limit\"}"
+  ) @merge(subgraph: "CSM", keyField: "id", keyArg: "id")  @merge(subgraph: "CSM", keyField: "created_at", keyArg: "created_at")  @merge(subgraph: "CSM", keyField: "xpub", keyArg: "xpub")  @merge(subgraph: "CSM", keyField: "farmId", keyArg: "farmId") 
+  """
+  asics container
+  """
+  containers(
+    id: String
+    created_at: String
+    asicId: String
+    units: String
+    cost: String
+    start: String
+    end: String
+    locationId: String
+    siteId: String
+    slug: String
+    """
+    Filtering Columns
+    """
+    select: String
+    """
+    Ordering
+    """
+    order: String
+    """
+    Limiting and Pagination
+    """
+    offset: String
+    """
+    Limiting and Pagination
+    """
+    limit: String
+  ): [containers] @httpOperation(
+    subgraph: "CSM"
+    path: "/containers"
+    operationSpecificHeaders: [["accept", "application/json"]]
+    httpMethod: GET
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"asicId\":\"asicId\",\"units\":\"units\",\"cost\":\"cost\",\"start\":\"start\",\"end\":\"end\",\"locationId\":\"locationId\",\"siteId\":\"siteId\",\"slug\":\"slug\",\"select\":\"select\",\"order\":\"order\",\"offset\":\"offset\",\"limit\":\"limit\"}"
+  ) @merge(subgraph: "CSM", keyField: "id", keyArg: "id")  @merge(subgraph: "CSM", keyField: "created_at", keyArg: "created_at")  @merge(subgraph: "CSM", keyField: "asicId", keyArg: "asicId")  @merge(subgraph: "CSM", keyField: "units", keyArg: "units")  @merge(subgraph: "CSM", keyField: "cost", keyArg: "cost")  @merge(subgraph: "CSM", keyField: "start", keyArg: "start")  @merge(subgraph: "CSM", keyField: "end", keyArg: "end")  @merge(subgraph: "CSM", keyField: "locationId", keyArg: "locationId")  @merge(subgraph: "CSM", keyField: "siteId", keyArg: "siteId")  @merge(subgraph: "CSM", keyField: "slug", keyArg: "slug") 
+  """
+  CSM mining society
+  """
+  societies(
+    id: String
+    created_at: String
+    csmSaShare: String
+    registrationNumber: String
+    shareCapital: String
+    tokenization: String
+    locationId: String
+    taxRate: String
+    provisionRate: String
+    crowdFundingFeeRate: String
+    name: String
+    updated_at: String
+    farmId: String
+    """
+    Filtering Columns
+    """
+    select: String
+    """
+    Ordering
+    """
+    order: String
+    """
+    Limiting and Pagination
+    """
+    offset: String
+    """
+    Limiting and Pagination
+    """
+    limit: String
+  ): [societies] @httpOperation(
+    subgraph: "CSM"
+    path: "/societies"
+    operationSpecificHeaders: [["accept", "application/json"]]
+    httpMethod: GET
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"csmSaShare\":\"csmSaShare\",\"registrationNumber\":\"registrationNumber\",\"shareCapital\":\"shareCapital\",\"tokenization\":\"tokenization\",\"locationId\":\"locationId\",\"taxRate\":\"taxRate\",\"provisionRate\":\"provisionRate\",\"crowdFundingFeeRate\":\"crowdFundingFeeRate\",\"name\":\"name\",\"updated_at\":\"updated_at\",\"farmId\":\"farmId\",\"select\":\"select\",\"order\":\"order\",\"offset\":\"offset\",\"limit\":\"limit\"}"
+  ) @merge(subgraph: "CSM", keyField: "id", keyArg: "id")  @merge(subgraph: "CSM", keyField: "created_at", keyArg: "created_at")  @merge(subgraph: "CSM", keyField: "csmSaShare", keyArg: "csmSaShare")  @merge(subgraph: "CSM", keyField: "registrationNumber", keyArg: "registrationNumber")  @merge(subgraph: "CSM", keyField: "shareCapital", keyArg: "shareCapital")  @merge(subgraph: "CSM", keyField: "tokenization", keyArg: "tokenization")  @merge(subgraph: "CSM", keyField: "locationId", keyArg: "locationId")  @merge(subgraph: "CSM", keyField: "taxRate", keyArg: "taxRate")  @merge(subgraph: "CSM", keyField: "provisionRate", keyArg: "provisionRate")  @merge(
+    subgraph: "CSM"
+    keyField: "crowdFundingFeeRate"
+    keyArg: "crowdFundingFeeRate"
+  ) @merge(subgraph: "CSM", keyField: "name", keyArg: "name")  @merge(subgraph: "CSM", keyField: "updated_at", keyArg: "updated_at")  @merge(subgraph: "CSM", keyField: "farmId", keyArg: "farmId") 
+  """
+  mining asic
+  """
+  asics(
+    id: String
+    created_at: String
+    manufacturer: String
+    model: String
+    powerW: String
+    hashrateTHs: String
+    """
+    Filtering Columns
+    """
+    select: String
+    """
+    Ordering
+    """
+    order: String
+    """
+    Limiting and Pagination
+    """
+    offset: String
+    """
+    Limiting and Pagination
+    """
+    limit: String
+  ): [asics] @httpOperation(
+    subgraph: "CSM"
+    path: "/asics"
+    operationSpecificHeaders: [["accept", "application/json"]]
+    httpMethod: GET
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"manufacturer\":\"manufacturer\",\"model\":\"model\",\"powerW\":\"powerW\",\"hashrateTHs\":\"hashrateTHs\",\"select\":\"select\",\"order\":\"order\",\"offset\":\"offset\",\"limit\":\"limit\"}"
+  ) @merge(subgraph: "CSM", keyField: "id", keyArg: "id")  @merge(subgraph: "CSM", keyField: "created_at", keyArg: "created_at")  @merge(subgraph: "CSM", keyField: "manufacturer", keyArg: "manufacturer")  @merge(subgraph: "CSM", keyField: "model", keyArg: "model")  @merge(subgraph: "CSM", keyField: "powerW", keyArg: "powerW")  @merge(subgraph: "CSM", keyField: "hashrateTHs", keyArg: "hashrateTHs") 
+  """
+  power plant electricity supplier
+  """
+  powerPlants(
+    id: String
+    created_at: String
+    powerMW: String
+    locationId: String
+    energies: String
+    slug: String
+    """
+    Filtering Columns
+    """
+    select: String
+    """
+    Ordering
+    """
+    order: String
+    """
+    Limiting and Pagination
+    """
+    offset: String
+    """
+    Limiting and Pagination
+    """
+    limit: String
+  ): [powerPlants] @httpOperation(
+    subgraph: "CSM"
+    path: "/powerPlants"
+    operationSpecificHeaders: [["accept", "application/json"]]
+    httpMethod: GET
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"powerMW\":\"powerMW\",\"locationId\":\"locationId\",\"energies\":\"energies\",\"slug\":\"slug\",\"select\":\"select\",\"order\":\"order\",\"offset\":\"offset\",\"limit\":\"limit\"}"
+  ) @merge(subgraph: "CSM", keyField: "id", keyArg: "id")  @merge(subgraph: "CSM", keyField: "created_at", keyArg: "created_at")  @merge(subgraph: "CSM", keyField: "powerMW", keyArg: "powerMW")  @merge(subgraph: "CSM", keyField: "locationId", keyArg: "locationId")  @merge(subgraph: "CSM", keyField: "energies", keyArg: "energies")  @merge(subgraph: "CSM", keyField: "slug", keyArg: "slug") 
+  """
+  contracts of mining services
+  """
+  contracts(
+    id: String
+    created_at: String
+    slug: String
+    siteId: String
+    csmTaxRate: String
+    csmPowerTax: String
+    csmProfitSharing: String
+    opTaxRate: String
+    opPowerTax: String
+    opProfitSharing: String
+    pool: String
+    poolTaxRate: String
+    operator: String
+    electricityPrice: String
+    electricityContractDuration: String
+    electricityContractRenewable: String
+    """
+    Filtering Columns
+    """
+    select: String
+    """
+    Ordering
+    """
+    order: String
+    """
+    Limiting and Pagination
+    """
+    offset: String
+    """
+    Limiting and Pagination
+    """
+    limit: String
+  ): [contracts] @httpOperation(
+    subgraph: "CSM"
+    path: "/contracts"
+    operationSpecificHeaders: [["accept", "application/json"]]
+    httpMethod: GET
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"slug\":\"slug\",\"siteId\":\"siteId\",\"csmTaxRate\":\"csmTaxRate\",\"csmPowerTax\":\"csmPowerTax\",\"csmProfitSharing\":\"csmProfitSharing\",\"opTaxRate\":\"opTaxRate\",\"opPowerTax\":\"opPowerTax\",\"opProfitSharing\":\"opProfitSharing\",\"pool\":\"pool\",\"poolTaxRate\":\"poolTaxRate\",\"operator\":\"operator\",\"electricityPrice\":\"electricityPrice\",\"electricityContractDuration\":\"electricityContractDuration\",\"electricityContractRenewable\":\"electricityContractRenewable\",\"select\":\"select\",\"order\":\"order\",\"offset\":\"offset\",\"limit\":\"limit\"}"
+  ) @merge(subgraph: "CSM", keyField: "id", keyArg: "id")  @merge(subgraph: "CSM", keyField: "created_at", keyArg: "created_at")  @merge(subgraph: "CSM", keyField: "slug", keyArg: "slug")  @merge(subgraph: "CSM", keyField: "siteId", keyArg: "siteId")  @merge(subgraph: "CSM", keyField: "csmTaxRate", keyArg: "csmTaxRate")  @merge(subgraph: "CSM", keyField: "csmPowerTax", keyArg: "csmPowerTax")  @merge(subgraph: "CSM", keyField: "csmProfitSharing", keyArg: "csmProfitSharing")  @merge(subgraph: "CSM", keyField: "opTaxRate", keyArg: "opTaxRate")  @merge(subgraph: "CSM", keyField: "opPowerTax", keyArg: "opPowerTax")  @merge(subgraph: "CSM", keyField: "opProfitSharing", keyArg: "opProfitSharing")  @merge(subgraph: "CSM", keyField: "pool", keyArg: "pool")  @merge(subgraph: "CSM", keyField: "poolTaxRate", keyArg: "poolTaxRate")  @merge(subgraph: "CSM", keyField: "operator", keyArg: "operator")  @merge(subgraph: "CSM", keyField: "electricityPrice", keyArg: "electricityPrice")  @merge(
+    subgraph: "CSM"
+    keyField: "electricityContractDuration"
+    keyArg: "electricityContractDuration"
+  ) @merge(
+    subgraph: "CSM"
+    keyField: "electricityContractRenewable"
+    keyArg: "electricityContractRenewable"
+  )
+  """
+  location of csm place
+  """
+  locations(
+    id: String
+    aera: String
+    country: String
+    countryCode: String
+    """
+    Filtering Columns
+    """
+    select: String
+    """
+    Ordering
+    """
+    order: String
+    """
+    Limiting and Pagination
+    """
+    offset: String
+    """
+    Limiting and Pagination
+    """
+    limit: String
+  ): [locations] @httpOperation(
+    subgraph: "CSM"
+    path: "/locations"
+    operationSpecificHeaders: [["accept", "application/json"]]
+    httpMethod: GET
+    queryParamArgMap: "{\"id\":\"id\",\"aera\":\"aera\",\"country\":\"country\",\"countryCode\":\"countryCode\",\"select\":\"select\",\"order\":\"order\",\"offset\":\"offset\",\"limit\":\"limit\"}"
+  ) @merge(subgraph: "CSM", keyField: "id", keyArg: "id")  @merge(subgraph: "CSM", keyField: "aera", keyArg: "aera")  @merge(subgraph: "CSM", keyField: "country", keyArg: "country")  @merge(subgraph: "CSM", keyField: "countryCode", keyArg: "countryCode") 
+  """
+  mining operator
+  """
+  operators(
+    id: String
+    logo: String
+    name: String
+    website: String
+    """
+    Filtering Columns
+    """
+    select: String
+    """
+    Ordering
+    """
+    order: String
+    """
+    Limiting and Pagination
+    """
+    offset: String
+    """
+    Limiting and Pagination
+    """
+    limit: String
+  ): [operators] @httpOperation(
+    subgraph: "CSM"
+    path: "/operators"
+    operationSpecificHeaders: [["accept", "application/json"]]
+    httpMethod: GET
+    queryParamArgMap: "{\"id\":\"id\",\"logo\":\"logo\",\"name\":\"name\",\"website\":\"website\",\"select\":\"select\",\"order\":\"order\",\"offset\":\"offset\",\"limit\":\"limit\"}"
+  ) @merge(subgraph: "CSM", keyField: "id", keyArg: "id")  @merge(subgraph: "CSM", keyField: "logo", keyArg: "logo")  @merge(subgraph: "CSM", keyField: "name", keyArg: "name")  @merge(subgraph: "CSM", keyField: "website", keyArg: "website") 
+  """
+  sources of energy
+  """
+  energies(
+    id: String
+    type: String
+    """
+    Filtering Columns
+    """
+    select: String
+    """
+    Ordering
+    """
+    order: String
+    """
+    Limiting and Pagination
+    """
+    offset: String
+    """
+    Limiting and Pagination
+    """
+    limit: String
+  ): [energies] @httpOperation(
+    subgraph: "CSM"
+    path: "/energies"
+    operationSpecificHeaders: [["accept", "application/json"]]
+    httpMethod: GET
+    queryParamArgMap: "{\"id\":\"id\",\"type\":\"type\",\"select\":\"select\",\"order\":\"order\",\"offset\":\"offset\",\"limit\":\"limit\"}"
+  ) @merge(subgraph: "CSM", keyField: "id", keyArg: "id")  @merge(subgraph: "CSM", keyField: "type", keyArg: "type") 
+  """
+  financial statement
+  """
+  financialStatements(
+    id: String
+    created_at: String
+    farmId: String
+    siteId: String
+    start: String
+    end: String
+    flow: String
+    btc: String
+    usd: String
+    btcPrice: String
+    at: String
+    """
+    Filtering Columns
+    """
+    select: String
+    """
+    Ordering
+    """
+    order: String
+    """
+    Limiting and Pagination
+    """
+    offset: String
+    """
+    Limiting and Pagination
+    """
+    limit: String
+  ): [financialStatements] @httpOperation(
+    subgraph: "CSM"
+    path: "/financialStatements"
+    operationSpecificHeaders: [["accept", "application/json"]]
+    httpMethod: GET
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"farmId\":\"farmId\",\"siteId\":\"siteId\",\"start\":\"start\",\"end\":\"end\",\"flow\":\"flow\",\"btc\":\"btc\",\"usd\":\"usd\",\"btcPrice\":\"btcPrice\",\"at\":\"at\",\"select\":\"select\",\"order\":\"order\",\"offset\":\"offset\",\"limit\":\"limit\"}"
+  ) @merge(subgraph: "CSM", keyField: "id", keyArg: "id")  @merge(subgraph: "CSM", keyField: "created_at", keyArg: "created_at")  @merge(subgraph: "CSM", keyField: "farmId", keyArg: "farmId")  @merge(subgraph: "CSM", keyField: "siteId", keyArg: "siteId")  @merge(subgraph: "CSM", keyField: "start", keyArg: "start")  @merge(subgraph: "CSM", keyField: "end", keyArg: "end")  @merge(subgraph: "CSM", keyField: "flow", keyArg: "flow")  @merge(subgraph: "CSM", keyField: "btc", keyArg: "btc")  @merge(subgraph: "CSM", keyField: "usd", keyArg: "usd")  @merge(subgraph: "CSM", keyField: "btcPrice", keyArg: "btcPrice")  @merge(subgraph: "CSM", keyField: "at", keyArg: "at") 
+  """
+  mining data
+  """
+  mining(
+    id: String
+    created_at: String
+    farmId: String
+    siteId: String
+    day: String
+    hashrate: String
+    uptime: String
+    mined: String
+    """
+    Filtering Columns
+    """
+    select: String
+    """
+    Ordering
+    """
+    order: String
+    """
+    Limiting and Pagination
+    """
+    offset: String
+    """
+    Limiting and Pagination
+    """
+    limit: String
+  ): [mining] @httpOperation(
+    subgraph: "CSM"
+    path: "/mining"
+    operationSpecificHeaders: [["accept", "application/json"]]
+    httpMethod: GET
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"farmId\":\"farmId\",\"siteId\":\"siteId\",\"day\":\"day\",\"hashrate\":\"hashrate\",\"uptime\":\"uptime\",\"mined\":\"mined\",\"select\":\"select\",\"order\":\"order\",\"offset\":\"offset\",\"limit\":\"limit\"}"
+  ) @merge(subgraph: "CSM", keyField: "id", keyArg: "id")  @merge(subgraph: "CSM", keyField: "created_at", keyArg: "created_at")  @merge(subgraph: "CSM", keyField: "farmId", keyArg: "farmId")  @merge(subgraph: "CSM", keyField: "siteId", keyArg: "siteId")  @merge(subgraph: "CSM", keyField: "day", keyArg: "day")  @merge(subgraph: "CSM", keyField: "hashrate", keyArg: "hashrate")  @merge(subgraph: "CSM", keyField: "uptime", keyArg: "uptime")  @merge(subgraph: "CSM", keyField: "mined", keyArg: "mined") 
+  """
+  Mining site of a farm
+  """
+  sites(
+    id: String
+    created_at: String
+    farmId: String
+    localisationId: String
+    isClosed: String
+    closed_at: String
+    updated_at: String
+    slug: String
+    powerPlantId: String
+    operatorId: String
+    """
+    Filtering Columns
+    """
+    select: String
+    """
+    Ordering
+    """
+    order: String
+    """
+    Limiting and Pagination
+    """
+    offset: String
+    """
+    Limiting and Pagination
+    """
+    limit: String
+  ): [sites] @httpOperation(
+    subgraph: "CSM"
+    path: "/sites"
+    operationSpecificHeaders: [["accept", "application/json"]]
+    httpMethod: GET
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"farmId\":\"farmId\",\"localisationId\":\"localisationId\",\"isClosed\":\"isClosed\",\"closed_at\":\"closed_at\",\"updated_at\":\"updated_at\",\"slug\":\"slug\",\"powerPlantId\":\"powerPlantId\",\"operatorId\":\"operatorId\",\"select\":\"select\",\"order\":\"order\",\"offset\":\"offset\",\"limit\":\"limit\"}"
+  ) @merge(subgraph: "CSM", keyField: "id", keyArg: "id")  @merge(subgraph: "CSM", keyField: "created_at", keyArg: "created_at")  @merge(subgraph: "CSM", keyField: "farmId", keyArg: "farmId")  @merge(subgraph: "CSM", keyField: "localisationId", keyArg: "localisationId")  @merge(subgraph: "CSM", keyField: "isClosed", keyArg: "isClosed")  @merge(subgraph: "CSM", keyField: "closed_at", keyArg: "closed_at")  @merge(subgraph: "CSM", keyField: "updated_at", keyArg: "updated_at")  @merge(subgraph: "CSM", keyField: "slug", keyArg: "slug")  @merge(subgraph: "CSM", keyField: "powerPlantId", keyArg: "powerPlantId")  @merge(subgraph: "CSM", keyField: "operatorId", keyArg: "operatorId") 
+  """
+  cash flow oidtion
+  """
+  flows(
+    cash: String
+    """
+    Filtering Columns
+    """
+    select: String
+    """
+    Ordering
+    """
+    order: String
+    """
+    Limiting and Pagination
+    """
+    offset: String
+    """
+    Limiting and Pagination
+    """
+    limit: String
+  ): [flows] @httpOperation(
+    subgraph: "CSM"
+    path: "/flows"
+    operationSpecificHeaders: [["accept", "application/json"]]
+    httpMethod: GET
+    queryParamArgMap: "{\"cash\":\"cash\",\"select\":\"select\",\"order\":\"order\",\"offset\":\"offset\",\"limit\":\"limit\"}"
+  ) @merge(subgraph: "CSM", keyField: "cash", keyArg: "cash") 
+  """
+  mining farm
+  """
+  farms(
+    id: String
+    created_at: String
+    name: String
+    shortName: String
+    slug: String
+    imageLink: String
+    status: String
+    locationId: String
+    updated_at: String
+    """
+    Filtering Columns
+    """
+    select: String
+    """
+    Ordering
+    """
+    order: String
+    """
+    Limiting and Pagination
+    """
+    offset: String
+    """
+    Limiting and Pagination
+    """
+    limit: String
+  ): [farms] @httpOperation(
+    subgraph: "CSM"
+    path: "/farms"
+    operationSpecificHeaders: [["accept", "application/json"]]
+    httpMethod: GET
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"name\":\"name\",\"shortName\":\"shortName\",\"slug\":\"slug\",\"imageLink\":\"imageLink\",\"status\":\"status\",\"locationId\":\"locationId\",\"updated_at\":\"updated_at\",\"select\":\"select\",\"order\":\"order\",\"offset\":\"offset\",\"limit\":\"limit\"}"
+  ) @merge(subgraph: "CSM", keyField: "id", keyArg: "id")  @merge(subgraph: "CSM", keyField: "created_at", keyArg: "created_at")  @merge(subgraph: "CSM", keyField: "name", keyArg: "name")  @merge(subgraph: "CSM", keyField: "shortName", keyArg: "shortName")  @merge(subgraph: "CSM", keyField: "slug", keyArg: "slug")  @merge(subgraph: "CSM", keyField: "imageLink", keyArg: "imageLink")  @merge(subgraph: "CSM", keyField: "status", keyArg: "status")  @merge(subgraph: "CSM", keyField: "locationId", keyArg: "locationId")  @merge(subgraph: "CSM", keyField: "updated_at", keyArg: "updated_at") 
+  """
+  CSM token
+  """
+  tokens(
+    id: String
+    created_at: String
+    address: String
+    decimals: String
+    gnosisscanUrl: String
+    initialPrice: String
+    name: String
+    symbol: String
+    supply: String
+    updated_at: String
+    farmId: String
+    """
+    Filtering Columns
+    """
+    select: String
+    """
+    Ordering
+    """
+    order: String
+    """
+    Limiting and Pagination
+    """
+    offset: String
+    """
+    Limiting and Pagination
+    """
+    limit: String
+  ): [tokens] @httpOperation(
+    subgraph: "CSM"
+    path: "/tokens"
+    operationSpecificHeaders: [["accept", "application/json"]]
+    httpMethod: GET
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"address\":\"address\",\"decimals\":\"decimals\",\"gnosisscanUrl\":\"gnosisscanUrl\",\"initialPrice\":\"initialPrice\",\"name\":\"name\",\"symbol\":\"symbol\",\"supply\":\"supply\",\"updated_at\":\"updated_at\",\"farmId\":\"farmId\",\"select\":\"select\",\"order\":\"order\",\"offset\":\"offset\",\"limit\":\"limit\"}"
+  ) @merge(subgraph: "CSM", keyField: "id", keyArg: "id")  @merge(subgraph: "CSM", keyField: "created_at", keyArg: "created_at")  @merge(subgraph: "CSM", keyField: "address", keyArg: "address")  @merge(subgraph: "CSM", keyField: "decimals", keyArg: "decimals")  @merge(subgraph: "CSM", keyField: "gnosisscanUrl", keyArg: "gnosisscanUrl")  @merge(subgraph: "CSM", keyField: "initialPrice", keyArg: "initialPrice")  @merge(subgraph: "CSM", keyField: "name", keyArg: "name")  @merge(subgraph: "CSM", keyField: "symbol", keyArg: "symbol")  @merge(subgraph: "CSM", keyField: "supply", keyArg: "supply")  @merge(subgraph: "CSM", keyField: "updated_at", keyArg: "updated_at")  @merge(subgraph: "CSM", keyField: "farmId", keyArg: "farmId") 
+  """
+  mining pool
+  """
+  pools(
+    id: String
+    name: String
+    """
+    Filtering Columns
+    """
+    select: String
+    """
+    Ordering
+    """
+    order: String
+    """
+    Limiting and Pagination
+    """
+    offset: String
+    """
+    Limiting and Pagination
+    """
+    limit: String
+  ): [pools] @httpOperation(
+    subgraph: "CSM"
+    path: "/pools"
+    operationSpecificHeaders: [["accept", "application/json"]]
+    httpMethod: GET
+    queryParamArgMap: "{\"id\":\"id\",\"name\":\"name\",\"select\":\"select\",\"order\":\"order\",\"offset\":\"offset\",\"limit\":\"limit\"}"
+  ) @merge(subgraph: "CSM", keyField: "id", keyArg: "id")  @merge(subgraph: "CSM", keyField: "name", keyArg: "name") 
+  """
+  mining pool api
+  """
+  apis(
+    id: String
+    poolId: String
+    username: String
+    url: String
+    siteId: String
+    closed_at: String
+    """
+    Filtering Columns
+    """
+    select: String
+    """
+    Ordering
+    """
+    order: String
+    """
+    Limiting and Pagination
+    """
+    offset: String
+    """
+    Limiting and Pagination
+    """
+    limit: String
+  ): [apis] @httpOperation(
+    subgraph: "CSM"
+    path: "/apis"
+    operationSpecificHeaders: [["accept", "application/json"]]
+    httpMethod: GET
+    queryParamArgMap: "{\"id\":\"id\",\"poolId\":\"poolId\",\"username\":\"username\",\"url\":\"url\",\"siteId\":\"siteId\",\"closed_at\":\"closed_at\",\"select\":\"select\",\"order\":\"order\",\"offset\":\"offset\",\"limit\":\"limit\"}"
+  ) @merge(subgraph: "CSM", keyField: "id", keyArg: "id")  @merge(subgraph: "CSM", keyField: "poolId", keyArg: "poolId")  @merge(subgraph: "CSM", keyField: "username", keyArg: "username")  @merge(subgraph: "CSM", keyField: "url", keyArg: "url")  @merge(subgraph: "CSM", keyField: "siteId", keyArg: "siteId")  @merge(subgraph: "CSM", keyField: "closed_at", keyArg: "closed_at") 
+  """
+  service provider
+  """
+  providers(
+    provider: String
+    """
+    Filtering Columns
+    """
+    select: String
+    """
+    Ordering
+    """
+    order: String
+    """
+    Limiting and Pagination
+    """
+    offset: String
+    """
+    Limiting and Pagination
+    """
+    limit: String
+  ): [providers] @httpOperation(
+    subgraph: "CSM"
+    path: "/providers"
+    operationSpecificHeaders: [["accept", "application/json"]]
+    httpMethod: GET
+    queryParamArgMap: "{\"provider\":\"provider\",\"select\":\"select\",\"order\":\"order\",\"offset\":\"offset\",\"limit\":\"limit\"}"
+  ) @merge(subgraph: "CSM", keyField: "provider", keyArg: "provider") 
+}
+
+"""
+CSM society bitcoin vault
+"""
+type vaults @join__type(graph: CSM, key: "id")  @join__type(graph: CSM, key: "created_at")  @join__type(graph: CSM, key: "xpub")  @join__type(graph: CSM, key: "farmId")  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String!
+  xpub: String!
+  """
+  Note:
+  This is a Foreign Key to `farms.id`.<fk table='farms' column='id'/>
+  """
+  farmId: Int!
+  farms: farms
+}
+
+"""
+mining farm
+"""
+type farms @join__type(graph: CSM, key: "id")  @join__type(graph: CSM, key: "created_at")  @join__type(graph: CSM, key: "name")  @join__type(graph: CSM, key: "shortName")  @join__type(graph: CSM, key: "slug")  @join__type(graph: CSM, key: "imageLink")  @join__type(graph: CSM, key: "status")  @join__type(graph: CSM, key: "locationId")  @join__type(graph: CSM, key: "updated_at")  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String!
+  name: String!
+  shortName: String!
+  slug: String!
+  imageLink: String!
+  status: String!
+  """
+  Note:
+  This is a Foreign Key to `locations.id`.<fk table='locations' column='id'/>
+  """
+  locationId: Int!
+  updated_at: String!
+  locations: locations
+  """
+  sites
+  """
+  sites: [sites]
+  tokens: tokens
+  societies: societies
+  """
+  CSM society bitcoin vault
+  """
+  vaults: vaults
+}
+
+"""
+location of csm place
+"""
+type locations @join__type(graph: CSM, key: "id")  @join__type(graph: CSM, key: "aera")  @join__type(graph: CSM, key: "country")  @join__type(graph: CSM, key: "countryCode")  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  aera: String!
+  country: String!
+  countryCode: String!
+}
+
+"""
+Mining site of a farm
+"""
+type sites @join__type(graph: CSM, key: "id")  @join__type(graph: CSM, key: "created_at")  @join__type(graph: CSM, key: "farmId")  @join__type(graph: CSM, key: "localisationId")  @join__type(graph: CSM, key: "isClosed")  @join__type(graph: CSM, key: "closed_at")  @join__type(graph: CSM, key: "updated_at")  @join__type(graph: CSM, key: "slug")  @join__type(graph: CSM, key: "powerPlantId")  @join__type(graph: CSM, key: "operatorId")  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String!
+  """
+  Note:
+  This is a Foreign Key to `farms.id`.<fk table='farms' column='id'/>
+  """
+  farmId: Int!
+  """
+  Note:
+  This is a Foreign Key to `locations.id`.<fk table='locations' column='id'/>
+  """
+  localisationId: Int!
+  isClosed: Boolean!
+  closed_at: String
+  updated_at: String!
+  slug: String!
+  """
+  Note:
+  This is a Foreign Key to `powerPlants.id`.<fk table='powerPlants' column='id'/>
+  """
+  powerPlantId: Int!
+  """
+  Note:
+  This is a Foreign Key to `operators.id`.<fk table='operators' column='id'/>
+  """
+  operatorId: Int!
+  """
+  mining farm
+  """
+  farms: farms
+  powerPlants: powerPlants
+  operators: operators
+  """
+  containers
+  """
+  containers: [containers]
+  contracts: contracts
+  apis: apis
+}
+
+"""
+power plant electricity supplier
+"""
+type powerPlants @join__type(graph: CSM, key: "id")  @join__type(graph: CSM, key: "created_at")  @join__type(graph: CSM, key: "powerMW")  @join__type(graph: CSM, key: "locationId")  @join__type(graph: CSM, key: "energies")  @join__type(graph: CSM, key: "slug")  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String!
+  powerMW: Float!
+  """
+  Note:
+  This is a Foreign Key to `locations.id`.<fk table='locations' column='id'/>
+  """
+  locationId: Int!
+  energies: [String]!
+  slug: String!
+  locations: locations
+}
+
+"""
+mining operator
+"""
+type operators @join__type(graph: CSM, key: "id")  @join__type(graph: CSM, key: "logo")  @join__type(graph: CSM, key: "name")  @join__type(graph: CSM, key: "website")  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  logo: String!
+  name: String!
+  website: String!
+}
+
+"""
+asics container
+"""
+type containers @join__type(graph: CSM, key: "id")  @join__type(graph: CSM, key: "created_at")  @join__type(graph: CSM, key: "asicId")  @join__type(graph: CSM, key: "units")  @join__type(graph: CSM, key: "cost")  @join__type(graph: CSM, key: "start")  @join__type(graph: CSM, key: "end")  @join__type(graph: CSM, key: "locationId")  @join__type(graph: CSM, key: "siteId")  @join__type(graph: CSM, key: "slug")  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String!
+  """
+  Note:
+  This is a Foreign Key to `asics.id`.<fk table='asics' column='id'/>
+  """
+  asicId: Int!
+  units: Int!
+  cost: Float!
+  start: String
+  end: String
+  """
+  Note:
+  This is a Foreign Key to `locations.id`.<fk table='locations' column='id'/>
+  """
+  locationId: Int!
+  """
+  Note:
+  This is a Foreign Key to `sites.id`.<fk table='sites' column='id'/>
+  """
+  siteId: Int!
+  slug: String!
+  """
+  Mining site of a farm
+  """
+  sites: sites
+  asics: asics
+  locations: locations
+}
+
+"""
+mining asic
+"""
+type asics @join__type(graph: CSM, key: "id")  @join__type(graph: CSM, key: "created_at")  @join__type(graph: CSM, key: "manufacturer")  @join__type(graph: CSM, key: "model")  @join__type(graph: CSM, key: "powerW")  @join__type(graph: CSM, key: "hashrateTHs")  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String!
+  manufacturer: String!
+  model: String!
+  powerW: Float!
+  hashrateTHs: Float!
+}
+
+"""
+contracts of mining services
+"""
+type contracts @join__type(graph: CSM, key: "id")  @join__type(graph: CSM, key: "created_at")  @join__type(graph: CSM, key: "slug")  @join__type(graph: CSM, key: "siteId")  @join__type(graph: CSM, key: "csmTaxRate")  @join__type(graph: CSM, key: "csmPowerTax")  @join__type(graph: CSM, key: "csmProfitSharing")  @join__type(graph: CSM, key: "opTaxRate")  @join__type(graph: CSM, key: "opPowerTax")  @join__type(graph: CSM, key: "opProfitSharing")  @join__type(graph: CSM, key: "pool")  @join__type(graph: CSM, key: "poolTaxRate")  @join__type(graph: CSM, key: "operator")  @join__type(graph: CSM, key: "electricityPrice")  @join__type(graph: CSM, key: "electricityContractDuration")  @join__type(graph: CSM, key: "electricityContractRenewable")  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String!
+  slug: String!
+  """
+  Note:
+  This is a Foreign Key to `sites.id`.<fk table='sites' column='id'/>
+  """
+  siteId: Int!
+  csmTaxRate: Float!
+  csmPowerTax: Float!
+  csmProfitSharing: Float!
+  opTaxRate: Float!
+  opPowerTax: Float!
+  opProfitSharing: Float!
+  """
+  Note:
+  This is a Foreign Key to `pools.name`.<fk table='pools' column='name'/>
+  """
+  pool: String!
+  poolTaxRate: Float!
+  """
+  Note:
+  This is a Foreign Key to `operators.name`.<fk table='operators' column='name'/>
+  """
+  operator: String!
+  electricityPrice: Float!
+  electricityContractDuration: Float!
+  electricityContractRenewable: Boolean!
+  """
+  Mining site of a farm
+  """
+  sites: sites
+}
+
+"""
+mining pool api
+"""
+type apis @join__type(graph: CSM, key: "id")  @join__type(graph: CSM, key: "poolId")  @join__type(graph: CSM, key: "username")  @join__type(graph: CSM, key: "url")  @join__type(graph: CSM, key: "siteId")  @join__type(graph: CSM, key: "closed_at")  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  """
+  Note:
+  This is a Foreign Key to `pools.id`.<fk table='pools' column='id'/>
+  """
+  poolId: Int!
+  username: String!
+  url: String!
+  """
+  Note:
+  This is a Foreign Key to `sites.id`.<fk table='sites' column='id'/>
+  """
+  siteId: Int!
+  closed_at: String
+  """
+  Mining site of a farm
+  """
+  sites: sites
+  pools: pools
+}
+
+"""
+mining pool
+"""
+type pools @join__type(graph: CSM, key: "id")  @join__type(graph: CSM, key: "name")  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  name: String!
+}
+
+"""
+CSM token
+"""
+type tokens @join__type(graph: CSM, key: "id")  @join__type(graph: CSM, key: "created_at")  @join__type(graph: CSM, key: "address")  @join__type(graph: CSM, key: "decimals")  @join__type(graph: CSM, key: "gnosisscanUrl")  @join__type(graph: CSM, key: "initialPrice")  @join__type(graph: CSM, key: "name")  @join__type(graph: CSM, key: "symbol")  @join__type(graph: CSM, key: "supply")  @join__type(graph: CSM, key: "updated_at")  @join__type(graph: CSM, key: "farmId")  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String!
+  address: String!
+  decimals: Int!
+  gnosisscanUrl: String!
+  initialPrice: Float!
+  name: String!
+  symbol: String!
+  supply: Float!
+  updated_at: String!
+  """
+  Note:
+  This is a Foreign Key to `farms.id`.<fk table='farms' column='id'/>
+  """
+  farmId: Int!
+  """
+  mining farm
+  """
+  farms: farms
+}
+
+"""
+CSM mining society
+"""
+type societies @join__type(graph: CSM, key: "id")  @join__type(graph: CSM, key: "created_at")  @join__type(graph: CSM, key: "csmSaShare")  @join__type(graph: CSM, key: "registrationNumber")  @join__type(graph: CSM, key: "shareCapital")  @join__type(graph: CSM, key: "tokenization")  @join__type(graph: CSM, key: "locationId")  @join__type(graph: CSM, key: "taxRate")  @join__type(graph: CSM, key: "provisionRate")  @join__type(graph: CSM, key: "crowdFundingFeeRate")  @join__type(graph: CSM, key: "name")  @join__type(graph: CSM, key: "updated_at")  @join__type(graph: CSM, key: "farmId")  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String!
+  csmSaShare: Float!
+  registrationNumber: String!
+  shareCapital: Float!
+  tokenization: Float!
+  """
+  Note:
+  This is a Foreign Key to `locations.id`.<fk table='locations' column='id'/>
+  """
+  locationId: Int!
+  taxRate: Float!
+  provisionRate: Float!
+  crowdFundingFeeRate: Float!
+  name: String!
+  updated_at: String!
+  """
+  Note:
+  This is a Foreign Key to `farms.id`.<fk table='farms' column='id'/>
+  """
+  farmId: Int!
+  """
+  mining farm
+  """
+  farms: farms
+  locations: locations
+}
+
+"""
+sources of energy
+"""
+type energies @join__type(graph: CSM, key: "id")  @join__type(graph: CSM, key: "type")  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  type: String!
+}
+
+"""
+financial statement
+"""
+type financialStatements @join__type(graph: CSM, key: "id")  @join__type(graph: CSM, key: "created_at")  @join__type(graph: CSM, key: "farmId")  @join__type(graph: CSM, key: "siteId")  @join__type(graph: CSM, key: "start")  @join__type(graph: CSM, key: "end")  @join__type(graph: CSM, key: "flow")  @join__type(graph: CSM, key: "btc")  @join__type(graph: CSM, key: "usd")  @join__type(graph: CSM, key: "btcPrice")  @join__type(graph: CSM, key: "at")  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String!
+  """
+  Note:
+  This is a Foreign Key to `farms.id`.<fk table='farms' column='id'/>
+  """
+  farmId: Int!
+  """
+  Note:
+  This is a Foreign Key to `sites.id`.<fk table='sites' column='id'/>
+  """
+  siteId: Int!
+  start: String!
+  end: String!
+  """
+  Note:
+  This is a Foreign Key to `flows.cash`.<fk table='flows' column='cash'/>
+  """
+  flow: String!
+  btc: Float!
+  usd: Float!
+  btcPrice: Float!
+  """
+  Note:
+  This is a Foreign Key to `providers.provider`.<fk table='providers' column='provider'/>
+  """
+  at: String
+  sites: sites
+  farms: farms
+}
+
+"""
+mining data
+"""
+type mining @join__type(graph: CSM, key: "id")  @join__type(graph: CSM, key: "created_at")  @join__type(graph: CSM, key: "farmId")  @join__type(graph: CSM, key: "siteId")  @join__type(graph: CSM, key: "day")  @join__type(graph: CSM, key: "hashrate")  @join__type(graph: CSM, key: "uptime")  @join__type(graph: CSM, key: "mined")  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String!
+  """
+  Note:
+  This is a Foreign Key to `farms.id`.<fk table='farms' column='id'/>
+  """
+  farmId: Int!
+  """
+  Note:
+  This is a Foreign Key to `sites.id`.<fk table='sites' column='id'/>
+  """
+  siteId: Int!
+  day: String!
+  hashrate: Float!
+  uptime: Float!
+  mined: Float!
+  sites: sites
+  farms: farms
+}
+
+"""
+cash flow oidtion
+"""
+type flows @join__type(graph: CSM, key: "cash")  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  cash: String!
+}
+
+"""
+service provider
+"""
+type providers @join__type(graph: CSM, key: "provider")  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  provider: String!
+}
+
+type Mutation @join__type(graph: CSM)  {
+  """
+  CSM society bitcoin vault
+  """
+  post_vaults("""
+  Filtering Columns
+  """
+  select: String, input: vaults_Input) : JSON @httpOperation(
+    subgraph: "CSM"
+    path: "/vaults"
+    operationSpecificHeaders: [["Content-Type", "application/json"]]
+    httpMethod: POST
+    queryParamArgMap: "{\"select\":\"select\"}"
+  )
+  """
+  CSM society bitcoin vault
+  """
+  delete_vaults(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    xpub: String
+    farmId: String
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/vaults"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"]]
+    httpMethod: DELETE
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"xpub\":\"xpub\",\"farmId\":\"farmId\"}"
+  )
+  """
+  CSM society bitcoin vault
+  """
+  patch_vaults(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    xpub: String
+    farmId: String
+    input: vaults_Input
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/vaults"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"], ["Content-Type", "application/json"]]
+    httpMethod: PATCH
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"xpub\":\"xpub\",\"farmId\":\"farmId\"}"
+  )
+  """
+  asics container
+  """
+  post_containers("""
+  Filtering Columns
+  """
+  select: String, input: containers_Input) : JSON @httpOperation(
+    subgraph: "CSM"
+    path: "/containers"
+    operationSpecificHeaders: [["Content-Type", "application/json"]]
+    httpMethod: POST
+    queryParamArgMap: "{\"select\":\"select\"}"
+  )
+  """
+  asics container
+  """
+  delete_containers(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    asicId: String
+    units: String
+    cost: String
+    start: String
+    end: String
+    locationId: String
+    siteId: String
+    slug: String
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/containers"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"]]
+    httpMethod: DELETE
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"asicId\":\"asicId\",\"units\":\"units\",\"cost\":\"cost\",\"start\":\"start\",\"end\":\"end\",\"locationId\":\"locationId\",\"siteId\":\"siteId\",\"slug\":\"slug\"}"
+  )
+  """
+  asics container
+  """
+  patch_containers(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    asicId: String
+    units: String
+    cost: String
+    start: String
+    end: String
+    locationId: String
+    siteId: String
+    slug: String
+    input: containers_Input
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/containers"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"], ["Content-Type", "application/json"]]
+    httpMethod: PATCH
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"asicId\":\"asicId\",\"units\":\"units\",\"cost\":\"cost\",\"start\":\"start\",\"end\":\"end\",\"locationId\":\"locationId\",\"siteId\":\"siteId\",\"slug\":\"slug\"}"
+  )
+  """
+  CSM mining society
+  """
+  post_societies("""
+  Filtering Columns
+  """
+  select: String, input: societies_Input) : JSON @httpOperation(
+    subgraph: "CSM"
+    path: "/societies"
+    operationSpecificHeaders: [["Content-Type", "application/json"]]
+    httpMethod: POST
+    queryParamArgMap: "{\"select\":\"select\"}"
+  )
+  """
+  CSM mining society
+  """
+  delete_societies(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    csmSaShare: String
+    registrationNumber: String
+    shareCapital: String
+    tokenization: String
+    locationId: String
+    taxRate: String
+    provisionRate: String
+    crowdFundingFeeRate: String
+    name: String
+    updated_at: String
+    farmId: String
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/societies"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"]]
+    httpMethod: DELETE
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"csmSaShare\":\"csmSaShare\",\"registrationNumber\":\"registrationNumber\",\"shareCapital\":\"shareCapital\",\"tokenization\":\"tokenization\",\"locationId\":\"locationId\",\"taxRate\":\"taxRate\",\"provisionRate\":\"provisionRate\",\"crowdFundingFeeRate\":\"crowdFundingFeeRate\",\"name\":\"name\",\"updated_at\":\"updated_at\",\"farmId\":\"farmId\"}"
+  )
+  """
+  CSM mining society
+  """
+  patch_societies(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    csmSaShare: String
+    registrationNumber: String
+    shareCapital: String
+    tokenization: String
+    locationId: String
+    taxRate: String
+    provisionRate: String
+    crowdFundingFeeRate: String
+    name: String
+    updated_at: String
+    farmId: String
+    input: societies_Input
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/societies"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"], ["Content-Type", "application/json"]]
+    httpMethod: PATCH
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"csmSaShare\":\"csmSaShare\",\"registrationNumber\":\"registrationNumber\",\"shareCapital\":\"shareCapital\",\"tokenization\":\"tokenization\",\"locationId\":\"locationId\",\"taxRate\":\"taxRate\",\"provisionRate\":\"provisionRate\",\"crowdFundingFeeRate\":\"crowdFundingFeeRate\",\"name\":\"name\",\"updated_at\":\"updated_at\",\"farmId\":\"farmId\"}"
+  )
+  """
+  mining asic
+  """
+  post_asics("""
+  Filtering Columns
+  """
+  select: String, input: asics_Input) : JSON @httpOperation(
+    subgraph: "CSM"
+    path: "/asics"
+    operationSpecificHeaders: [["Content-Type", "application/json"]]
+    httpMethod: POST
+    queryParamArgMap: "{\"select\":\"select\"}"
+  )
+  """
+  mining asic
+  """
+  delete_asics(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    manufacturer: String
+    model: String
+    powerW: String
+    hashrateTHs: String
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/asics"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"]]
+    httpMethod: DELETE
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"manufacturer\":\"manufacturer\",\"model\":\"model\",\"powerW\":\"powerW\",\"hashrateTHs\":\"hashrateTHs\"}"
+  )
+  """
+  mining asic
+  """
+  patch_asics(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    manufacturer: String
+    model: String
+    powerW: String
+    hashrateTHs: String
+    input: asics_Input
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/asics"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"], ["Content-Type", "application/json"]]
+    httpMethod: PATCH
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"manufacturer\":\"manufacturer\",\"model\":\"model\",\"powerW\":\"powerW\",\"hashrateTHs\":\"hashrateTHs\"}"
+  )
+  """
+  power plant electricity supplier
+  """
+  post_powerPlants("""
+  Filtering Columns
+  """
+  select: String, input: powerPlants_Input) : JSON @httpOperation(
+    subgraph: "CSM"
+    path: "/powerPlants"
+    operationSpecificHeaders: [["Content-Type", "application/json"]]
+    httpMethod: POST
+    queryParamArgMap: "{\"select\":\"select\"}"
+  )
+  """
+  power plant electricity supplier
+  """
+  delete_powerPlants(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    powerMW: String
+    locationId: String
+    energies: String
+    slug: String
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/powerPlants"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"]]
+    httpMethod: DELETE
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"powerMW\":\"powerMW\",\"locationId\":\"locationId\",\"energies\":\"energies\",\"slug\":\"slug\"}"
+  )
+  """
+  power plant electricity supplier
+  """
+  patch_powerPlants(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    powerMW: String
+    locationId: String
+    energies: String
+    slug: String
+    input: powerPlants_Input
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/powerPlants"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"], ["Content-Type", "application/json"]]
+    httpMethod: PATCH
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"powerMW\":\"powerMW\",\"locationId\":\"locationId\",\"energies\":\"energies\",\"slug\":\"slug\"}"
+  )
+  """
+  contracts of mining services
+  """
+  post_contracts("""
+  Filtering Columns
+  """
+  select: String, input: contracts_Input) : JSON @httpOperation(
+    subgraph: "CSM"
+    path: "/contracts"
+    operationSpecificHeaders: [["Content-Type", "application/json"]]
+    httpMethod: POST
+    queryParamArgMap: "{\"select\":\"select\"}"
+  )
+  """
+  contracts of mining services
+  """
+  delete_contracts(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    slug: String
+    siteId: String
+    csmTaxRate: String
+    csmPowerTax: String
+    csmProfitSharing: String
+    opTaxRate: String
+    opPowerTax: String
+    opProfitSharing: String
+    pool: String
+    poolTaxRate: String
+    operator: String
+    electricityPrice: String
+    electricityContractDuration: String
+    electricityContractRenewable: String
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/contracts"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"]]
+    httpMethod: DELETE
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"slug\":\"slug\",\"siteId\":\"siteId\",\"csmTaxRate\":\"csmTaxRate\",\"csmPowerTax\":\"csmPowerTax\",\"csmProfitSharing\":\"csmProfitSharing\",\"opTaxRate\":\"opTaxRate\",\"opPowerTax\":\"opPowerTax\",\"opProfitSharing\":\"opProfitSharing\",\"pool\":\"pool\",\"poolTaxRate\":\"poolTaxRate\",\"operator\":\"operator\",\"electricityPrice\":\"electricityPrice\",\"electricityContractDuration\":\"electricityContractDuration\",\"electricityContractRenewable\":\"electricityContractRenewable\"}"
+  )
+  """
+  contracts of mining services
+  """
+  patch_contracts(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    slug: String
+    siteId: String
+    csmTaxRate: String
+    csmPowerTax: String
+    csmProfitSharing: String
+    opTaxRate: String
+    opPowerTax: String
+    opProfitSharing: String
+    pool: String
+    poolTaxRate: String
+    operator: String
+    electricityPrice: String
+    electricityContractDuration: String
+    electricityContractRenewable: String
+    input: contracts_Input
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/contracts"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"], ["Content-Type", "application/json"]]
+    httpMethod: PATCH
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"slug\":\"slug\",\"siteId\":\"siteId\",\"csmTaxRate\":\"csmTaxRate\",\"csmPowerTax\":\"csmPowerTax\",\"csmProfitSharing\":\"csmProfitSharing\",\"opTaxRate\":\"opTaxRate\",\"opPowerTax\":\"opPowerTax\",\"opProfitSharing\":\"opProfitSharing\",\"pool\":\"pool\",\"poolTaxRate\":\"poolTaxRate\",\"operator\":\"operator\",\"electricityPrice\":\"electricityPrice\",\"electricityContractDuration\":\"electricityContractDuration\",\"electricityContractRenewable\":\"electricityContractRenewable\"}"
+  )
+  """
+  location of csm place
+  """
+  post_locations("""
+  Filtering Columns
+  """
+  select: String, input: locations_Input) : JSON @httpOperation(
+    subgraph: "CSM"
+    path: "/locations"
+    operationSpecificHeaders: [["Content-Type", "application/json"]]
+    httpMethod: POST
+    queryParamArgMap: "{\"select\":\"select\"}"
+  )
+  """
+  location of csm place
+  """
+  delete_locations(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    aera: String
+    country: String
+    countryCode: String
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/locations"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"]]
+    httpMethod: DELETE
+    queryParamArgMap: "{\"id\":\"id\",\"aera\":\"aera\",\"country\":\"country\",\"countryCode\":\"countryCode\"}"
+  )
+  """
+  location of csm place
+  """
+  patch_locations(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    aera: String
+    country: String
+    countryCode: String
+    input: locations_Input
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/locations"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"], ["Content-Type", "application/json"]]
+    httpMethod: PATCH
+    queryParamArgMap: "{\"id\":\"id\",\"aera\":\"aera\",\"country\":\"country\",\"countryCode\":\"countryCode\"}"
+  )
+  """
+  mining operator
+  """
+  post_operators("""
+  Filtering Columns
+  """
+  select: String, input: operators_Input) : JSON @httpOperation(
+    subgraph: "CSM"
+    path: "/operators"
+    operationSpecificHeaders: [["Content-Type", "application/json"]]
+    httpMethod: POST
+    queryParamArgMap: "{\"select\":\"select\"}"
+  )
+  """
+  mining operator
+  """
+  delete_operators(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    logo: String
+    name: String
+    website: String
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/operators"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"]]
+    httpMethod: DELETE
+    queryParamArgMap: "{\"id\":\"id\",\"logo\":\"logo\",\"name\":\"name\",\"website\":\"website\"}"
+  )
+  """
+  mining operator
+  """
+  patch_operators(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    logo: String
+    name: String
+    website: String
+    input: operators_Input
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/operators"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"], ["Content-Type", "application/json"]]
+    httpMethod: PATCH
+    queryParamArgMap: "{\"id\":\"id\",\"logo\":\"logo\",\"name\":\"name\",\"website\":\"website\"}"
+  )
+  """
+  sources of energy
+  """
+  post_energies("""
+  Filtering Columns
+  """
+  select: String, input: energies_Input) : JSON @httpOperation(
+    subgraph: "CSM"
+    path: "/energies"
+    operationSpecificHeaders: [["Content-Type", "application/json"]]
+    httpMethod: POST
+    queryParamArgMap: "{\"select\":\"select\"}"
+  )
+  """
+  sources of energy
+  """
+  delete_energies("""
+  Preference
+  """
+  Prefer: String, id: String, type: String) : Void @httpOperation(
+    subgraph: "CSM"
+    path: "/energies"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"]]
+    httpMethod: DELETE
+    queryParamArgMap: "{\"id\":\"id\",\"type\":\"type\"}"
+  )
+  """
+  sources of energy
+  """
+  patch_energies(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    type: String
+    input: energies_Input
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/energies"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"], ["Content-Type", "application/json"]]
+    httpMethod: PATCH
+    queryParamArgMap: "{\"id\":\"id\",\"type\":\"type\"}"
+  )
+  """
+  financial statement
+  """
+  post_financialStatements("""
+  Filtering Columns
+  """
+  select: String, input: financialStatements_Input) : JSON @httpOperation(
+    subgraph: "CSM"
+    path: "/financialStatements"
+    operationSpecificHeaders: [["Content-Type", "application/json"]]
+    httpMethod: POST
+    queryParamArgMap: "{\"select\":\"select\"}"
+  )
+  """
+  financial statement
+  """
+  delete_financialStatements(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    farmId: String
+    siteId: String
+    start: String
+    end: String
+    flow: String
+    btc: String
+    usd: String
+    btcPrice: String
+    at: String
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/financialStatements"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"]]
+    httpMethod: DELETE
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"farmId\":\"farmId\",\"siteId\":\"siteId\",\"start\":\"start\",\"end\":\"end\",\"flow\":\"flow\",\"btc\":\"btc\",\"usd\":\"usd\",\"btcPrice\":\"btcPrice\",\"at\":\"at\"}"
+  )
+  """
+  financial statement
+  """
+  patch_financialStatements(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    farmId: String
+    siteId: String
+    start: String
+    end: String
+    flow: String
+    btc: String
+    usd: String
+    btcPrice: String
+    at: String
+    input: financialStatements_Input
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/financialStatements"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"], ["Content-Type", "application/json"]]
+    httpMethod: PATCH
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"farmId\":\"farmId\",\"siteId\":\"siteId\",\"start\":\"start\",\"end\":\"end\",\"flow\":\"flow\",\"btc\":\"btc\",\"usd\":\"usd\",\"btcPrice\":\"btcPrice\",\"at\":\"at\"}"
+  )
+  """
+  mining data
+  """
+  post_mining("""
+  Filtering Columns
+  """
+  select: String, input: mining_Input) : JSON @httpOperation(
+    subgraph: "CSM"
+    path: "/mining"
+    operationSpecificHeaders: [["Content-Type", "application/json"]]
+    httpMethod: POST
+    queryParamArgMap: "{\"select\":\"select\"}"
+  )
+  """
+  mining data
+  """
+  delete_mining(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    farmId: String
+    siteId: String
+    day: String
+    hashrate: String
+    uptime: String
+    mined: String
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/mining"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"]]
+    httpMethod: DELETE
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"farmId\":\"farmId\",\"siteId\":\"siteId\",\"day\":\"day\",\"hashrate\":\"hashrate\",\"uptime\":\"uptime\",\"mined\":\"mined\"}"
+  )
+  """
+  mining data
+  """
+  patch_mining(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    farmId: String
+    siteId: String
+    day: String
+    hashrate: String
+    uptime: String
+    mined: String
+    input: mining_Input
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/mining"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"], ["Content-Type", "application/json"]]
+    httpMethod: PATCH
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"farmId\":\"farmId\",\"siteId\":\"siteId\",\"day\":\"day\",\"hashrate\":\"hashrate\",\"uptime\":\"uptime\",\"mined\":\"mined\"}"
+  )
+  """
+  Mining site of a farm
+  """
+  post_sites("""
+  Filtering Columns
+  """
+  select: String, input: sites_Input) : JSON @httpOperation(
+    subgraph: "CSM"
+    path: "/sites"
+    operationSpecificHeaders: [["Content-Type", "application/json"]]
+    httpMethod: POST
+    queryParamArgMap: "{\"select\":\"select\"}"
+  )
+  """
+  Mining site of a farm
+  """
+  delete_sites(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    farmId: String
+    localisationId: String
+    isClosed: String
+    closed_at: String
+    updated_at: String
+    slug: String
+    powerPlantId: String
+    operatorId: String
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/sites"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"]]
+    httpMethod: DELETE
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"farmId\":\"farmId\",\"localisationId\":\"localisationId\",\"isClosed\":\"isClosed\",\"closed_at\":\"closed_at\",\"updated_at\":\"updated_at\",\"slug\":\"slug\",\"powerPlantId\":\"powerPlantId\",\"operatorId\":\"operatorId\"}"
+  )
+  """
+  Mining site of a farm
+  """
+  patch_sites(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    farmId: String
+    localisationId: String
+    isClosed: String
+    closed_at: String
+    updated_at: String
+    slug: String
+    powerPlantId: String
+    operatorId: String
+    input: sites_Input
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/sites"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"], ["Content-Type", "application/json"]]
+    httpMethod: PATCH
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"farmId\":\"farmId\",\"localisationId\":\"localisationId\",\"isClosed\":\"isClosed\",\"closed_at\":\"closed_at\",\"updated_at\":\"updated_at\",\"slug\":\"slug\",\"powerPlantId\":\"powerPlantId\",\"operatorId\":\"operatorId\"}"
+  )
+  """
+  cash flow oidtion
+  """
+  post_flows("""
+  Filtering Columns
+  """
+  select: String, input: flows_Input) : JSON @httpOperation(
+    subgraph: "CSM"
+    path: "/flows"
+    operationSpecificHeaders: [["Content-Type", "application/json"]]
+    httpMethod: POST
+    queryParamArgMap: "{\"select\":\"select\"}"
+  )
+  """
+  cash flow oidtion
+  """
+  delete_flows("""
+  Preference
+  """
+  Prefer: String, cash: String) : Void @httpOperation(
+    subgraph: "CSM"
+    path: "/flows"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"]]
+    httpMethod: DELETE
+    queryParamArgMap: "{\"cash\":\"cash\"}"
+  )
+  """
+  cash flow oidtion
+  """
+  patch_flows("""
+  Preference
+  """
+  Prefer: String, cash: String, input: flows_Input) : Void @httpOperation(
+    subgraph: "CSM"
+    path: "/flows"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"], ["Content-Type", "application/json"]]
+    httpMethod: PATCH
+    queryParamArgMap: "{\"cash\":\"cash\"}"
+  )
+  """
+  mining farm
+  """
+  post_farms("""
+  Filtering Columns
+  """
+  select: String, input: farms_Input) : JSON @httpOperation(
+    subgraph: "CSM"
+    path: "/farms"
+    operationSpecificHeaders: [["Content-Type", "application/json"]]
+    httpMethod: POST
+    queryParamArgMap: "{\"select\":\"select\"}"
+  )
+  """
+  mining farm
+  """
+  delete_farms(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    name: String
+    shortName: String
+    slug: String
+    imageLink: String
+    status: String
+    locationId: String
+    updated_at: String
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/farms"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"]]
+    httpMethod: DELETE
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"name\":\"name\",\"shortName\":\"shortName\",\"slug\":\"slug\",\"imageLink\":\"imageLink\",\"status\":\"status\",\"locationId\":\"locationId\",\"updated_at\":\"updated_at\"}"
+  )
+  """
+  mining farm
+  """
+  patch_farms(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    name: String
+    shortName: String
+    slug: String
+    imageLink: String
+    status: String
+    locationId: String
+    updated_at: String
+    input: farms_Input
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/farms"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"], ["Content-Type", "application/json"]]
+    httpMethod: PATCH
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"name\":\"name\",\"shortName\":\"shortName\",\"slug\":\"slug\",\"imageLink\":\"imageLink\",\"status\":\"status\",\"locationId\":\"locationId\",\"updated_at\":\"updated_at\"}"
+  )
+  """
+  CSM token
+  """
+  post_tokens("""
+  Filtering Columns
+  """
+  select: String, input: tokens_Input) : JSON @httpOperation(
+    subgraph: "CSM"
+    path: "/tokens"
+    operationSpecificHeaders: [["Content-Type", "application/json"]]
+    httpMethod: POST
+    queryParamArgMap: "{\"select\":\"select\"}"
+  )
+  """
+  CSM token
+  """
+  delete_tokens(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    address: String
+    decimals: String
+    gnosisscanUrl: String
+    initialPrice: String
+    name: String
+    symbol: String
+    supply: String
+    updated_at: String
+    farmId: String
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/tokens"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"]]
+    httpMethod: DELETE
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"address\":\"address\",\"decimals\":\"decimals\",\"gnosisscanUrl\":\"gnosisscanUrl\",\"initialPrice\":\"initialPrice\",\"name\":\"name\",\"symbol\":\"symbol\",\"supply\":\"supply\",\"updated_at\":\"updated_at\",\"farmId\":\"farmId\"}"
+  )
+  """
+  CSM token
+  """
+  patch_tokens(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    created_at: String
+    address: String
+    decimals: String
+    gnosisscanUrl: String
+    initialPrice: String
+    name: String
+    symbol: String
+    supply: String
+    updated_at: String
+    farmId: String
+    input: tokens_Input
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/tokens"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"], ["Content-Type", "application/json"]]
+    httpMethod: PATCH
+    queryParamArgMap: "{\"id\":\"id\",\"created_at\":\"created_at\",\"address\":\"address\",\"decimals\":\"decimals\",\"gnosisscanUrl\":\"gnosisscanUrl\",\"initialPrice\":\"initialPrice\",\"name\":\"name\",\"symbol\":\"symbol\",\"supply\":\"supply\",\"updated_at\":\"updated_at\",\"farmId\":\"farmId\"}"
+  )
+  """
+  mining pool
+  """
+  post_pools("""
+  Filtering Columns
+  """
+  select: String, input: pools_Input) : JSON @httpOperation(
+    subgraph: "CSM"
+    path: "/pools"
+    operationSpecificHeaders: [["Content-Type", "application/json"]]
+    httpMethod: POST
+    queryParamArgMap: "{\"select\":\"select\"}"
+  )
+  """
+  mining pool
+  """
+  delete_pools("""
+  Preference
+  """
+  Prefer: String, id: String, name: String) : Void @httpOperation(
+    subgraph: "CSM"
+    path: "/pools"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"]]
+    httpMethod: DELETE
+    queryParamArgMap: "{\"id\":\"id\",\"name\":\"name\"}"
+  )
+  """
+  mining pool
+  """
+  patch_pools(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    name: String
+    input: pools_Input
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/pools"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"], ["Content-Type", "application/json"]]
+    httpMethod: PATCH
+    queryParamArgMap: "{\"id\":\"id\",\"name\":\"name\"}"
+  )
+  """
+  mining pool api
+  """
+  post_apis("""
+  Filtering Columns
+  """
+  select: String, input: apis_Input) : JSON @httpOperation(
+    subgraph: "CSM"
+    path: "/apis"
+    operationSpecificHeaders: [["Content-Type", "application/json"]]
+    httpMethod: POST
+    queryParamArgMap: "{\"select\":\"select\"}"
+  )
+  """
+  mining pool api
+  """
+  delete_apis(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    poolId: String
+    username: String
+    url: String
+    siteId: String
+    closed_at: String
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/apis"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"]]
+    httpMethod: DELETE
+    queryParamArgMap: "{\"id\":\"id\",\"poolId\":\"poolId\",\"username\":\"username\",\"url\":\"url\",\"siteId\":\"siteId\",\"closed_at\":\"closed_at\"}"
+  )
+  """
+  mining pool api
+  """
+  patch_apis(
+    """
+    Preference
+    """
+    Prefer: String
+    id: String
+    poolId: String
+    username: String
+    url: String
+    siteId: String
+    closed_at: String
+    input: apis_Input
+  ): Void @httpOperation(
+    subgraph: "CSM"
+    path: "/apis"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"], ["Content-Type", "application/json"]]
+    httpMethod: PATCH
+    queryParamArgMap: "{\"id\":\"id\",\"poolId\":\"poolId\",\"username\":\"username\",\"url\":\"url\",\"siteId\":\"siteId\",\"closed_at\":\"closed_at\"}"
+  )
+  """
+  service provider
+  """
+  post_providers("""
+  Filtering Columns
+  """
+  select: String, input: providers_Input) : JSON @httpOperation(
+    subgraph: "CSM"
+    path: "/providers"
+    operationSpecificHeaders: [["Content-Type", "application/json"]]
+    httpMethod: POST
+    queryParamArgMap: "{\"select\":\"select\"}"
+  )
+  """
+  service provider
+  """
+  delete_providers("""
+  Preference
+  """
+  Prefer: String, provider: String) : Void @httpOperation(
+    subgraph: "CSM"
+    path: "/providers"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"]]
+    httpMethod: DELETE
+    queryParamArgMap: "{\"provider\":\"provider\"}"
+  )
+  """
+  service provider
+  """
+  patch_providers("""
+  Preference
+  """
+  Prefer: String, provider: String, input: providers_Input) : Void @httpOperation(
+    subgraph: "CSM"
+    path: "/providers"
+    operationSpecificHeaders: [["Prefer", "{args.Prefer}"], ["Content-Type", "application/json"]]
+    httpMethod: PATCH
+    queryParamArgMap: "{\"provider\":\"provider\"}"
+  )
+}
+
+enum HTTPMethod @join__type(graph: CSM)  {
+  GET @join__enumValue(graph: CSM) 
+  HEAD @join__enumValue(graph: CSM) 
+  POST @join__enumValue(graph: CSM) 
+  PUT @join__enumValue(graph: CSM) 
+  DELETE @join__enumValue(graph: CSM) 
+  CONNECT @join__enumValue(graph: CSM) 
+  OPTIONS @join__enumValue(graph: CSM) 
+  TRACE @join__enumValue(graph: CSM) 
+  PATCH @join__enumValue(graph: CSM) 
+}
+
+"""
+CSM society bitcoin vault
+"""
+input vaults_Input @join__type(graph: CSM)  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String! = "now()"
+  xpub: String!
+  """
+  Note:
+  This is a Foreign Key to `farms.id`.<fk table='farms' column='id'/>
+  """
+  farmId: Int!
+  farms: farms_Input
+}
+
+"""
+mining farm
+"""
+input farms_Input @join__type(graph: CSM)  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String! = "now()"
+  name: String!
+  shortName: String!
+  slug: String!
+  imageLink: String!
+  status: String! = "operational"
+  """
+  Note:
+  This is a Foreign Key to `locations.id`.<fk table='locations' column='id'/>
+  """
+  locationId: Int!
+  updated_at: String! = "now()"
+  locations: locations_Input
+  """
+  sites
+  """
+  sites: [sites_Input]
+  tokens: tokens_Input
+  societies: societies_Input
+  """
+  CSM society bitcoin vault
+  """
+  vaults: vaults_Input
+}
+
+"""
+location of csm place
+"""
+input locations_Input @join__type(graph: CSM)  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  aera: String!
+  country: String!
+  countryCode: String!
+}
+
+"""
+Mining site of a farm
+"""
+input sites_Input @join__type(graph: CSM)  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String! = "now()"
+  """
+  Note:
+  This is a Foreign Key to `farms.id`.<fk table='farms' column='id'/>
+  """
+  farmId: Int!
+  """
+  Note:
+  This is a Foreign Key to `locations.id`.<fk table='locations' column='id'/>
+  """
+  localisationId: Int!
+  isClosed: Boolean!
+  closed_at: String
+  updated_at: String! = "now()"
+  slug: String!
+  """
+  Note:
+  This is a Foreign Key to `powerPlants.id`.<fk table='powerPlants' column='id'/>
+  """
+  powerPlantId: Int!
+  """
+  Note:
+  This is a Foreign Key to `operators.id`.<fk table='operators' column='id'/>
+  """
+  operatorId: Int!
+  """
+  mining farm
+  """
+  farms: farms_Input
+  powerPlants: powerPlants_Input
+  operators: operators_Input
+  """
+  containers
+  """
+  containers: [containers_Input]
+  contracts: contracts_Input
+  apis: apis_Input
+}
+
+"""
+power plant electricity supplier
+"""
+input powerPlants_Input @join__type(graph: CSM)  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String! = "now()"
+  powerMW: Float!
+  """
+  Note:
+  This is a Foreign Key to `locations.id`.<fk table='locations' column='id'/>
+  """
+  locationId: Int!
+  energies: [String]!
+  slug: String!
+  locations: locations_Input
+}
+
+"""
+mining operator
+"""
+input operators_Input @join__type(graph: CSM)  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  logo: String!
+  name: String!
+  website: String!
+}
+
+"""
+asics container
+"""
+input containers_Input @join__type(graph: CSM)  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String! = "now()"
+  """
+  Note:
+  This is a Foreign Key to `asics.id`.<fk table='asics' column='id'/>
+  """
+  asicId: Int!
+  units: Int!
+  cost: Float!
+  start: String
+  end: String
+  """
+  Note:
+  This is a Foreign Key to `locations.id`.<fk table='locations' column='id'/>
+  """
+  locationId: Int!
+  """
+  Note:
+  This is a Foreign Key to `sites.id`.<fk table='sites' column='id'/>
+  """
+  siteId: Int!
+  slug: String!
+  """
+  Mining site of a farm
+  """
+  sites: sites_Input
+  asics: asics_Input
+  locations: locations_Input
+}
+
+"""
+mining asic
+"""
+input asics_Input @join__type(graph: CSM)  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String! = "now()"
+  manufacturer: String!
+  model: String!
+  powerW: Float!
+  hashrateTHs: Float!
+}
+
+"""
+contracts of mining services
+"""
+input contracts_Input @join__type(graph: CSM)  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String! = "now()"
+  slug: String!
+  """
+  Note:
+  This is a Foreign Key to `sites.id`.<fk table='sites' column='id'/>
+  """
+  siteId: Int!
+  csmTaxRate: Float!
+  csmPowerTax: Float!
+  csmProfitSharing: Float!
+  opTaxRate: Float!
+  opPowerTax: Float!
+  opProfitSharing: Float!
+  """
+  Note:
+  This is a Foreign Key to `pools.name`.<fk table='pools' column='name'/>
+  """
+  pool: String!
+  poolTaxRate: Float!
+  """
+  Note:
+  This is a Foreign Key to `operators.name`.<fk table='operators' column='name'/>
+  """
+  operator: String!
+  electricityPrice: Float!
+  electricityContractDuration: Float!
+  electricityContractRenewable: Boolean!
+  """
+  Mining site of a farm
+  """
+  sites: sites_Input
+}
+
+"""
+mining pool api
+"""
+input apis_Input @join__type(graph: CSM)  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  """
+  Note:
+  This is a Foreign Key to `pools.id`.<fk table='pools' column='id'/>
+  """
+  poolId: Int!
+  username: String!
+  url: String!
+  """
+  Note:
+  This is a Foreign Key to `sites.id`.<fk table='sites' column='id'/>
+  """
+  siteId: Int!
+  closed_at: String
+  """
+  Mining site of a farm
+  """
+  sites: sites_Input
+  pools: pools_Input
+}
+
+"""
+mining pool
+"""
+input pools_Input @join__type(graph: CSM)  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  name: String!
+}
+
+"""
+CSM token
+"""
+input tokens_Input @join__type(graph: CSM)  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String! = "now()"
+  address: String!
+  decimals: Int!
+  gnosisscanUrl: String!
+  initialPrice: Float!
+  name: String!
+  symbol: String!
+  supply: Float!
+  updated_at: String! = "now()"
+  """
+  Note:
+  This is a Foreign Key to `farms.id`.<fk table='farms' column='id'/>
+  """
+  farmId: Int!
+  """
+  mining farm
+  """
+  farms: farms_Input
+}
+
+"""
+CSM mining society
+"""
+input societies_Input @join__type(graph: CSM)  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String! = "now()"
+  csmSaShare: Float!
+  registrationNumber: String!
+  shareCapital: Float!
+  tokenization: Float!
+  """
+  Note:
+  This is a Foreign Key to `locations.id`.<fk table='locations' column='id'/>
+  """
+  locationId: Int!
+  taxRate: Float!
+  provisionRate: Float!
+  crowdFundingFeeRate: Float!
+  name: String!
+  updated_at: String! = "now()"
+  """
+  Note:
+  This is a Foreign Key to `farms.id`.<fk table='farms' column='id'/>
+  """
+  farmId: Int!
+  """
+  mining farm
+  """
+  farms: farms_Input
+  locations: locations_Input
+}
+
+"""
+sources of energy
+"""
+input energies_Input @join__type(graph: CSM)  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  type: String!
+}
+
+"""
+financial statement
+"""
+input financialStatements_Input @join__type(graph: CSM)  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String! = "now()"
+  """
+  Note:
+  This is a Foreign Key to `farms.id`.<fk table='farms' column='id'/>
+  """
+  farmId: Int!
+  """
+  Note:
+  This is a Foreign Key to `sites.id`.<fk table='sites' column='id'/>
+  """
+  siteId: Int!
+  start: String!
+  end: String!
+  """
+  Note:
+  This is a Foreign Key to `flows.cash`.<fk table='flows' column='cash'/>
+  """
+  flow: String!
+  btc: Float!
+  usd: Float!
+  btcPrice: Float!
+  """
+  Note:
+  This is a Foreign Key to `providers.provider`.<fk table='providers' column='provider'/>
+  """
+  at: String
+  sites: sites_Input
+  farms: farms_Input
+}
+
+"""
+mining data
+"""
+input mining_Input @join__type(graph: CSM)  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  id: Int!
+  created_at: String! = "now()"
+  """
+  Note:
+  This is a Foreign Key to `farms.id`.<fk table='farms' column='id'/>
+  """
+  farmId: Int!
+  """
+  Note:
+  This is a Foreign Key to `sites.id`.<fk table='sites' column='id'/>
+  """
+  siteId: Int!
+  day: String!
+  hashrate: Float!
+  uptime: Float!
+  mined: Float!
+  sites: sites_Input
+  farms: farms_Input
+}
+
+"""
+cash flow oidtion
+"""
+input flows_Input @join__type(graph: CSM)  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  cash: String!
+}
+
+"""
+service provider
+"""
+input providers_Input @join__type(graph: CSM)  {
+  """
+  Note:
+  This is a Primary Key.<pk/>
+  """
+  provider: String!
+}
+    
