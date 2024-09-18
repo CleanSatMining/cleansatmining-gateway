@@ -12,6 +12,7 @@
     "@graphql-hive/gateway": "^1.0.5",
     "@graphql-mesh/compose-cli": "^1.0.2",
     "@omnigraph/openapi": "^0.106.8",
+    "netlify-cli": "^17.36.0",
     "next": "14.2.11",
     "react": "^18",
     "react-dom": "^18"
