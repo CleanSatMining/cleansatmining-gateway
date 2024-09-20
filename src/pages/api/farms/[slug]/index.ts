@@ -27,10 +27,18 @@ export default async function handler(
     console.log("Parametres :", parameters);
 
     const url = process.env.SUPABASE_API_URL + GET_FARMS.url + parameters;
+    const apiKey = process.env.SUPABASE_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: "API key is missing." });
+    }
+    //const headers = GET_FARMS.headers
 
     const response = await fetch(url, {
       method: GET_FARMS.method, // ou "POST", "PUT", etc.
-      headers: GET_FARMS.headers,
+      headers: {
+        ...GET_FARMS.headers,
+        apiKey: apiKey, // Ajouter la clé apiKey dans les headers
+      } as HeadersInit,
     });
 
     const jsonData: FarmApiResponse[] = await response.json();
