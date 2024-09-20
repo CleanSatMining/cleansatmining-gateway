@@ -73,17 +73,18 @@ export const farmsInitRow: Database["public"]["Tables"]["farms"]["Row"] = {
 
 export const financialStatementsInitRow: Database["public"]["Tables"]["financialStatements"]["Row"] =
   {
-    at: null,
     btc: 0,
     btcPrice: 0,
     created_at: "",
     end: "",
-    farmId: 0,
     flow: "",
     id: 0,
-    siteId: 0,
     start: "",
     usd: 0,
+    farmSlug: "",
+    siteSlug: "",
+    from: null,
+    to: null,
   };
 
 export const flowsInitRow: Database["public"]["Tables"]["flows"]["Row"] = {
@@ -101,12 +102,12 @@ export const locationsInitRow: Database["public"]["Tables"]["locations"]["Row"] 
 export const miningInitRow: Database["public"]["Tables"]["mining"]["Row"] = {
   created_at: "",
   day: "",
-  farmId: 0,
   hashrate: 0,
   id: 0,
   mined: 0,
-  siteId: 0,
   uptime: 0,
+  farmSlug: "",
+  siteSlug: "",
 };
 
 export const operatorsInitRow: Database["public"]["Tables"]["operators"]["Row"] =

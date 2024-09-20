@@ -1,5 +1,5 @@
 import { Config } from "./supabase.config";
-import { TABLES } from "./init";
+import { TABLES } from "./supabase.init";
 
 export type Api = {
   name: string;

@@ -269,58 +269,54 @@ export type Database = {
       }
       financialStatements: {
         Row: {
-          at: string | null
           btc: number
           btcPrice: number
           created_at: string
           end: string
-          farmId: number
+          farmSlug: string
           flow: string
+          from: string | null
           id: number
-          siteId: number
+          siteSlug: string
           start: string
+          to: string | null
           usd: number
         }
         Insert: {
-          at?: string | null
           btc: number
           btcPrice: number
           created_at?: string
           end: string
-          farmId: number
+          farmSlug: string
           flow: string
+          from?: string | null
           id?: number
-          siteId: number
+          siteSlug: string
           start: string
+          to?: string | null
           usd: number
         }
         Update: {
-          at?: string | null
           btc?: number
           btcPrice?: number
           created_at?: string
           end?: string
-          farmId?: number
+          farmSlug?: string
           flow?: string
+          from?: string | null
           id?: number
-          siteId?: number
+          siteSlug?: string
           start?: string
+          to?: string | null
           usd?: number
         }
         Relationships: [
           {
             foreignKeyName: "financialStatement_at_fkey"
-            columns: ["at"]
+            columns: ["to"]
             isOneToOne: false
             referencedRelation: "providers"
             referencedColumns: ["provider"]
-          },
-          {
-            foreignKeyName: "financialStatement_farmId_fkey"
-            columns: ["farmId"]
-            isOneToOne: false
-            referencedRelation: "farms"
-            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "financialStatement_flow_fkey"
@@ -330,11 +326,25 @@ export type Database = {
             referencedColumns: ["cash"]
           },
           {
-            foreignKeyName: "financialStatement_siteId_fkey"
-            columns: ["siteId"]
+            foreignKeyName: "financialStatements_farmSlug_fkey"
+            columns: ["farmSlug"]
+            isOneToOne: false
+            referencedRelation: "farms"
+            referencedColumns: ["slug"]
+          },
+          {
+            foreignKeyName: "financialStatements_from_fkey"
+            columns: ["from"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["provider"]
+          },
+          {
+            foreignKeyName: "financialStatements_siteSlug_fkey"
+            columns: ["siteSlug"]
             isOneToOne: false
             referencedRelation: "sites"
-            referencedColumns: ["id"]
+            referencedColumns: ["slug"]
           },
         ]
       }
@@ -375,47 +385,61 @@ export type Database = {
         Row: {
           created_at: string
           day: string
-          farmId: number
+          farmSlug: string
           hashrate: number
           id: number
           mined: number
-          siteId: number
+          siteSlug: string
           uptime: number
         }
         Insert: {
           created_at?: string
           day?: string
-          farmId: number
+          farmSlug: string
           hashrate: number
           id?: number
           mined: number
-          siteId: number
+          siteSlug: string
           uptime: number
         }
         Update: {
           created_at?: string
           day?: string
-          farmId?: number
+          farmSlug?: string
           hashrate?: number
           id?: number
           mined?: number
-          siteId?: number
+          siteSlug?: string
           uptime?: number
         }
         Relationships: [
           {
-            foreignKeyName: "mining_farmId_fkey"
-            columns: ["farmId"]
+            foreignKeyName: "mining_farmSlug_fkey"
+            columns: ["farmSlug"]
             isOneToOne: false
             referencedRelation: "farms"
-            referencedColumns: ["id"]
+            referencedColumns: ["slug"]
           },
           {
-            foreignKeyName: "mining_siteId_fkey"
-            columns: ["siteId"]
+            foreignKeyName: "mining_siteSlug_fkey"
+            columns: ["siteSlug"]
             isOneToOne: false
             referencedRelation: "sites"
-            referencedColumns: ["id"]
+            referencedColumns: ["slug"]
+          },
+          {
+            foreignKeyName: "mining_slug_fkey"
+            columns: ["farmSlug"]
+            isOneToOne: false
+            referencedRelation: "farms"
+            referencedColumns: ["slug"]
+          },
+          {
+            foreignKeyName: "mining_slug_fkey1"
+            columns: ["farmSlug"]
+            isOneToOne: false
+            referencedRelation: "farms"
+            referencedColumns: ["slug"]
           },
         ]
       }
