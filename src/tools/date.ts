@@ -6,3 +6,12 @@ export function convertDateToTimestamptzFormat(date: Date): string {
   const formattedDate = `${datePart}T${time}.${ms.slice(0, 6)}+00:00`;
   return formattedDate;
 }
+
+export function calculateDaysBetweenDates(start: Date, end: Date): number {
+  const oneDayInMilliseconds = 24 * 60 * 60 * 1000; // Nombre de millisecondes dans un jour
+  const startTime = start.getTime();
+  const endTime = end.getTime();
+  const differenceInMilliseconds = endTime - startTime;
+  const differenceInDays = differenceInMilliseconds / oneDayInMilliseconds;
+  return Math.round(differenceInDays);
+}
