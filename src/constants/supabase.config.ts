@@ -41,6 +41,11 @@ export const Config: Record<string, TableConfig> = {
         table: "locations",
         type: ObjectType.Object,
       },
+      {
+        field: "fundraisings",
+        table: "fundraisings",
+        type: ObjectType.Array,
+      },
     ],
   },
   sites: {

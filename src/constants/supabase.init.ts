@@ -28,10 +28,10 @@ export const containersInitRow: Database["public"]["Tables"]["containers"]["Row"
     end: null,
     id: 0,
     locationId: 0,
-    siteId: 0,
     slug: "",
     start: null,
     units: 0,
+    siteSlug: "",
   };
 
 export const contractsInitRow: Database["public"]["Tables"]["contracts"]["Row"] =
@@ -63,12 +63,12 @@ export const farmsInitRow: Database["public"]["Tables"]["farms"]["Row"] = {
   created_at: "",
   id: 0,
   imageLink: "",
-  locationId: 0,
   name: "",
   shortName: "",
   slug: "",
   status: "",
   updated_at: "",
+  locationSlug: "",
 };
 
 export const financialStatementsInitRow: Database["public"]["Tables"]["financialStatements"]["Row"] =
@@ -87,6 +87,20 @@ export const financialStatementsInitRow: Database["public"]["Tables"]["financial
     to: null,
   };
 
+export const fundraisingsInitRow: Database["public"]["Tables"]["fundraisings"]["Row"] =
+  {
+    amount: 0,
+    created_at: "",
+    farmSlug: "",
+    id: 0,
+    asicsCost: 0,
+    containerCost: 0,
+    date: "",
+    depositAmount: 0,
+    otherCost: 0,
+    transportCost: 0,
+  };
+
 export const flowsInitRow: Database["public"]["Tables"]["flows"]["Row"] = {
   cash: "",
 };
@@ -97,6 +111,7 @@ export const locationsInitRow: Database["public"]["Tables"]["locations"]["Row"] 
     country: "",
     countryCode: "",
     id: 0,
+    slug: "",
   };
 
 export const miningInitRow: Database["public"]["Tables"]["mining"]["Row"] = {
@@ -141,15 +156,15 @@ export const providersInitRow: Database["public"]["Tables"]["providers"]["Row"] 
 export const sitesInitRow: Database["public"]["Tables"]["sites"]["Row"] = {
   closed_at: null,
   created_at: "",
-  farmId: 0,
   id: 0,
   isClosed: false,
-  localisationId: 0,
-  operatorId: 0,
   powerPlantId: 0,
   slug: "",
   updated_at: "",
   contractId: 0,
+  farmSlug: "",
+  localisationSlug: "",
+  operatorName: "",
 };
 
 export const societiesInitRow: Database["public"]["Tables"]["societies"]["Row"] =
@@ -227,6 +242,10 @@ export const TABLES: Record<string, GenericTable> = {
   flows: {
     type: "flows",
     row: flowsInitRow,
+  },
+  fundraisings: {
+    type: "fundraisings",
+    row: fundraisingsInitRow,
   },
   locations: {
     type: "locations",

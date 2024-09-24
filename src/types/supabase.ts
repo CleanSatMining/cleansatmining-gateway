@@ -86,7 +86,7 @@ export type Database = {
           end: string | null
           id: number
           locationId: number
-          siteId: number
+          siteSlug: string
           slug: string
           start: string | null
           units: number
@@ -98,7 +98,7 @@ export type Database = {
           end?: string | null
           id?: number
           locationId: number
-          siteId: number
+          siteSlug: string
           slug: string
           start?: string | null
           units?: number
@@ -110,7 +110,7 @@ export type Database = {
           end?: string | null
           id?: number
           locationId?: number
-          siteId?: number
+          siteSlug?: string
           slug?: string
           start?: string | null
           units?: number
@@ -131,11 +131,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "containers_siteId_fkey"
-            columns: ["siteId"]
+            foreignKeyName: "containers_siteSlug_fkey"
+            columns: ["siteSlug"]
             isOneToOne: false
             referencedRelation: "sites"
-            referencedColumns: ["id"]
+            referencedColumns: ["slug"]
           },
         ]
       }
@@ -228,7 +228,7 @@ export type Database = {
           created_at: string
           id: number
           imageLink: string
-          locationId: number
+          locationSlug: string
           name: string
           shortName: string
           slug: string
@@ -239,7 +239,7 @@ export type Database = {
           created_at?: string
           id?: number
           imageLink: string
-          locationId: number
+          locationSlug: string
           name: string
           shortName: string
           slug: string
@@ -250,7 +250,7 @@ export type Database = {
           created_at?: string
           id?: number
           imageLink?: string
-          locationId?: number
+          locationSlug?: string
           name?: string
           shortName?: string
           slug?: string
@@ -259,11 +259,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "farm_locationId_fkey"
-            columns: ["locationId"]
+            foreignKeyName: "farms_locationSlug_fkey"
+            columns: ["locationSlug"]
             isOneToOne: false
             referencedRelation: "locations"
-            referencedColumns: ["id"]
+            referencedColumns: ["slug"]
           },
         ]
       }
@@ -360,24 +360,74 @@ export type Database = {
         }
         Relationships: []
       }
+      fundraisings: {
+        Row: {
+          amount: number
+          asicsCost: number | null
+          containerCost: number | null
+          created_at: string
+          date: string
+          depositAmount: number | null
+          farmSlug: string
+          id: number
+          otherCost: number | null
+          transportCost: number | null
+        }
+        Insert: {
+          amount: number
+          asicsCost?: number | null
+          containerCost?: number | null
+          created_at?: string
+          date: string
+          depositAmount?: number | null
+          farmSlug: string
+          id?: number
+          otherCost?: number | null
+          transportCost?: number | null
+        }
+        Update: {
+          amount?: number
+          asicsCost?: number | null
+          containerCost?: number | null
+          created_at?: string
+          date?: string
+          depositAmount?: number | null
+          farmSlug?: string
+          id?: number
+          otherCost?: number | null
+          transportCost?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fundraisings_farmSlug_fkey"
+            columns: ["farmSlug"]
+            isOneToOne: false
+            referencedRelation: "farms"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
       locations: {
         Row: {
           aera: string
           country: string
           countryCode: string
           id: number
+          slug: string
         }
         Insert: {
           aera: string
           country: string
           countryCode: string
           id?: number
+          slug: string
         }
         Update: {
           aera?: string
           country?: string
           countryCode?: string
           id?: number
+          slug?: string
         }
         Relationships: []
       }
@@ -389,7 +439,7 @@ export type Database = {
           hashrate: number
           id: number
           mined: number
-          siteSlug: string
+          siteSlug: string | null
           uptime: number
         }
         Insert: {
@@ -399,7 +449,7 @@ export type Database = {
           hashrate: number
           id?: number
           mined: number
-          siteSlug: string
+          siteSlug?: string | null
           uptime: number
         }
         Update: {
@@ -409,7 +459,7 @@ export type Database = {
           hashrate?: number
           id?: number
           mined?: number
-          siteSlug?: string
+          siteSlug?: string | null
           uptime?: number
         }
         Relationships: [
@@ -531,11 +581,11 @@ export type Database = {
           closed_at: string | null
           contractId: number
           created_at: string
-          farmId: number
+          farmSlug: string
           id: number
           isClosed: boolean
-          localisationId: number
-          operatorId: number
+          localisationSlug: string
+          operatorName: string
           powerPlantId: number
           slug: string
           updated_at: string
@@ -544,11 +594,11 @@ export type Database = {
           closed_at?: string | null
           contractId: number
           created_at?: string
-          farmId: number
+          farmSlug: string
           id?: number
           isClosed?: boolean
-          localisationId: number
-          operatorId: number
+          localisationSlug: string
+          operatorName: string
           powerPlantId: number
           slug: string
           updated_at?: string
@@ -557,30 +607,16 @@ export type Database = {
           closed_at?: string | null
           contractId?: number
           created_at?: string
-          farmId?: number
+          farmSlug?: string
           id?: number
           isClosed?: boolean
-          localisationId?: number
-          operatorId?: number
+          localisationSlug?: string
+          operatorName?: string
           powerPlantId?: number
           slug?: string
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "Site_farmId_fkey"
-            columns: ["farmId"]
-            isOneToOne: false
-            referencedRelation: "farms"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "Site_localisationId_fkey"
-            columns: ["localisationId"]
-            isOneToOne: false
-            referencedRelation: "locations"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "sites_contractId_fkey"
             columns: ["contractId"]
@@ -589,11 +625,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "sites_operatorId_fkey"
-            columns: ["operatorId"]
+            foreignKeyName: "sites_farmSlug_fkey"
+            columns: ["farmSlug"]
+            isOneToOne: false
+            referencedRelation: "farms"
+            referencedColumns: ["slug"]
+          },
+          {
+            foreignKeyName: "sites_localisationSlug_fkey"
+            columns: ["localisationSlug"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["slug"]
+          },
+          {
+            foreignKeyName: "sites_operatorName_fkey"
+            columns: ["operatorName"]
             isOneToOne: false
             referencedRelation: "operators"
-            referencedColumns: ["id"]
+            referencedColumns: ["name"]
           },
           {
             foreignKeyName: "sites_powerPlantId_fkey"

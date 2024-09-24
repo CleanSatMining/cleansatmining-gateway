@@ -4,11 +4,10 @@ import {
   getMiningHistoryRelatedToFinancialStatement,
   getDailyFinancialStatement,
   getDailyAccounting,
-  mapFinancialPartnaireToField,
 } from "./financialstatements";
 import {
   DailyAccounting,
-  FinancialStatementAmount,
+  FinancialSource,
   FinancialFlow,
   FinancialPartnaire,
   addDailyAccounting,
@@ -200,14 +199,14 @@ const mockDailyAccounting1: DailyAccounting = {
   day: new Date("2023-01-01"),
   uptime: 10,
   expenses: {
-    electricity: { btc: 100, usd: 0, isFromFinancialStatement: true },
-    csm: { btc: 50, usd: 0, isFromFinancialStatement: true },
-    operator: { btc: 30, usd: 0, isFromFinancialStatement: true },
-    other: { btc: 20, usd: 0, isFromFinancialStatement: true },
+    electricity: { btc: 100, usd: 0, source: FinancialSource.STATEMENT },
+    csm: { btc: 50, usd: 0, source: FinancialSource.STATEMENT },
+    operator: { btc: 30, usd: 0, source: FinancialSource.STATEMENT },
+    other: { btc: 20, usd: 0, source: FinancialSource.STATEMENT },
   },
   income: {
-    pool: { btc: 200, usd: 0, isFromFinancialStatement: true },
-    other: { btc: 10, usd: 0, isFromFinancialStatement: true },
+    pool: { btc: 200, usd: 0, source: FinancialSource.STATEMENT },
+    other: { btc: 10, usd: 0, source: FinancialSource.STATEMENT },
   },
 };
 
@@ -215,14 +214,14 @@ const mockDailyAccounting2: DailyAccounting = {
   day: new Date("2023-01-01"),
   uptime: 10,
   expenses: {
-    electricity: { btc: 100, usd: 0, isFromFinancialStatement: true },
-    csm: { btc: 50, usd: 0, isFromFinancialStatement: true },
-    operator: { btc: 30, usd: 0, isFromFinancialStatement: true },
-    other: { btc: 20, usd: 0, isFromFinancialStatement: true },
+    electricity: { btc: 100, usd: 0, source: FinancialSource.STATEMENT },
+    csm: { btc: 50, usd: 0, source: FinancialSource.STATEMENT },
+    operator: { btc: 30, usd: 0, source: FinancialSource.STATEMENT },
+    other: { btc: 20, usd: 0, source: FinancialSource.STATEMENT },
   },
   income: {
-    pool: { btc: 200, usd: 0, isFromFinancialStatement: true },
-    other: { btc: 10, usd: 0, isFromFinancialStatement: true },
+    pool: { btc: 200, usd: 0, source: FinancialSource.STATEMENT },
+    other: { btc: 10, usd: 0, source: FinancialSource.STATEMENT },
   },
 };
 

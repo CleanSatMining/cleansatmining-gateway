@@ -77,6 +77,24 @@ export const GET_FARMS: Api = {
   },
 };
 
+export const GET_SITES: Api = {
+  name: "GET_SITES",
+  url: "/rest/v1/sites",
+  method: "GET",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  fields: getTableFields("sites"),
+  parameters: {
+    select: {
+      full: () => getSelectTable("sites"),
+      partial: () => {
+        return "";
+      },
+    },
+  },
+};
+
 export const INSERT_MINING: Api = {
   name: "INSERT_MINING",
   url: "/rest/v1/mining",

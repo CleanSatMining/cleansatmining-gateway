@@ -8,6 +8,7 @@ import {
   FinancialPartnaire,
   convertFinancialStatementToAccounting,
   addDailyAccounting,
+  FinancialSource,
 } from "@/types/FinancialSatement";
 import { BigNumber } from "bignumber.js";
 
@@ -76,7 +77,7 @@ export function getDailyFinancialStatement(
   const financialStatementAmount: FinancialStatementAmount = {
     btc: financialStatement.btc,
     usd: financialStatement.usd,
-    isFromFinancialStatement: true,
+    source: FinancialSource.STATEMENT,
   };
 
   const uptimeWeight = getFinancialStatementUptimeWeight(
@@ -126,12 +127,10 @@ export function getDailyFinancialStatement(
                 )
                 .toNumber()
             : 0;
-          acc.isFromFinancialStatement =
-            acc.isFromFinancialStatement ||
-            financialStatementAmount.isFromFinancialStatement;
+          acc.source = financialStatementAmount.source;
           return acc;
         },
-        { usd: 0, btc: 0, isFromFinancialStatement: false }
+        { usd: 0, btc: 0, source: FinancialSource.NONE }
       );
 
       dailyFinancialStatement.push({

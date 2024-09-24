@@ -9,7 +9,7 @@ export type DailyFinancialStatement = {
 export type FinancialStatementAmount = {
   btc: number;
   usd?: number;
-  isFromFinancialStatement: boolean;
+  source: FinancialSource;
 };
 
 export type DailyAccounting = {
@@ -27,17 +27,24 @@ export type DailyAccounting = {
   };
 };
 
+export enum FinancialSource {
+  NONE = "none",
+  POOL = "pool",
+  SIMULATOR = "simulator",
+  STATEMENT = "statement",
+}
+
 export enum FinancialFlow {
-  IN,
-  OUT,
+  IN = "in",
+  OUT = "out",
 }
 
 export enum FinancialPartnaire {
-  OPERATOR,
-  CSM,
-  ELECTRICITY,
-  POOL,
-  OTHER,
+  OPERATOR = "operator",
+  CSM = "csm sa",
+  ELECTRICITY = "electricity",
+  POOL = "pool",
+  OTHER = "other",
 }
 
 export function convertFinancialStatementToAccounting(
@@ -50,29 +57,29 @@ export function convertFinancialStatementToAccounting(
       electricity:
         dayStatement.partnaire === FinancialPartnaire.ELECTRICITY
           ? dayStatement.amount
-          : { btc: 0, isFromFinancialStatement: false },
+          : { btc: 0, source: FinancialSource.NONE },
       csm:
         dayStatement.partnaire === FinancialPartnaire.CSM
           ? dayStatement.amount
-          : { btc: 0, isFromFinancialStatement: false },
+          : { btc: 0, source: FinancialSource.NONE },
       operator:
         dayStatement.partnaire === FinancialPartnaire.OPERATOR
           ? dayStatement.amount
-          : { btc: 0, isFromFinancialStatement: false },
+          : { btc: 0, source: FinancialSource.NONE },
       other:
         dayStatement.partnaire === FinancialPartnaire.OTHER
           ? dayStatement.amount
-          : { btc: 0, isFromFinancialStatement: false },
+          : { btc: 0, source: FinancialSource.NONE },
     },
     income: {
       pool:
         dayStatement.partnaire === FinancialPartnaire.POOL
           ? dayStatement.amount
-          : { btc: 0, isFromFinancialStatement: false },
+          : { btc: 0, source: FinancialSource.NONE },
       other:
         dayStatement.partnaire === FinancialPartnaire.OTHER
           ? dayStatement.amount
-          : { btc: 0, isFromFinancialStatement: false },
+          : { btc: 0, source: FinancialSource.NONE },
     },
   };
 }
@@ -84,8 +91,7 @@ export function addFinancialAmount(
   return {
     btc: amount1.btc + amount2.btc,
     usd: amount1.usd && amount2.usd ? amount1.usd + amount2.usd : 0,
-    isFromFinancialStatement:
-      amount1.isFromFinancialStatement || amount2.isFromFinancialStatement,
+    source: amount1.source || amount2.source,
   };
 }
 
