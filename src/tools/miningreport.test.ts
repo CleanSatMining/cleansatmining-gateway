@@ -1,11 +1,8 @@
 import { Database } from "@/types/supabase";
 import { Site } from "@/types/supabase.extend";
-import {
-  getFinancialStatementUptimeWeight,
-  getDailyFinancialStatement as getFinancialStatementByDay,
-} from "./financialstatements";
+import {} from "./financialstatements";
 import { filterMiningHistoryWithFinancialStatement } from "./mininghistory";
-
+import { getDailyMiningReportsOfSite } from "./miningreport";
 import {
   FinancialSource,
   FinancialFlow,
@@ -317,44 +314,24 @@ const mockDailyAccounting2: DailyMiningReport = {
   },
 };
 
-describe("financialstatements.ts", () => {
-  test("getFinancialStatementUptimeWeight", () => {
-    const weight = getFinancialStatementUptimeWeight(
-      mockPoolFinancialStatement,
-      mockMiningHistory
-    );
-    expect(weight).toBe(8); // Adjust expected value based on your logic
-  });
-
-  test("getMiningHistoryRelatedToFinancialStatement", () => {
-    const relatedHistory = filterMiningHistoryWithFinancialStatement(
-      mockPoolFinancialStatement,
-      mockMiningHistory
-    );
-    expect(relatedHistory).toHaveLength(10); // Adjust expected value based on your logic
-  });
-
-  test("getDailyFinancialStatement", () => {
+describe("miningreport.ts", () => {
+  test("get Site Daily Mining Reports", () => {
     // Add your test logic here
-
-    const financialStatementByDay = getFinancialStatementByDay(
-      mockPoolFinancialStatement,
-      mockMiningHistory
+    const dailyAccounting = getDailyMiningReportsOfSite(
+      [
+        mockPoolFinancialStatement,
+        mockElecFinancialStatement,
+        mockOpeFinancialStatement,
+        mockCsmFinancialStatement,
+      ],
+      mockMiningHistory,
+      mockSite
     );
-
-    console.log(
-      "Financial statement by day",
-      JSON.stringify(financialStatementByDay, null, 2)
-    );
-
-    const statements = Array.from(financialStatementByDay.values());
-
-    expect(statements.length).toBe(10);
-    expect(statements[0].amount.btc).toBe(mockPoolFinancialStatement.btc / 8);
-    expect(statements[0].amount.usd).toBe(mockPoolFinancialStatement.usd / 8);
-    expect(statements[0].uptime).toBe(1);
-    expect(statements[0].flow).toBe(FinancialFlow.IN);
-    expect(statements[0].partnaire).toBe(FinancialPartnaire.POOL);
+    console.log("Daily accounting", JSON.stringify(dailyAccounting, null, 2));
+    expect(dailyAccounting.length).toBe(10);
+    expect(
+      dailyAccounting.reduce((acc, account) => acc + account.income.pool.btc, 0)
+    ).toBe(mockPoolFinancialStatement.btc);
   });
 
   test("mapFinancialPartnaireToField", () => {

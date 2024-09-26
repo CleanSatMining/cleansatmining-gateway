@@ -117,7 +117,7 @@ export const locationsInitRow: Database["public"]["Tables"]["locations"]["Row"] 
 export const miningInitRow: Database["public"]["Tables"]["mining"]["Row"] = {
   created_at: "",
   day: "",
-  hashrate: 0,
+  hashrateTHs: 0,
   id: 0,
   mined: 0,
   uptime: 0,

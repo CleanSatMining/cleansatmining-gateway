@@ -7,7 +7,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { slug, siteSlug, datemin, datemax } = req.query;
+  const { slug, site, start, end } = req.query;
 
   if (!slug) {
     return res
@@ -15,15 +15,15 @@ export default async function handler(
       .json({ error: "Paramètre nom de la ferme manquant." });
   }
 
-  if (!siteSlug) {
+  if (!site) {
     return res.status(400).json({ error: "Paramètre nom du site manquant." });
   }
 
-  const dateMin = datemin
-    ? convertDateToTimestamptzFormat(new Date(datemin.toString()))
+  const dateMin = start
+    ? convertDateToTimestamptzFormat(new Date(start.toString()))
     : undefined;
-  const dateMax = datemax
-    ? convertDateToTimestamptzFormat(new Date(datemax.toString()))
+  const dateMax = end
+    ? convertDateToTimestamptzFormat(new Date(end.toString()))
     : undefined;
 
   try {
@@ -34,7 +34,7 @@ export default async function handler(
       await fetchFinancialStatementsData(
         supabaseClient,
         farmSlug,
-        siteSlug.toString(),
+        site.toString(),
         dateMin,
         dateMax
       );

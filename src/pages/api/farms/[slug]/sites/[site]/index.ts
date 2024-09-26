@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { GET_SITES } from "@/constants/apis";
+import { GET_SUPABASE_SITES } from "@/constants/apis";
 import {
   SiteApiResponse,
   Site,
@@ -15,27 +15,27 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { slug, siteSlug } = req.query;
+  const { slug, site } = req.query;
   if (!slug) {
     return res.status(400).json({ error: "Paramètre ferme manquant." });
   }
-  if (!siteSlug) {
+  if (!site) {
     return res.status(400).json({ error: "Paramètre site manquant." });
   }
 
   try {
-    console.log("Récupération du site +" + siteSlug + "+");
+    console.log("Récupération du site +" + site + "+");
     const siteApiResponse = await fetchSite(
       getSupabaseClient(),
-      siteSlug.toString()
+      site.toString()
     );
     if (siteApiResponse === null) {
       return res.status(404).json({ error: DATA_NOT_FOUND });
     }
 
-    const site: Site = mapSiteApiResponseToSite(siteApiResponse);
+    const siteData: Site = mapSiteApiResponseToSite(siteApiResponse);
 
-    return res.status(200).json(site);
+    return res.status(200).json(siteData);
   } catch (error) {
     console.error("Erreur lors de la récupération du site :", error);
     return res
@@ -46,16 +46,16 @@ export default async function handler(
 
 async function fetchSite(
   supabase: SupabaseClient,
-  siteSlug: string
+  slug: string
 ): Promise<SiteApiResponse | null> {
-  const selectQuery = GET_SITES.parameters.select.full();
+  const selectQuery = GET_SUPABASE_SITES.parameters.select.full();
 
   console.log("Parametres :", selectQuery);
 
   const { data, error } = await supabase
     .from("sites")
     .select()
-    .eq("slug", siteSlug.trim())
+    .eq("slug", slug.trim())
     .select(selectQuery);
 
   if (error) {

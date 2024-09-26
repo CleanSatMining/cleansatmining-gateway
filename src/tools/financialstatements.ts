@@ -1,21 +1,33 @@
 import { Database } from "@/types/supabase";
-import { calculateDaysBetweenDates } from "./date";
+import { calculateDaysBetweenDates, convertDateToMapKey } from "./date";
 import {
-  DailyAccounting,
   DailyFinancialStatement,
   FinancialStatementAmount,
   FinancialFlow,
   FinancialPartnaire,
-  convertFinancialStatementToAccounting,
-  addDailyAccounting,
   FinancialSource,
 } from "@/types/FinancialSatement";
 import { BigNumber } from "bignumber.js";
 
+function getEmptyDailyFinancialStatement(
+  day: Date,
+  flow: FinancialFlow,
+  partnaire: FinancialPartnaire
+): DailyFinancialStatement {
+  return {
+    day: day,
+    uptime: 0,
+    hashrateTHs: 0,
+    flow: flow,
+    partnaire: partnaire,
+    amount: { btc: 0, source: FinancialSource.NONE },
+  };
+}
+
 export function getFinancialStatementUptimeWeight(
   financialStatement: Database["public"]["Tables"]["financialStatements"]["Row"],
   miningHistory: Database["public"]["Tables"]["mining"]["Row"][]
-): number {
+): { uptimeWeight: number; daysInHistory: number } {
   const timestampStart = new Date(financialStatement.start).getTime();
   const timestampEnd = new Date(financialStatement.end).getTime();
   let weight = 0;
@@ -40,47 +52,56 @@ export function getFinancialStatementUptimeWeight(
     );
   }
 
-  return weight;
+  return { uptimeWeight: weight, daysInHistory };
 }
 
-export function getMiningHistoryRelatedToFinancialStatement(
-  financialStatement: Database["public"]["Tables"]["financialStatements"]["Row"],
-  miningHistory: Database["public"]["Tables"]["mining"]["Row"][]
-): Database["public"]["Tables"]["mining"]["Row"][] {
-  const farm = financialStatement.farmSlug;
-  const site = financialStatement.siteSlug;
-  const timestampStart = new Date(financialStatement.start).getTime();
-  const timestampEnd = new Date(financialStatement.end).getTime();
-  const history = miningHistory.filter((history) => {
-    const timestamp = new Date(history.day).getTime();
-    return (
-      timestamp >= timestampStart &&
-      timestamp <= timestampEnd &&
-      history.farmSlug === farm &&
-      history.siteSlug === site
-    );
-  });
+export function getFinancialStatementsPeriod(
+  financialStatements: Database["public"]["Tables"]["financialStatements"]["Row"][]
+): {
+  start: Date;
+  end: Date;
+} {
+  const start = new Date(
+    financialStatements.reduce((acc, statement) => {
+      return acc < new Date(statement.start) ? acc : new Date(statement.start);
+    }, new Date())
+  );
+  const end = new Date(
+    financialStatements.reduce((acc, statement) => {
+      return acc > new Date(statement.end) ? acc : new Date(statement.end);
+    }, start)
+  );
 
-  return history;
+  return { start, end };
 }
 
 export function getDailyFinancialStatement(
   financialStatement: Database["public"]["Tables"]["financialStatements"]["Row"],
   miningHistory: Database["public"]["Tables"]["mining"]["Row"][]
-): DailyFinancialStatement[] {
-  const dailyFinancialStatement: DailyFinancialStatement[] = [];
+): Map<string, DailyFinancialStatement> {
+  //const dailyFinancialStatement: DailyFinancialStatement[] = [];
+  const dailyStatementMap: Map<string, DailyFinancialStatement> = new Map();
+
+  const flow =
+    financialStatement.flow === "IN" ? FinancialFlow.IN : FinancialFlow.OUT;
+
+  const partenaire = mapFinancialPartnaireToField(financialStatement);
+
+  // calculate the total number of days in the financial statement
   const totalDays = calculateDaysBetweenDates(
     new Date(financialStatement.start),
     new Date(financialStatement.end)
   );
 
+  // Get the amount of the statement
   const financialStatementAmount: FinancialStatementAmount = {
     btc: financialStatement.btc,
     usd: financialStatement.usd,
     source: FinancialSource.STATEMENT,
   };
 
-  const uptimeWeight = getFinancialStatementUptimeWeight(
+  // Get the uptime weight of the financial statement
+  const { uptimeWeight, daysInHistory } = getFinancialStatementUptimeWeight(
     financialStatement,
     miningHistory
   );
@@ -93,11 +114,13 @@ export function getDailyFinancialStatement(
     const dayMiningHistory = miningHistory.filter((history) => {
       const historyDay = new Date(history.day);
       return (
-        historyDay.getFullYear() === day.getFullYear() &&
-        historyDay.getMonth() === day.getMonth() &&
-        historyDay.getDate() === day.getDate()
+        historyDay.getUTCFullYear() === day.getUTCFullYear() &&
+        historyDay.getUTCMonth() === day.getUTCMonth() &&
+        historyDay.getUTCDate() === day.getUTCDate()
       );
     });
+
+    const key = convertDateToMapKey(day);
 
     // Calculate the uptime and the total amount of the statement for the day
     if (dayMiningHistory.length > 0) {
@@ -133,72 +156,48 @@ export function getDailyFinancialStatement(
         { usd: 0, btc: 0, source: FinancialSource.NONE }
       );
 
-      dailyFinancialStatement.push({
+      const hashrateTHs = dayMiningHistory.reduce(
+        (acc, history) => acc + history.hashrateTHs,
+        0
+      );
+
+      const financialStatementOfTheDay = {
         day: day,
         uptime: uptime,
+        hashrateTHs: hashrateTHs,
         amount: totalAmount,
-        flow:
-          financialStatement.flow === "IN"
-            ? FinancialFlow.IN
-            : FinancialFlow.OUT,
-        partnaire: mapFinancialPartnaireToField(financialStatement),
-      });
-    }
-  }
+        flow: flow,
+        partnaire: partenaire,
+      };
 
-  return dailyFinancialStatement;
-}
-
-export function getDailyAccounting(
-  financialStatements: Database["public"]["Tables"]["financialStatements"]["Row"][],
-  miningHistory: Database["public"]["Tables"]["mining"]["Row"][]
-): DailyAccounting[] {
-  const dailyAccounting: DailyAccounting[] = [];
-  const dailyFinancialStatements: DailyFinancialStatement[] = [];
-  const financialStatementMiningHistories = financialStatements.map(
-    (financialStatement) => {
-      return getMiningHistoryRelatedToFinancialStatement(
-        financialStatement,
-        miningHistory
-      );
-    }
-  );
-
-  for (
-    let FinancialStatementindex = 0;
-    FinancialStatementindex < financialStatements.length;
-    FinancialStatementindex++
-  ) {
-    const financialStatement = financialStatements[FinancialStatementindex];
-    const miningHistory =
-      financialStatementMiningHistories[FinancialStatementindex];
-
-    dailyFinancialStatements.push(
-      ...getDailyFinancialStatement(financialStatement, miningHistory)
-    );
-  }
-
-  for (const dailyFinancialStatement of dailyFinancialStatements) {
-    const dailyStatementAcounting = convertFinancialStatementToAccounting(
-      dailyFinancialStatement
-    );
-    // recherche si la date existe déjà
-    const index = dailyAccounting.findIndex(
-      (accounting) =>
-        accounting.day.getTime() === dailyStatementAcounting.day.getTime()
-    );
-
-    if (index === -1) {
-      dailyAccounting.push(dailyStatementAcounting);
+      dailyStatementMap.set(key, financialStatementOfTheDay);
+    } else if (daysInHistory === 0) {
+      // no mining history data for the day : set the uptime to 0.9 and the amount to the total amount divided by the total number of days
+      const financialStatementOfTheDay: DailyFinancialStatement = {
+        day: day,
+        uptime: 0.9,
+        hashrateTHs: 0,
+        amount: {
+          btc: financialStatement.btc / totalDays,
+          usd: financialStatement.usd
+            ? financialStatement.usd / totalDays
+            : undefined,
+          source: FinancialSource.STATEMENT,
+        },
+        flow: flow,
+        partnaire: partenaire,
+      };
+      dailyStatementMap.set(key, financialStatementOfTheDay);
     } else {
-      dailyAccounting[index] = addDailyAccounting(
-        dailyAccounting[index],
-        dailyStatementAcounting
+      // If there is no mining history for the day, we add an empty financial statement
+      dailyStatementMap.set(
+        key,
+        getEmptyDailyFinancialStatement(day, flow, partenaire)
       );
     }
   }
 
-  return dailyAccounting;
+  return dailyStatementMap;
 }
 
 export function mapFinancialPartnaireToField(
@@ -221,4 +220,28 @@ export function mapFinancialPartnaireToField(
     default:
       return FinancialPartnaire.OTHER;
   }
+}
+
+export function aggregateFinancialStatements(
+  financialStatements: Database["public"]["Tables"]["financialStatements"]["Row"][],
+  miningHistory: Database["public"]["Tables"]["mining"]["Row"][]
+): Map<string, DailyFinancialStatement[]> {
+  const dailyFinancialStatements: Map<string, DailyFinancialStatement[]> =
+    new Map();
+  for (const financialStatement of financialStatements) {
+    const dailyFinancialStatement = getDailyFinancialStatement(
+      financialStatement,
+      miningHistory
+    );
+    for (const key of dailyFinancialStatement.keys()) {
+      const statements = dailyFinancialStatements.get(key);
+      const statement = dailyFinancialStatement.get(key);
+      if (dailyFinancialStatements.has(key)) {
+        statements?.push(statement!);
+      } else {
+        dailyFinancialStatements.set(key, [statement!]);
+      }
+    }
+  }
+  return dailyFinancialStatements;
 }

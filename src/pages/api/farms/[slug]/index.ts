@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { createParameters, GET_FARMS } from "@/constants/apis";
+import { createParameters, GET_SUPABASE_FARMS } from "@/constants/apis";
 import {
   FarmApiResponse,
   Farm,
@@ -45,13 +45,14 @@ export default async function handler(
 
 async function getFarmByApi(slug: string): Promise<FarmApiResponse> {
   const parameters = createParameters({
-    select: GET_FARMS.parameters.select.full(),
+    select: GET_SUPABASE_FARMS.parameters.select.full(),
     slug: OP.EQUALS(slug.toString()),
   });
 
   console.log("Parametres :", parameters);
 
-  const url = process.env.SUPABASE_API_URL + GET_FARMS.url + parameters;
+  const url =
+    process.env.SUPABASE_API_URL + GET_SUPABASE_FARMS.url + parameters;
   const apiKey = process.env.SUPABASE_API_KEY;
   if (!apiKey) {
     //return res.status(500).json({ error: "API key is missing." });
@@ -59,9 +60,9 @@ async function getFarmByApi(slug: string): Promise<FarmApiResponse> {
   }
   //const headers = GET_FARMS.headers
   const response = await fetch(url, {
-    method: GET_FARMS.method, // ou "POST", "PUT", etc.
+    method: GET_SUPABASE_FARMS.method, // ou "POST", "PUT", etc.
     headers: {
-      ...GET_FARMS.headers,
+      ...GET_SUPABASE_FARMS.headers,
       apiKey: apiKey, // Ajouter la clé apiKey dans les headers
     } as HeadersInit,
   });
@@ -76,7 +77,7 @@ async function fetchFarm(
   supabase: SupabaseClient,
   slug: string
 ): Promise<FarmApiResponse | null> {
-  const selectFarm = GET_FARMS.parameters.select.full();
+  const selectFarm = GET_SUPABASE_FARMS.parameters.select.full();
 
   const { data, error } = await supabase
     .from("farms")

@@ -1,6 +1,9 @@
+import { uptime } from "process";
+
 export type DailyFinancialStatement = {
   day: Date;
   uptime: number;
+  hashrateTHs: number;
   flow: FinancialFlow;
   partnaire: FinancialPartnaire;
   amount: FinancialStatementAmount;
@@ -10,21 +13,6 @@ export type FinancialStatementAmount = {
   btc: number;
   usd?: number;
   source: FinancialSource;
-};
-
-export type DailyAccounting = {
-  day: Date;
-  uptime: number;
-  expenses: {
-    electricity: FinancialStatementAmount;
-    csm: FinancialStatementAmount;
-    operator: FinancialStatementAmount;
-    other: FinancialStatementAmount;
-  };
-  income: {
-    pool: FinancialStatementAmount;
-    other: FinancialStatementAmount;
-  };
 };
 
 export enum FinancialSource {
@@ -47,79 +35,55 @@ export enum FinancialPartnaire {
   OTHER = "other",
 }
 
-export function convertFinancialStatementToAccounting(
-  dayStatement: DailyFinancialStatement
-): DailyAccounting {
-  return {
-    day: dayStatement.day,
-    uptime: dayStatement.uptime,
-    expenses: {
-      electricity:
-        dayStatement.partnaire === FinancialPartnaire.ELECTRICITY
-          ? dayStatement.amount
-          : { btc: 0, source: FinancialSource.NONE },
-      csm:
-        dayStatement.partnaire === FinancialPartnaire.CSM
-          ? dayStatement.amount
-          : { btc: 0, source: FinancialSource.NONE },
-      operator:
-        dayStatement.partnaire === FinancialPartnaire.OPERATOR
-          ? dayStatement.amount
-          : { btc: 0, source: FinancialSource.NONE },
-      other:
-        dayStatement.partnaire === FinancialPartnaire.OTHER
-          ? dayStatement.amount
-          : { btc: 0, source: FinancialSource.NONE },
-    },
-    income: {
-      pool:
-        dayStatement.partnaire === FinancialPartnaire.POOL
-          ? dayStatement.amount
-          : { btc: 0, source: FinancialSource.NONE },
-      other:
-        dayStatement.partnaire === FinancialPartnaire.OTHER
-          ? dayStatement.amount
-          : { btc: 0, source: FinancialSource.NONE },
-    },
-  };
+export function resolveFinancialSource(
+  source1: FinancialSource,
+  source2: FinancialSource
+): FinancialSource {
+  if (source1 === FinancialSource.NONE) {
+    return source2;
+  } else if (source2 === FinancialSource.NONE) {
+    return source1;
+  } else if (
+    source1 === FinancialSource.STATEMENT ||
+    source2 === FinancialSource.STATEMENT
+  ) {
+    return FinancialSource.STATEMENT;
+  } else if (
+    source1 === FinancialSource.POOL ||
+    source2 === FinancialSource.POOL
+  ) {
+    return FinancialSource.POOL;
+  } else if (
+    source1 === FinancialSource.SIMULATOR ||
+    source2 === FinancialSource.SIMULATOR
+  ) {
+    return FinancialSource.SIMULATOR;
+  }
+  return source1;
 }
 
 export function addFinancialAmount(
   amount1: FinancialStatementAmount,
   amount2: FinancialStatementAmount
 ): FinancialStatementAmount {
-  return {
-    btc: amount1.btc + amount2.btc,
-    usd: amount1.usd && amount2.usd ? amount1.usd + amount2.usd : 0,
-    source: amount1.source || amount2.source,
-  };
-}
+  const source = resolveFinancialSource(amount1.source, amount2.source);
+  // add only if both are of the same source
+  let btc: number = 0;
+  let usd: number | undefined = undefined;
+  if (amount1.source === amount2.source) {
+    btc = amount1.btc + amount2.btc;
+    usd = amount1.usd && amount2.usd ? amount1.usd + amount2.usd : undefined;
+  } else if (amount1.source === source) {
+    btc = amount1.btc;
+    usd = amount1.usd;
+  } else if (amount2.source === source) {
+    btc = amount2.btc;
+    usd = amount2.usd;
+  }
 
-export function addDailyAccounting(
-  account1: DailyAccounting,
-  account2: DailyAccounting
-): DailyAccounting {
   return {
-    day: account1.day, // Assuming the day is the same for both accounts
-    uptime: account1.uptime, // Assuming the uptime is the same for both accounts
-    expenses: {
-      electricity: addFinancialAmount(
-        account1.expenses.electricity,
-        account2.expenses.electricity
-      ),
-      csm: addFinancialAmount(account1.expenses.csm, account2.expenses.csm),
-      operator: addFinancialAmount(
-        account1.expenses.operator,
-        account2.expenses.operator
-      ),
-      other: addFinancialAmount(
-        account1.expenses.other,
-        account2.expenses.other
-      ),
-    },
-    income: {
-      pool: addFinancialAmount(account1.income.pool, account2.income.pool),
-      other: addFinancialAmount(account1.income.other, account2.income.other),
-    },
+    btc: btc,
+    usd: usd,
+    source: source,
   };
 }

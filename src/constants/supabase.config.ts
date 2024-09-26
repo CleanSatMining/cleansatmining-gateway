@@ -1,4 +1,5 @@
 import { TableType } from "@/types/supabase.extend";
+import { TABLES } from "./supabase.init";
 
 export enum ObjectType {
   Object = "object",
@@ -107,3 +108,36 @@ export const OP = {
     return "eq." + param;
   },
 };
+
+export function getQueryTableFields(tablename: string): string[] {
+  const table = TABLES[tablename];
+  const tableType = table.type;
+  if (!tableType) {
+    console.log("Table " + tablename + " not found");
+    throw new Error("Table " + tablename + " not found");
+  }
+  const fields: string[] = Object.keys(table.row) as string[];
+
+  return fields;
+}
+
+export function getQueryTableSelect(tablename: string): string {
+  const table = TABLES[tablename];
+  const tableType = table.type;
+  if (!tableType) {
+    console.log("Table " + tablename + " not found");
+    throw new Error("Table " + tablename + " not found");
+  }
+
+  const fields: string[] = Object.keys(table.row) as string[];
+
+  if (Config[tablename]) {
+    const have = Config[tablename].have;
+    for (const item of have) {
+      const itemFields = getQueryTableSelect(item.table);
+      fields.push(item.table + "(" + itemFields + ")");
+    }
+  }
+
+  return fields.join(",");
+}
