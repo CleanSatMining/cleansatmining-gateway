@@ -1,14 +1,14 @@
 import { Database } from "@/types/supabase";
 import { Site } from "@/types/supabase.extend";
 import {} from "./financialstatements";
-import { filterMiningHistoryWithFinancialStatement } from "./mininghistory";
-import { getDailyMiningReportsOfSite } from "./miningreport";
+import { filterMiningHistoryWithFinancialStatementPeriod } from "./mininghistory";
+import { getSiteDailyMiningReports } from "./miningreport";
 import {
   FinancialSource,
   FinancialFlow,
   FinancialPartnaire,
 } from "@/types/FinancialSatement";
-import { mergeMiningReportsOfTheDay } from "@/types/MiningReport";
+import { mergeMiningReportsOfTheDay } from "./miningreport";
 import { DailyMiningReport } from "@/types/MiningReport";
 
 const mockSite: Site = {
@@ -317,7 +317,7 @@ const mockDailyAccounting2: DailyMiningReport = {
 describe("miningreport.ts", () => {
   test("get Site Daily Mining Reports", () => {
     // Add your test logic here
-    const dailyAccounting = getDailyMiningReportsOfSite(
+    const dailyAccounting = getSiteDailyMiningReports(
       [
         mockPoolFinancialStatement,
         mockElecFinancialStatement,

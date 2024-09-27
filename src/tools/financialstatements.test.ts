@@ -2,16 +2,16 @@ import { Database } from "@/types/supabase";
 import { Site } from "@/types/supabase.extend";
 import {
   getFinancialStatementUptimeWeight,
-  getDailyFinancialStatement as getFinancialStatementByDay,
+  convertFinancialStatementInDailyPeriod as getFinancialStatementByDay,
 } from "./financialstatements";
-import { filterMiningHistoryWithFinancialStatement } from "./mininghistory";
+import { filterMiningHistoryWithFinancialStatementPeriod } from "./mininghistory";
 
 import {
   FinancialSource,
   FinancialFlow,
   FinancialPartnaire,
 } from "@/types/FinancialSatement";
-import { mergeMiningReportsOfTheDay } from "@/types/MiningReport";
+import { mergeMiningReportsOfTheDay } from "./miningreport";
 import { DailyMiningReport } from "@/types/MiningReport";
 
 const mockSite: Site = {
@@ -327,7 +327,7 @@ describe("financialstatements.ts", () => {
   });
 
   test("getMiningHistoryRelatedToFinancialStatement", () => {
-    const relatedHistory = filterMiningHistoryWithFinancialStatement(
+    const relatedHistory = filterMiningHistoryWithFinancialStatementPeriod(
       mockPoolFinancialStatement,
       mockMiningHistory
     );

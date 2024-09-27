@@ -1,16 +1,14 @@
 import { Site } from "@/types/supabase.extend";
 import {
+  addFinancialAmount,
   FinancialSource,
   FinancialStatementAmount,
 } from "@/types/FinancialSatement";
 import { convertDailyFinancialStatementToMiningReport } from "@/types/MiningReport";
-import {
-  DailyMiningReport,
-  mergeMiningReportsOfTheDay,
-} from "@/types/MiningReport";
+import { DailyMiningReport } from "@/types/MiningReport";
 import { Database } from "@/types/supabase";
 import {
-  aggregateFinancialStatements as aggregateFinancialStatementsByDay,
+  aggregateFinancialStatementsByDay as aggregateFinancialStatementsByDay,
   getFinancialStatementsPeriod,
 } from "./financialstatements";
 import {
@@ -21,7 +19,7 @@ import {
 import { getMiningHistoryByDay, getMiningHistoryPeriod } from "./mininghistory";
 import { calculateSiteGrossIncome } from "./site";
 
-export function getDailyMiningReportsOfSite(
+export function getSiteDailyMiningReports(
   financialStatements: Database["public"]["Tables"]["financialStatements"]["Row"][],
   miningHistory: Database["public"]["Tables"]["mining"]["Row"][],
   site: Site,
@@ -67,9 +65,8 @@ export function getDailyMiningReportsOfSite(
     // get the mining history if exists
     const miningHistoryOfDay = miningHistoryByDay.get(dayKey);
 
-    let miningReportFromStatement: DailyMiningReport | undefined = undefined;
-
     // get the financial statements if exists
+    let miningReportFromStatement: DailyMiningReport | undefined = undefined;
     if (financialStatementsByDay.has(dayKey)) {
       const statementsOfTheDay = financialStatementsByDay.get(dayKey) ?? [];
       const reportsOfTheDay = statementsOfTheDay.map((statement) => {
@@ -113,58 +110,63 @@ export function getDailyMiningReportsOfSite(
 }
 
 function aggregateMiningReportData(
-  dayReport: DailyMiningReport | undefined,
+  financialStatementReport: DailyMiningReport | undefined,
   miningHistoryOfDay: Database["public"]["Tables"]["mining"]["Row"] | undefined,
   day: Date,
   site: Site,
   btcPrice: number
 ): DailyMiningReport {
-  if (dayReport === undefined && miningHistoryOfDay === undefined) {
-    // no data for the day
-    dayReport = getEmptyDailyMiningReport(day);
+  if (financialStatementReport !== undefined) {
+    // day has financial statements : use the mining report from the financial statements
+    // we suppose that the financial statements are complete
+    return financialStatementReport;
   } else if (miningHistoryOfDay !== undefined) {
-    // day has mining history
-    const electricityCostBtc = dayReport?.expenses.electricity.btc;
-    const simulationResult = calculateSiteGrossIncome(
+    // day has no financial statements : use the mining report from the pool
+
+    const dayReportFromPool = getSiteDayMiningReportFromPool(
       site,
       miningHistoryOfDay,
       btcPrice,
-      electricityCostBtc
-    );
-    const dayReportFromPool = getDailyMiningReportFromPool(
-      day,
-      miningHistoryOfDay.uptime,
-      miningHistoryOfDay.hashrateTHs,
-      miningHistoryOfDay.mined,
-      {
-        btc: simulationResult.cost.electricity.btc,
-        source: FinancialSource.SIMULATOR,
-      },
-      {
-        btc: simulationResult.cost.csm.btc,
-        source: FinancialSource.SIMULATOR,
-      },
-      {
-        btc: simulationResult.cost.operator.btc,
-        source: FinancialSource.SIMULATOR,
-      }
+      day
     );
 
-    if (dayReport !== undefined) {
-      // day has financial statements : merge the mining report from the pool with the financial statements
-      dayReport = mergeMiningReportsOfTheDay(
-        [dayReport, dayReportFromPool],
-        miningHistoryOfDay.uptime,
-        miningHistoryOfDay.hashrateTHs
-      );
-    } else {
-      // day has no financial statements : use the mining report from the pool
-      dayReport = dayReportFromPool;
-    }
-  } else if (dayReport !== undefined) {
-    // do nothing : use the financial statements
+    return dayReportFromPool;
+  } else {
+    // no data for the day
+    return getEmptyDailyMiningReport(day);
   }
-  return dayReport ?? getEmptyDailyMiningReport(day);
+}
+
+function getSiteDayMiningReportFromPool(
+  site: Site,
+  miningHistoryOfDay: Database["public"]["Tables"]["mining"]["Row"],
+  btcPrice: number,
+  day: Date
+) {
+  const simulationResult = calculateSiteGrossIncome(
+    site,
+    miningHistoryOfDay,
+    btcPrice
+  );
+  const dayReportFromPool = getDailyMiningReportFromPool(
+    day,
+    miningHistoryOfDay.uptime,
+    miningHistoryOfDay.hashrateTHs,
+    miningHistoryOfDay.mined,
+    {
+      btc: simulationResult.cost.electricity.total.btc,
+      source: FinancialSource.SIMULATOR,
+    },
+    {
+      btc: simulationResult.cost.csm.btc,
+      source: FinancialSource.SIMULATOR,
+    },
+    {
+      btc: simulationResult.cost.operator.btc,
+      source: FinancialSource.SIMULATOR,
+    }
+  );
+  return dayReportFromPool;
 }
 
 function getEmptyDailyMiningReport(day: Date): DailyMiningReport {
@@ -210,4 +212,70 @@ function getDailyMiningReportFromPool(
       other: otherIncome ?? { btc: 0, source: FinancialSource.NONE },
     },
   };
+}
+export function mergeMiningReportsOfTheDay(
+  reports: DailyMiningReport[],
+  uptime?: number,
+  hashrateTHs?: number
+): DailyMiningReport {
+  if (reports.length === 0) {
+    throw new Error("Cannot merge empty Mining Report");
+  }
+  if (reports.length === 1) {
+    return reports[0];
+  }
+  if (
+    reports[0].day.getUTCFullYear() !== reports[1].day.getUTCFullYear() &&
+    reports[0].day.getUTCMonth() !== reports[1].day.getUTCMonth() &&
+    reports[0].day.getUTCDate() !== reports[1].day.getUTCDate()
+  ) {
+    throw new Error("Cannot merge Mining Report for different days");
+  }
+  if (uptime === undefined && reports[0].uptime !== reports[1].uptime) {
+    throw new Error("Cannot merge Mining Report for different uptime");
+  }
+  if (
+    hashrateTHs === undefined &&
+    reports[0].hashrateTHs !== reports[1].hashrateTHs
+  ) {
+    throw new Error("Cannot merge Mining Report for different hashrate");
+  }
+
+  const sum = {
+    day: reports[0].day, // Assuming the day is the same for both accounts
+    uptime: uptime ?? reports[0].uptime, // Assuming the uptime is the same for both accounts
+    hashrateTHs: hashrateTHs ?? reports[0].hashrateTHs, // Assuming the hashrate is the same for both accounts
+    expenses: {
+      electricity: addFinancialAmount(
+        reports[0].expenses.electricity,
+        reports[1].expenses.electricity
+      ),
+      csm: addFinancialAmount(reports[0].expenses.csm, reports[1].expenses.csm),
+      operator: addFinancialAmount(
+        reports[0].expenses.operator,
+        reports[1].expenses.operator
+      ),
+      other: addFinancialAmount(
+        reports[0].expenses.other,
+        reports[1].expenses.other
+      ),
+    },
+    income: {
+      pool: addFinancialAmount(reports[0].income.pool, reports[1].income.pool),
+      other: addFinancialAmount(
+        reports[0].income.other,
+        reports[1].income.other
+      ),
+    },
+  };
+
+  if (reports.length === 2) {
+    return sum;
+  } else {
+    return mergeMiningReportsOfTheDay(
+      [sum, ...reports.slice(2)],
+      uptime,
+      hashrateTHs
+    );
+  }
 }

@@ -2,7 +2,7 @@
 import type { Context } from "@netlify/functions";
 import { Site } from "../../src/types/supabase.extend";
 import { Database } from "../../src/types/supabase";
-import { getDailyMiningReportsOfSite } from "../../src/tools/miningreport";
+import { getSiteDailyMiningReports } from "../../src/tools/miningreport";
 import {
   GET_GATEWAY_SITE,
   GET_GATEWAY_MINING_HISTORY,
@@ -104,7 +104,7 @@ export default async (req: Request, context: Context) => {
     const miningHistoryData: Database["public"]["Tables"]["mining"]["Row"][] =
       await miningHistoryApiresponse.json();
 
-    const reports = getDailyMiningReportsOfSite(
+    const reports = getSiteDailyMiningReports(
       financialStatementsData,
       miningHistoryData,
       siteData,

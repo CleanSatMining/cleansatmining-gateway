@@ -1,6 +1,5 @@
 import { convertToUTCStartOfDay } from "@/tools/date";
 import {
-  addFinancialAmount,
   DailyFinancialStatement,
   FinancialPartnaire,
   FinancialSource,
@@ -23,78 +22,6 @@ export type DailyMiningReport = {
     other: FinancialStatementAmount;
   };
 };
-export function mergeMiningReportsOfTheDay(
-  accounts: DailyMiningReport[],
-  uptime?: number,
-  hashrateTHs?: number
-): DailyMiningReport {
-  if (accounts.length === 0) {
-    throw new Error("Cannot merge empty Mining Report");
-  }
-  if (accounts.length === 1) {
-    return accounts[0];
-  }
-  if (
-    accounts[0].day.getUTCFullYear() !== accounts[1].day.getUTCFullYear() &&
-    accounts[0].day.getUTCMonth() !== accounts[1].day.getUTCMonth() &&
-    accounts[0].day.getUTCDate() !== accounts[1].day.getUTCDate()
-  ) {
-    throw new Error("Cannot merge Mining Report for different days");
-  }
-  if (uptime === undefined && accounts[0].uptime !== accounts[1].uptime) {
-    throw new Error("Cannot merge Mining Report for different uptime");
-  }
-  if (
-    hashrateTHs === undefined &&
-    accounts[0].hashrateTHs !== accounts[1].hashrateTHs
-  ) {
-    throw new Error("Cannot merge Mining Report for different hashrate");
-  }
-
-  const sum = {
-    day: accounts[0].day, // Assuming the day is the same for both accounts
-    uptime: uptime ?? accounts[0].uptime, // Assuming the uptime is the same for both accounts
-    hashrateTHs: hashrateTHs ?? accounts[0].hashrateTHs, // Assuming the hashrate is the same for both accounts
-    expenses: {
-      electricity: addFinancialAmount(
-        accounts[0].expenses.electricity,
-        accounts[1].expenses.electricity
-      ),
-      csm: addFinancialAmount(
-        accounts[0].expenses.csm,
-        accounts[1].expenses.csm
-      ),
-      operator: addFinancialAmount(
-        accounts[0].expenses.operator,
-        accounts[1].expenses.operator
-      ),
-      other: addFinancialAmount(
-        accounts[0].expenses.other,
-        accounts[1].expenses.other
-      ),
-    },
-    income: {
-      pool: addFinancialAmount(
-        accounts[0].income.pool,
-        accounts[1].income.pool
-      ),
-      other: addFinancialAmount(
-        accounts[0].income.other,
-        accounts[1].income.other
-      ),
-    },
-  };
-
-  if (accounts.length === 2) {
-    return sum;
-  } else {
-    return mergeMiningReportsOfTheDay(
-      [sum, ...accounts.slice(2)],
-      uptime,
-      hashrateTHs
-    );
-  }
-}
 export function convertDailyFinancialStatementToMiningReport(
   dayStatement: DailyFinancialStatement
 ): DailyMiningReport {

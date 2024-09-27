@@ -10,7 +10,11 @@ interface CurrencyDetail {
 }
 
 interface Cost {
-  electricity: CurrencyDetail;
+  electricity: {
+    csmFee: CurrencyDetail;
+    operatorFee: CurrencyDetail;
+    total: CurrencyDetail;
+  };
   csm: CurrencyDetail;
   operator: CurrencyDetail;
 }

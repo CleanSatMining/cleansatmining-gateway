@@ -76,14 +76,21 @@ export function calculateGrossIncome(
   const csmTax = csmTaxesAmount.plus(csmProfitSharing).plus(csmElectricityCost);
   const opTax = opTaxesAmount.plus(opProfitSharing).plus(opElectricityCost);
 
-  const electricityCostOnlyBtc = new BigNumber(electricityCostBtc).minus(
-    csmElectricityCost.plus(opElectricityCost)
-  );
   const simulationResult: SimulationResult = {
     cost: {
       electricity: {
-        btc: electricityCostOnlyBtc.toNumber(),
-        usd: electricityCostOnlyBtc.times(btcPrice).toNumber(),
+        csmFee: {
+          btc: csmElectricityCost.toNumber(),
+          usd: csmElectricityCost.times(btcPrice).toNumber(),
+        },
+        operatorFee: {
+          btc: opElectricityCost.toNumber(),
+          usd: opElectricityCost.times(btcPrice).toNumber(),
+        },
+        total: {
+          btc: electricityCostBtc,
+          usd: new BigNumber(electricityCostBtc).times(btcPrice).toNumber(),
+        },
       },
       csm: {
         btc: csmTax.toNumber(),

@@ -75,16 +75,18 @@ export function getFinancialStatementsPeriod(
   return { start, end };
 }
 
-export function getDailyFinancialStatement(
+export function convertFinancialStatementInDailyPeriod(
   financialStatement: Database["public"]["Tables"]["financialStatements"]["Row"],
   miningHistory: Database["public"]["Tables"]["mining"]["Row"][]
 ): Map<string, DailyFinancialStatement> {
   //const dailyFinancialStatement: DailyFinancialStatement[] = [];
   const dailyStatementMap: Map<string, DailyFinancialStatement> = new Map();
 
+  // get the flow of the financial statement
   const flow =
     financialStatement.flow === "IN" ? FinancialFlow.IN : FinancialFlow.OUT;
 
+  // get the partenaire of the financial statement
   const partenaire = mapFinancialPartnaireToField(financialStatement);
 
   // calculate the total number of days in the financial statement
@@ -222,14 +224,14 @@ export function mapFinancialPartnaireToField(
   }
 }
 
-export function aggregateFinancialStatements(
+export function aggregateFinancialStatementsByDay(
   financialStatements: Database["public"]["Tables"]["financialStatements"]["Row"][],
   miningHistory: Database["public"]["Tables"]["mining"]["Row"][]
 ): Map<string, DailyFinancialStatement[]> {
   const dailyFinancialStatements: Map<string, DailyFinancialStatement[]> =
     new Map();
   for (const financialStatement of financialStatements) {
-    const dailyFinancialStatement = getDailyFinancialStatement(
+    const dailyFinancialStatement = convertFinancialStatementInDailyPeriod(
       financialStatement,
       miningHistory
     );

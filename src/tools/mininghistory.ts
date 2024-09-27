@@ -2,7 +2,7 @@ import { Farm, Site } from "@/types/supabase.extend";
 import { Database } from "@/types/supabase";
 import { convertDateToMapKey } from "@/tools/date";
 
-export function filterMiningHistoryWithFinancialStatement(
+export function filterMiningHistoryWithFinancialStatementPeriod(
   financialStatement: Database["public"]["Tables"]["financialStatements"]["Row"],
   miningHistory: Database["public"]["Tables"]["mining"]["Row"][]
 ): Database["public"]["Tables"]["mining"]["Row"][] {
