@@ -119,7 +119,7 @@ export function getSiteDailyMiningReports(
   financialStatements: Database["public"]["Tables"]["financialStatements"]["Row"][],
   miningHistory: Database["public"]["Tables"]["mining"]["Row"][],
   site: Site,
-  btcPrice: number = 1,
+  btcPrice: number,
   startDay: Date | undefined = undefined,
   endDay: Date = new Date()
 ): DailyMiningReport[] {
@@ -154,7 +154,7 @@ export function getSiteMiningReportsByDay(
   financialStatements: Database["public"]["Tables"]["financialStatements"]["Row"][],
   miningHistory: Database["public"]["Tables"]["mining"]["Row"][],
   site: Site,
-  btcPrice: number = 1,
+  btcPrice: number,
   startDay: Date | undefined = undefined,
   endDay: Date = new Date()
 ): Map<string, DailyMiningReport> {
@@ -227,6 +227,7 @@ export function getSiteDayMiningReportFromPool(
     miningHistoryOfDay,
     btcPrice
   );
+
   const dayReportFromPool = getDailyMiningReportFromPool(
     day,
     miningHistoryOfDay.uptime,
@@ -234,14 +235,17 @@ export function getSiteDayMiningReportFromPool(
     miningHistoryOfDay.mined,
     {
       btc: simulationResult.cost.electricity.total.btc,
+      usd: simulationResult.cost.electricity.total.usd,
       source: FinancialSource.SIMULATOR,
     },
     {
       btc: simulationResult.cost.csm.btc,
+      usd: simulationResult.cost.csm.usd,
       source: FinancialSource.SIMULATOR,
     },
     {
       btc: simulationResult.cost.operator.btc,
+      usd: simulationResult.cost.operator.usd,
       source: FinancialSource.SIMULATOR,
     }
   );

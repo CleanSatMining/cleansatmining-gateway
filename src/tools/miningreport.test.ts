@@ -319,7 +319,8 @@ describe("miningreport.ts", () => {
         mockCsmFinancialStatement,
       ],
       mockMiningHistory,
-      mockSite
+      mockSite,
+      1
     );
     console.log("Daily accounting", JSON.stringify(dailyReports, null, 2));
     expect(dailyReports.length).toBe(10);

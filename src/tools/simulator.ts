@@ -5,7 +5,10 @@ export function calculateElectricityCost(
   hours: number,
   costPerKwh: number
 ): number {
-  const costPerHour = new BigNumber(powerW).times(hours).times(costPerKwh);
+  const costPerHour = new BigNumber(powerW)
+    .dividedBy(1000)
+    .times(hours)
+    .times(costPerKwh);
   return costPerHour.toNumber();
 }
 

@@ -8,7 +8,7 @@ export function getFarmDailyMiningReports(
   financialStatements: Database["public"]["Tables"]["financialStatements"]["Row"][],
   miningHistory: Database["public"]["Tables"]["mining"]["Row"][],
   farm: Farm,
-  btcPrice: number = 1,
+  btcPrice: number,
   startDay: Date | undefined = undefined,
   endDay: Date = new Date()
 ): DailyMiningReport[] {
