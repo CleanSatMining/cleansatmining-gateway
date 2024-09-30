@@ -7,19 +7,19 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { slug, datemin, datemax } = req.query;
+  const { slug, start, end } = req.query;
 
   if (!slug) {
     return res.status(400).json({ error: "Paramètre slug manquant." });
   }
 
-  console.log("dateMin", datemin);
+  console.log("start", start);
 
-  const dateMin = datemin
-    ? convertDateToTimestamptzFormat(new Date(datemin.toString()))
+  const dateMin = start
+    ? convertDateToTimestamptzFormat(new Date(start.toString()))
     : undefined;
-  const dateMax = datemax
-    ? convertDateToTimestamptzFormat(new Date(datemax.toString()))
+  const dateMax = end
+    ? convertDateToTimestamptzFormat(new Date(end.toString()))
     : undefined;
 
   console.log("dateMin", dateMin);

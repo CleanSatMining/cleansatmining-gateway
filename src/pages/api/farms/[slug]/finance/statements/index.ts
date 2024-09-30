@@ -7,7 +7,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { slug, datemin, datemax } = req.query;
+  const { slug, start, end } = req.query;
 
   if (!slug) {
     return res
@@ -15,12 +15,16 @@ export default async function handler(
       .json({ error: "Paramètre nom de la ferme manquant." });
   }
 
-  const dateMin = datemin
-    ? convertDateToTimestamptzFormat(new Date(datemin.toString()))
+  const dateMin = start
+    ? convertDateToTimestamptzFormat(new Date(start.toString()))
     : undefined;
-  const dateMax = datemax
-    ? convertDateToTimestamptzFormat(new Date(datemax.toString()))
+  const dateMax = end
+    ? convertDateToTimestamptzFormat(new Date(end.toString()))
     : undefined;
+
+  console.log("Statements ", slug);
+  console.log("dateMin", dateMin);
+  console.log("dateMax", dateMax);
 
   try {
     console.log("Récupération du mining  " + slug);

@@ -305,7 +305,7 @@ async function fetchOperationalData(
 }> {
   // Fetch financial statements data
   const financialStatementsApiResponse: Response =
-    await fetchFinancialStatements(farm, site);
+    await fetchFinancialStatements(farm, site, start, end);
   if (!financialStatementsApiResponse.ok) {
     return {
       financialStatementsData: [],
@@ -322,6 +322,11 @@ async function fetchOperationalData(
   }
   const financialStatementsData: Database["public"]["Tables"]["financialStatements"]["Row"][] =
     await financialStatementsApiResponse.json();
+
+  console.log(
+    "financialStatementsData",
+    JSON.stringify(financialStatementsData, null, 2)
+  );
 
   const { start: startStatement, end: endstatement } =
     getFinancialStatementsPeriod(financialStatementsData);
