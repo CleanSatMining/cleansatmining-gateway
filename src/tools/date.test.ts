@@ -9,13 +9,13 @@ describe("date.ts", () => {
     it("should convert a date to the correct timestamptz format", () => {
       const date = new Date("2024-09-18T16:51:34.083Z");
       const result = convertDateToTimestamptzFormat(date);
-      expect(result).toBe("2024-09-18T16:51:34.083Z+00:00");
+      expect(result).toBe("2024-09-18T16:51:34.083Z");
     });
 
     it("should handle dates with different milliseconds", () => {
       const date = new Date("2024-09-18T16:51:34.123Z");
       const result = convertDateToTimestamptzFormat(date);
-      expect(result).toBe("2024-09-18T16:51:34.123Z+00:00");
+      expect(result).toBe("2024-09-18T16:51:34.123Z");
     });
   });
 

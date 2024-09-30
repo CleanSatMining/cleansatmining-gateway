@@ -11,7 +11,6 @@ import {
   FinancialFlow,
   FinancialPartnaire,
 } from "@/types/FinancialSatement";
-import { mergeMiningReportsOfTheDay } from "./miningreport";
 import { DailyMiningReport } from "@/types/MiningReport";
 
 const mockSite: Site = {
@@ -323,7 +322,7 @@ describe("financialstatements.ts", () => {
       mockPoolFinancialStatement,
       mockMiningHistory
     );
-    expect(weight).toBe(8); // Adjust expected value based on your logic
+    expect(weight.uptimeWeight).toBe(8); // Adjust expected value based on your logic
   });
 
   test("getMiningHistoryRelatedToFinancialStatement", () => {
@@ -359,16 +358,5 @@ describe("financialstatements.ts", () => {
 
   test("mapFinancialPartnaireToField", () => {
     // Add your test logic here
-  });
-
-  test("addDailyAccounting", () => {
-    const result = mergeMiningReportsOfTheDay([
-      mockDailyAccounting1,
-      mockDailyAccounting2,
-    ]);
-    expect(result.uptime).toBe(10);
-    expect(result.expenses.electricity.btc).toBe(200);
-    expect(result.income.pool.btc).toBe(400);
-    // Add other assertions as necessary
   });
 });

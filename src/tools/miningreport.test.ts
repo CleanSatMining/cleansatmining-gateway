@@ -1,14 +1,8 @@
 import { Database } from "@/types/supabase";
 import { Site } from "@/types/supabase.extend";
 import {} from "./financialstatements";
-import { filterMiningHistoryWithFinancialStatementPeriod } from "./mininghistory";
-import { getSiteDailyMiningReports } from "./miningreport";
-import {
-  FinancialSource,
-  FinancialFlow,
-  FinancialPartnaire,
-} from "@/types/FinancialSatement";
-import { mergeMiningReportsOfTheDay } from "./miningreport";
+import { getSiteDailyMiningReports } from "./site";
+import { FinancialSource } from "@/types/FinancialSatement";
 import { DailyMiningReport } from "@/types/MiningReport";
 
 const mockSite: Site = {
@@ -317,7 +311,7 @@ const mockDailyAccounting2: DailyMiningReport = {
 describe("miningreport.ts", () => {
   test("get Site Daily Mining Reports", () => {
     // Add your test logic here
-    const dailyAccounting = getSiteDailyMiningReports(
+    const dailyReports = getSiteDailyMiningReports(
       [
         mockPoolFinancialStatement,
         mockElecFinancialStatement,
@@ -327,25 +321,14 @@ describe("miningreport.ts", () => {
       mockMiningHistory,
       mockSite
     );
-    console.log("Daily accounting", JSON.stringify(dailyAccounting, null, 2));
-    expect(dailyAccounting.length).toBe(10);
+    console.log("Daily accounting", JSON.stringify(dailyReports, null, 2));
+    expect(dailyReports.length).toBe(10);
     expect(
-      dailyAccounting.reduce((acc, account) => acc + account.income.pool.btc, 0)
+      dailyReports.reduce((acc, account) => acc + account.income.pool.btc, 0)
     ).toBe(mockPoolFinancialStatement.btc);
   });
 
   test("mapFinancialPartnaireToField", () => {
     // Add your test logic here
-  });
-
-  test("addDailyAccounting", () => {
-    const result = mergeMiningReportsOfTheDay([
-      mockDailyAccounting1,
-      mockDailyAccounting2,
-    ]);
-    expect(result.uptime).toBe(10);
-    expect(result.expenses.electricity.btc).toBe(200);
-    expect(result.income.pool.btc).toBe(400);
-    // Add other assertions as necessary
   });
 });

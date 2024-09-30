@@ -18,7 +18,7 @@ export type GatewayApi = {
   name: string;
   url:
     | ((params: string) => string)
-    | ((param1: string, param2: string) => string)
+    | ((param1: string, param2?: string) => string)
     | string;
   method: string;
   headers?: Record<string, string>;
@@ -102,7 +102,8 @@ export const GET_GATEWAY_FARM: GatewayApi = {
 
 export const GET_GATEWAY_SITE: GatewayApi = {
   name: "GET_GATEWAY_FARM",
-  url: (farm: string, site: string) => `/api/farms/${farm}/sites/${site}`,
+  url: (farm: string, site?: string) =>
+    site ? `/api/farms/${farm}/sites/${site}` : `/api/farms/${farm}/sites`,
   method: "GET",
   headers: {
     "Content-Type": "application/json",
@@ -111,8 +112,11 @@ export const GET_GATEWAY_SITE: GatewayApi = {
 
 export const GET_GATEWAY_MINING_HISTORY: GatewayApi = {
   name: "GET_GATEWAY_MINING_HISTORY",
-  url: (farm: string, site: string) =>
-    `/api/farms/${farm}/sites/${site}/mining/history`,
+  url: (farm: string, site?: string) =>
+    site
+      ? `/api/farms/${farm}/sites/${site}/mining/history`
+      : `/api/farms/${farm}/mining/history`,
+
   method: "GET",
   headers: {
     "Content-Type": "application/json",
@@ -125,8 +129,10 @@ export const GET_GATEWAY_MINING_HISTORY: GatewayApi = {
 
 export const GET_GATEWAY_FINANCIAL_STATEMENTS: GatewayApi = {
   name: "GET_GATEWAY_FINANCIAL_STATEMENTS",
-  url: (farm: string, site: string) =>
-    `/api/farms/${farm}/sites/${site}/finance/statements`,
+  url: (farm: string, site?: string) =>
+    site
+      ? `/api/farms/${farm}/sites/${site}/finance/statements`
+      : `/api/farms/${farm}/finance/statements`,
   method: "GET",
   headers: {
     "Content-Type": "application/json",

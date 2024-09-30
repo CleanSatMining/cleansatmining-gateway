@@ -1,5 +1,3 @@
-import { uptime } from "process";
-
 export type DailyFinancialStatement = {
   day: Date;
   uptime: number;
