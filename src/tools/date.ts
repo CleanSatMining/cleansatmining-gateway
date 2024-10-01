@@ -40,12 +40,17 @@ export function convertDateToMapKey(date: Date): string {
   return convertToUTCStartOfDay(date).toISOString();
 }
 
-export function getYesterdayDate(): Date {
+export function getYesterdayDate(
+  hours: number = 0,
+  min: number = 0,
+  sec: number = 0,
+  ms: number = 0
+): Date {
   const today = new Date();
   today.setUTCDate(today.getUTCDate() - 1);
 
   // Remettre l'heure à 00:00:00.000 pour obtenir le début de la journée en UTC
-  today.setUTCHours(0, 0, 0, 0);
+  today.setUTCHours(hours, min, sec, ms);
 
   return today;
 }

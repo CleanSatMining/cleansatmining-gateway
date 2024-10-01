@@ -28,6 +28,7 @@ export function getEmptyDailyMiningReport(day: Date): DailyMiningReport {
     day: convertToUTCStartOfDay(day),
     uptime: 0,
     hashrateTHs: 0,
+    btcSellPrice: 1,
     expenses: {
       electricity: { btc: 0, source: FinancialSource.NONE },
       csm: { btc: 0, source: FinancialSource.NONE },
@@ -45,6 +46,7 @@ export function getDailyMiningReportFromPool(
   uptime: number,
   hashrateTHs: number,
   btc: number,
+  btcPrice: number,
   electricityCost?: FinancialStatementAmount,
   csmCost?: FinancialStatementAmount,
   operatorCost?: FinancialStatementAmount,
@@ -55,6 +57,7 @@ export function getDailyMiningReportFromPool(
     day: convertToUTCStartOfDay(day),
     uptime: uptime,
     hashrateTHs: hashrateTHs,
+    btcSellPrice: btcPrice,
     expenses: {
       electricity: electricityCost ?? { btc: 0, source: FinancialSource.NONE },
       csm: csmCost ?? { btc: 0, source: FinancialSource.NONE },
@@ -120,10 +123,11 @@ function mergeDayStatmentsMiningReports(
     throw new Error("Cannot merge Mining Report for different hashrate");
   }
 
-  const sum = {
+  const sum: DailyMiningReport = {
     day: dayReports[0].day, // Assuming the day is the same for both accounts
     uptime: dayUptime ?? dayReports[0].uptime, // Assuming the uptime is the same for both accounts
     hashrateTHs: dayHashrateTHs ?? dayReports[0].hashrateTHs, // Assuming the hashrate is the same for both accounts
+    btcSellPrice: dayReports[0].btcSellPrice,
     expenses: {
       electricity: addFinancialAmount(
         dayReports[0].expenses.electricity,
@@ -193,10 +197,11 @@ export function mergeDayMiningReport(
     .dividedBy(hashrateWeight)
     .toNumber();
 
-  const sum = {
+  const sum: DailyMiningReport = {
     day: dayReports[0].day, // Assuming the day is the same for both accounts
     uptime: uptime,
     hashrateTHs: hashrateTHs,
+    btcSellPrice: dayReports[0].btcSellPrice,
     expenses: {
       electricity: addFinancialAmount(
         dayReports[0].expenses.electricity,

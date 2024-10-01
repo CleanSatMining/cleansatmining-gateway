@@ -280,6 +280,7 @@ const mockDailyAccounting1: DailyMiningReport = {
   day: new Date("2023-01-01"),
   uptime: 10,
   hashrateTHs: 100,
+  btcSellPrice: 50000,
   expenses: {
     electricity: { btc: 100, usd: 0, source: FinancialSource.STATEMENT },
     csm: { btc: 50, usd: 0, source: FinancialSource.STATEMENT },
@@ -296,6 +297,7 @@ const mockDailyAccounting2: DailyMiningReport = {
   day: new Date("2023-01-01"),
   uptime: 10,
   hashrateTHs: 100,
+  btcSellPrice: 50000,
   expenses: {
     electricity: { btc: 100, usd: 0, source: FinancialSource.STATEMENT },
     csm: { btc: 50, usd: 0, source: FinancialSource.STATEMENT },

@@ -75,7 +75,7 @@ export default async (req: Request, context: Context) => {
         });
       }
 
-      console.log("api farm response", JSON.stringify(response.report));
+      console.log("api farm response", response.report.length);
 
       return new Response(JSON.stringify(response.report), {
         headers: { "content-type": "application/json" },
@@ -323,30 +323,56 @@ async function fetchOperationalData(
   const financialStatementsData: Database["public"]["Tables"]["financialStatements"]["Row"][] =
     await financialStatementsApiResponse.json();
 
-  console.log(
-    "financialStatementsData",
-    JSON.stringify(financialStatementsData, null, 2)
-  );
+  console.log("financialStatementsData", financialStatementsData.length);
 
   const { start: startStatement, end: endstatement } =
     getFinancialStatementsPeriod(financialStatementsData);
 
-  const startMining =
-    start && startStatement > new Date(start)
-      ? new Date(start)
-      : startStatement;
-  const endMining =
-    end && endstatement < new Date(end) ? new Date(end) : endstatement;
+  // Get the start date for mining history
+  let startMining: Date | undefined = undefined;
+  if (start && startStatement) {
+    startMining =
+      new Date(start) < startStatement ? new Date(start) : startStatement;
+  } else if (start) {
+    startMining = new Date(start);
+  } else if (startStatement) {
+    startMining = startStatement;
+  }
 
-  console.log("startMining", startMining);
-  console.log("endMining", endMining);
+  let endMining: Date | undefined = undefined;
+  if (end && endstatement) {
+    endMining = endstatement < new Date(end) ? new Date(end) : endstatement;
+  } else if (end) {
+    endMining = new Date(end);
+  } else if (endstatement) {
+    endMining = endstatement;
+  }
+
+  /*const startMining =
+    start && startStatement && startStatement > new Date(start)
+      ? new Date(start)
+      : startStatement;*/
+  /*const endMining =
+    end && endstatement && endstatement < new Date(end)
+      ? new Date(end)
+      : endstatement;*/
+
+  const startMiningTimestampz = startMining
+    ? convertDateToTimestamptzFormat(startMining)
+    : undefined;
+  const endMiningTimestampz = endMining
+    ? convertDateToTimestamptzFormat(endMining)
+    : undefined;
+
+  console.log("startMining", startMiningTimestampz);
+  console.log("endMining", endMiningTimestampz);
 
   // Fetch mining history data
   const miningHistoryApiresponse: Response = await fetchMiningHistory(
     farm,
     site,
-    convertDateToTimestamptzFormat(startMining),
-    convertDateToTimestamptzFormat(endMining)
+    startMiningTimestampz,
+    endMiningTimestampz
   );
   if (!miningHistoryApiresponse.ok) {
     return {

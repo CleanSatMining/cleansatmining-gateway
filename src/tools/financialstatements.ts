@@ -21,6 +21,7 @@ function getEmptyDailyFinancialStatement(
     flow: flow,
     partnaire: partnaire,
     amount: { btc: 0, source: FinancialSource.NONE },
+    btcPrice: 1,
   };
 }
 
@@ -58,9 +59,13 @@ export function getFinancialStatementUptimeWeight(
 export function getFinancialStatementsPeriod(
   financialStatements: Database["public"]["Tables"]["financialStatements"]["Row"][]
 ): {
-  start: Date;
-  end: Date;
+  start: Date | undefined;
+  end: Date | undefined;
 } {
+  if (financialStatements.length === 0) {
+    return { start: undefined, end: undefined };
+  }
+
   const start = new Date(
     financialStatements.reduce((acc, statement) => {
       return acc < new Date(statement.start) ? acc : new Date(statement.start);
@@ -170,6 +175,7 @@ export function convertFinancialStatementInDailyPeriod(
         amount: totalAmount,
         flow: flow,
         partnaire: partenaire,
+        btcPrice: financialStatement.btcPrice,
       };
 
       dailyStatementMap.set(key, financialStatementOfTheDay);
@@ -179,6 +185,7 @@ export function convertFinancialStatementInDailyPeriod(
         day: day,
         uptime: 0.9,
         hashrateTHs: 0,
+        btcPrice: financialStatement.btcPrice,
         amount: {
           btc: financialStatement.btc / totalDays,
           usd: financialStatement.usd

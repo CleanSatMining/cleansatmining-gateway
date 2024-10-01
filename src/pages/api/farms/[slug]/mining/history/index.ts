@@ -37,8 +37,6 @@ export default async function handler(
       dateMax
     );
 
-    console.log("miningData", miningData);
-
     if (miningError) {
       console.error(
         "Erreur lors de la récupération de la ferme :",

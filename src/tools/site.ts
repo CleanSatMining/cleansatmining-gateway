@@ -13,6 +13,7 @@ import {
   convertToUTCStartOfDay,
   calculateDaysBetweenDates,
   convertDateToMapKey,
+  getYesterdayDate,
 } from "./date";
 import {
   filterMiningReportsByDay,
@@ -32,35 +33,26 @@ export function calculateSitePower(
   const containers = site.containers.filter((container) => {
     // Check if the container is active
     if (container.start === null || container.start === undefined) {
+      console.warn("The container has no start date", container);
       return false;
     }
 
-    const yearStart = new Date(container.start).getUTCFullYear();
-    const monthStart = new Date(container.start).getUTCMonth();
-    const dayStart = new Date(container.start).getUTCDate();
-
-    //check if the container is active on the day
-    const isStarted =
-      yearStart <= day.getUTCFullYear() &&
-      monthStart <= day.getUTCMonth() &&
-      dayStart <= day.getUTCDate();
+    const isStarted = new Date(container.start) <= day;
 
     let isEnded = false;
 
     // check if the container is still active
     if (container.end !== null && container.end !== undefined) {
-      const yearEnd = new Date(container.end).getUTCFullYear();
-      const monthEnd = new Date(container.end).getUTCMonth();
-      const dayEnd = new Date(container.end).getUTCDate();
-
-      isEnded =
-        yearEnd >= day.getUTCFullYear() &&
-        monthEnd >= day.getUTCMonth() &&
-        dayEnd >= day.getUTCDate();
+      isEnded = new Date(container.end) <= day;
     }
 
     return isStarted && !isEnded;
   });
+
+  console.log(
+    "containers",
+    containers.length + " vs " + site.containers.length
+  );
 
   // Calculate the electricity power of the site
   const watts = containers
@@ -121,7 +113,7 @@ export function getSiteDailyMiningReports(
   site: Site,
   btcPrice: number,
   startDay: Date | undefined = undefined,
-  endDay: Date = new Date()
+  endDay: Date = getYesterdayDate(23, 59, 59, 999)
 ): DailyMiningReport[] {
   const miningReportByDay = getSiteMiningReportsByDay(
     financialStatements,
@@ -155,31 +147,41 @@ export function getSiteMiningReportsByDay(
   miningHistory: Database["public"]["Tables"]["mining"]["Row"][],
   site: Site,
   btcPrice: number,
-  startDay: Date | undefined = undefined,
-  endDay: Date = new Date()
+  start_param: Date | undefined = undefined,
+  end_param: Date = getYesterdayDate(23, 59, 59, 999)
 ): Map<string, DailyMiningReport> {
   const miningReportByDay: Map<string, DailyMiningReport> = new Map();
 
   // get the mining history data by day
   const miningHistoryByDay = getMiningHistoryByDay(miningHistory, site);
 
-  // get the period of the financial statements
+  // get the period of the financial statements and the mining history
   const { start: starthistory, end: endhistory } =
     getMiningHistoryPeriod(miningHistory);
   const { start: startstatement, end: endstatement } =
     getFinancialStatementsPeriod(financialStatements);
-  const startData =
-    starthistory < startstatement ? starthistory : startstatement;
-  const endData = endhistory > endstatement ? endhistory : endstatement;
 
-  const start =
-    startDay && startData < startDay
-      ? convertToUTCStartOfDay(startDay)
+  // get the longest period between the financial statements and the mining history
+  const startData: Date =
+    startstatement && starthistory > startstatement
+      ? startstatement
+      : starthistory;
+  const endData: Date =
+    endstatement && endhistory < endstatement ? endstatement : endhistory;
+
+  // get the longest period between the data and the parameters
+  const start: Date =
+    start_param && start_param < startData
+      ? convertToUTCStartOfDay(start_param)
       : startData;
-  const end = endDay > endData ? convertToUTCStartOfDay(endDay) : endData;
+  const end: Date =
+    endData < end_param ? convertToUTCStartOfDay(end_param) : endData;
 
   // get the total number of days between the start and end of the financial statements
-  const totalDays = calculateDaysBetweenDates(new Date(start), new Date(end));
+  const totalDays = calculateDaysBetweenDates(start, end);
+
+  console.log("start", start);
+  console.log("totalDays", totalDays);
 
   // aggregate the daily financial statement for each day of the financial statements
   const financialStatementsByDay = aggregateFinancialStatementsByDay(
@@ -233,6 +235,7 @@ export function getSiteDayMiningReportFromPool(
     miningHistoryOfDay.uptime,
     miningHistoryOfDay.hashrateTHs,
     miningHistoryOfDay.mined,
+    btcPrice,
     {
       btc: simulationResult.cost.electricity.total.btc,
       usd: simulationResult.cost.electricity.total.usd,

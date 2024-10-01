@@ -11,6 +11,7 @@ export type DailyMiningReport = {
   day: Date;
   uptime: number;
   hashrateTHs: number;
+  btcSellPrice: number;
   expenses: {
     electricity: FinancialStatementAmount;
     csm: FinancialStatementAmount;
@@ -29,6 +30,7 @@ export function convertDailyFinancialStatementToMiningReport(
     day: convertToUTCStartOfDay(dayStatement.day),
     uptime: dayStatement.uptime,
     hashrateTHs: dayStatement.hashrateTHs,
+    btcSellPrice: dayStatement.btcPrice,
     expenses: {
       electricity:
         dayStatement.partnaire === FinancialPartnaire.ELECTRICITY
@@ -62,6 +64,7 @@ export function convertDailyFinancialStatementToMiningReport(
 
 export function convertMiningHistoryToMiningReport(
   miningDay: Database["public"]["Tables"]["mining"]["Row"],
+  btcPrice?: number,
   electricityCost?: FinancialStatementAmount,
   csmCost?: FinancialStatementAmount,
   operatorCost?: FinancialStatementAmount,
@@ -80,6 +83,7 @@ export function convertMiningHistoryToMiningReport(
     day: convertToUTCStartOfDay(new Date(miningDay.day)),
     uptime: miningDay.uptime,
     hashrateTHs: miningDay.hashrateTHs,
+    btcSellPrice: btcPrice ?? 0,
     expenses: {
       electricity: electricity,
       csm: csm,

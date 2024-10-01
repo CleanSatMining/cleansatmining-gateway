@@ -5,6 +5,7 @@ export type DailyFinancialStatement = {
   flow: FinancialFlow;
   partnaire: FinancialPartnaire;
   amount: FinancialStatementAmount;
+  btcPrice: number;
 };
 
 export type FinancialStatementAmount = {
