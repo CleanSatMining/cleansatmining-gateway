@@ -324,7 +324,7 @@ describe("miningreport.ts", () => {
       mockSite,
       1
     );
-    console.log("Daily accounting", JSON.stringify(dailyReports, null, 2));
+
     expect(dailyReports.length).toBe(10);
     expect(
       dailyReports.reduce((acc, account) => acc + account.income.pool.btc, 0)

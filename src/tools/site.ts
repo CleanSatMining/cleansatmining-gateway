@@ -49,11 +49,6 @@ export function calculateSitePower(
     return isStarted && !isEnded;
   });
 
-  console.log(
-    "containers",
-    containers.length + " vs " + site.containers.length
-  );
-
   // Calculate the electricity power of the site
   const watts = containers
     .reduce((acc, container) => {

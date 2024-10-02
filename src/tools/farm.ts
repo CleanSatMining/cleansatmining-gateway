@@ -35,9 +35,6 @@ export function getFarmDailyMiningReports(
     sitesMiningReportsByDay.push(siteMiningReportsByDay);
   });
 
-  console.log("sitesMiningReportsByDay", sitesMiningReportsByDay.length);
-  console.log("sitesMiningReportsByDay[0]", sitesMiningReportsByDay[0].size);
-
   const miningReportByDay = mergeMiningReports(sitesMiningReportsByDay);
 
   const dailyMiningReport: DailyMiningReport[] = Array.from(

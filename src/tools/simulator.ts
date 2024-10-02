@@ -79,8 +79,6 @@ export function calculateGrossIncome(
   const csmTax = csmTaxesAmount.plus(csmProfitSharing).plus(csmElectricityCost);
   const opTax = opTaxesAmount.plus(opProfitSharing).plus(opElectricityCost);
 
-  console.log("ElectricityCost", electricityCostBtc);
-
   const simulationResult: SimulationResult = {
     cost: {
       electricity: {
