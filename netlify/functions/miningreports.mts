@@ -5,13 +5,25 @@ import { convertToUTCStartOfDay } from "../../src/tools/date";
 import { fetchFarmDailyReport } from "../../src/resources/farm";
 import { fetchSiteDailyReport } from "../../src/resources/site";
 
+import type { DailyMiningReport } from "../../src/types/MiningReport";
+
+interface ApiResponse {
+  farm: string;
+  site?: string;
+  start?: Date;
+  end?: Date;
+  numberOfDays: number;
+  btcSellPrice: number;
+  data: DailyMiningReport[];
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default async (req: Request, context: Context) => {
   const url = new URL(req.url);
   const farm = url.searchParams.get("farm") || "undefined";
   const site = url.searchParams.get("site") || "undefined";
-  const start = url.searchParams.get("start") || undefined;
-  const end = url.searchParams.get("end") || undefined;
+  const start_input = url.searchParams.get("start") || undefined;
+  const end_input = url.searchParams.get("end") || undefined;
   const btc_input = url.searchParams.get("btc") || undefined;
 
   const todayUTC = convertToUTCStartOfDay(new Date());
@@ -28,23 +40,23 @@ export default async (req: Request, context: Context) => {
     return new Response("Invalid btc price", { status: 400 });
   }
 
-  if (start && !Date.parse(start)) {
+  if (start_input && !Date.parse(start_input)) {
     return new Response("Invalid start date", { status: 400 });
   }
-  if (end && !Date.parse(end)) {
+  if (end_input && !Date.parse(end_input)) {
     return new Response("Invalid end date", { status: 400 });
   }
 
-  if (start && end && new Date(start) > new Date(end)) {
+  if (start_input && end_input && new Date(start_input) > new Date(end_input)) {
     return new Response("Start date is greater than end date", { status: 400 });
   }
-  if (start && end && new Date(start) > todayUTC) {
+  if (start_input && end_input && new Date(start_input) > todayUTC) {
     return new Response("Start date is greater than current date", {
       status: 400,
     });
   }
 
-  if (end && new Date(end) > todayUTC) {
+  if (end_input && new Date(end_input) > todayUTC) {
     return new Response("End date is greater than current date", {
       status: 400,
     });
@@ -56,7 +68,12 @@ export default async (req: Request, context: Context) => {
     if (site === "undefined") {
       // Farm report
       console.log("api farm", farm);
-      const response = await fetchFarmDailyReport(farm, btc, start, end);
+      const response = await fetchFarmDailyReport(
+        farm,
+        btc,
+        start_input,
+        end_input
+      );
       if (!response.ok) {
         return new Response(response.message, {
           status: response.status,
@@ -65,18 +82,55 @@ export default async (req: Request, context: Context) => {
 
       console.log("api farm response", response.report.length);
 
-      return new Response(JSON.stringify(response.report), {
+      const report: DailyMiningReport[] = response.report;
+      const numberOfDays = report.length;
+      const dateStart = numberOfDays > 0 ? report[0].day : undefined;
+      const dateEnd =
+        numberOfDays > 0 ? report[numberOfDays - 1].day : undefined;
+
+      const apiResponse: ApiResponse = {
+        farm: farm,
+        start: dateStart,
+        end: dateEnd,
+        numberOfDays: response.report.length,
+        btcSellPrice: btc,
+        data: response.report,
+      };
+
+      return new Response(JSON.stringify(apiResponse), {
         headers: { "content-type": "application/json" },
       });
     } else {
       // Site report
-      const response = await fetchSiteDailyReport(farm, site, btc, start, end);
+      const response = await fetchSiteDailyReport(
+        farm,
+        site,
+        btc,
+        start_input,
+        end_input
+      );
 
       if (!response.ok) {
         return new Response(response.message, { status: response.status });
       }
 
-      return new Response(JSON.stringify(response.report), {
+      const report: DailyMiningReport[] = response.report;
+      const numberOfDays = report.length;
+      const dateStart = numberOfDays > 0 ? report[0].day : undefined;
+      const dateEnd =
+        numberOfDays > 0 ? report[numberOfDays - 1].day : undefined;
+
+      const apiResponse: ApiResponse = {
+        farm: farm,
+        site: site,
+        start: dateStart,
+        end: dateEnd,
+        numberOfDays: response.report.length,
+        btcSellPrice: btc,
+        data: response.report,
+      };
+
+      return new Response(JSON.stringify(apiResponse), {
         headers: { "content-type": "application/json" },
       });
     }

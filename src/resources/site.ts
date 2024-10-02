@@ -29,8 +29,8 @@ export async function fetchSiteDailyReport(
   farm: string,
   site: string,
   btc: number,
-  start: string | undefined,
-  end: string | undefined
+  start_param: string | undefined,
+  end_param: string | undefined
 ): Promise<{
   report: DailyMiningReport[];
   message: string;
@@ -40,8 +40,8 @@ export async function fetchSiteDailyReport(
   const operationalData = await fetchSiteOperationalData(
     farm,
     site,
-    start,
-    end
+    start_param,
+    end_param
   );
 
   if (!operationalData.ok || operationalData.siteData === undefined) {
@@ -58,8 +58,8 @@ export async function fetchSiteDailyReport(
     operationalData.miningHistoryData,
     operationalData.siteData,
     btc,
-    start ? new Date(start) : undefined,
-    end ? new Date(end) : undefined
+    start_param ? new Date(start_param) : undefined,
+    end_param ? new Date(end_param) : undefined
   );
   return {
     report: reports,

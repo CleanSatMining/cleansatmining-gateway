@@ -10,8 +10,8 @@ import { fetchSite } from "./site";
 export async function fetchOperationalData(
   farm: string,
   site: string | undefined,
-  start: string | undefined,
-  end: string | undefined
+  start_param: string | undefined,
+  end_param: string | undefined
 ): Promise<{
   financialStatementsData: Database["public"]["Tables"]["financialStatements"]["Row"][];
   miningHistoryData: Database["public"]["Tables"]["mining"]["Row"][];
@@ -21,7 +21,7 @@ export async function fetchOperationalData(
 }> {
   // Fetch financial statements data
   const financialStatementsApiResponse: Response =
-    await fetchFinancialStatements(farm, site, start, end);
+    await fetchFinancialStatements(farm, site, start_param, end_param);
   if (!financialStatementsApiResponse.ok) {
     return {
       financialStatementsData: [],
@@ -46,22 +46,21 @@ export async function fetchOperationalData(
 
   // Get the start date for mining history
   let startMining: Date | undefined = undefined;
-  if (start && startStatement) {
+  if (start_param && startStatement) {
     startMining =
-      new Date(start) < startStatement ? new Date(start) : startStatement;
-  } else if (start) {
-    startMining = new Date(start);
-  } else if (startStatement) {
-    startMining = startStatement;
+      new Date(start_param) < startStatement
+        ? new Date(start_param)
+        : startStatement;
+  } else if (start_param) {
+    startMining = new Date(start_param);
   }
 
   let endMining: Date | undefined = undefined;
-  if (end && endstatement) {
-    endMining = endstatement < new Date(end) ? new Date(end) : endstatement;
-  } else if (end) {
-    endMining = new Date(end);
-  } else if (endstatement) {
-    endMining = endstatement;
+  if (end_param && endstatement) {
+    endMining =
+      endstatement < new Date(end_param) ? new Date(end_param) : endstatement;
+  } else if (end_param) {
+    endMining = new Date(end_param);
   }
 
   const startMiningTimestampz = startMining
@@ -110,8 +109,8 @@ export async function fetchOperationalData(
 
 export async function fetchFarmOperationalData(
   farm: string,
-  start: string | undefined,
-  end: string | undefined
+  start_param: string | undefined,
+  end_param: string | undefined
 ): Promise<{
   financialStatementsData: Database["public"]["Tables"]["financialStatements"]["Row"][];
   miningHistoryData: Database["public"]["Tables"]["mining"]["Row"][];
@@ -138,8 +137,8 @@ export async function fetchFarmOperationalData(
   const operationalData = await fetchOperationalData(
     farm,
     undefined,
-    start,
-    end
+    start_param,
+    end_param
   );
   if (!operationalData.ok) {
     return {

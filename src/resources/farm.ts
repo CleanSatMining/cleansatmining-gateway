@@ -28,15 +28,19 @@ export async function fetchFarm(farm: string): Promise<any> {
 export async function fetchFarmDailyReport(
   farm: string,
   btc: number,
-  start: string | undefined,
-  end: string | undefined
+  start_param: string | undefined,
+  end_param: string | undefined
 ): Promise<{
   report: DailyMiningReport[];
   message: string;
   status: number;
   ok: boolean;
 }> {
-  const operationalData = await fetchFarmOperationalData(farm, start, end);
+  const operationalData = await fetchFarmOperationalData(
+    farm,
+    start_param,
+    end_param
+  );
 
   if (!operationalData.ok || operationalData.farmData === undefined) {
     return {
@@ -52,8 +56,8 @@ export async function fetchFarmDailyReport(
     operationalData.miningHistoryData,
     operationalData.farmData,
     btc,
-    start ? new Date(start) : undefined,
-    end ? new Date(end) : undefined
+    start_param ? new Date(start_param) : undefined,
+    end_param ? new Date(end_param) : undefined
   );
   return {
     report: reports,
