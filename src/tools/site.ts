@@ -283,6 +283,6 @@ function aggregateSiteMiningReportData(
     return dayReportFromPool;
   } else {
     // no data for the day
-    return getEmptyDailyMiningReport(day);
+    return getEmptyDailyMiningReport(day, btcPrice);
   }
 }

@@ -23,12 +23,15 @@ export function filterMiningReportsByDay(
   });
 }
 
-export function getEmptyDailyMiningReport(day: Date): DailyMiningReport {
+export function getEmptyDailyMiningReport(
+  day: Date,
+  btcSellPrice: number = 1
+): DailyMiningReport {
   return {
     day: convertToUTCStartOfDay(day),
     uptime: 0,
     hashrateTHs: 0,
-    btcSellPrice: 1,
+    btcSellPrice: btcSellPrice,
     expenses: {
       electricity: { btc: 0, source: FinancialSource.NONE },
       csm: { btc: 0, source: FinancialSource.NONE },
