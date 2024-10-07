@@ -29,6 +29,19 @@ export function calculateDailyGrossIncome(
   ).times(uptime);
   const electricityCostBtc = electricityCostUsd.dividedBy(btcPrice).toNumber();
 
+  console.log(
+    "calculateDailyGrossIncome",
+    btcMined,
+    btcPrice,
+    uptime,
+    powerW,
+    costPerKwh,
+    csmTaxes,
+    opTaxes,
+    costPerKwhwithTaxes,
+    electricityCostUsd.toNumber()
+  );
+
   // income after electricity
   const simulation = calculateGrossIncome(
     btcMined,

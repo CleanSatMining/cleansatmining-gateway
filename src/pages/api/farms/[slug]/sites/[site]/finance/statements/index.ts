@@ -78,7 +78,7 @@ async function fetchFinancialStatementsData(
       .eq("farmSlug", slug)
       .eq("siteSlug", siteSlug)
       .gte("end", dateMin)
-      .lte("start", dateMax);
+      .lt("start", dateMax);
   } else if (dateMin) {
     console.log("Récupération du financial statements depuis le " + dateMin);
     return await supabase
@@ -94,7 +94,7 @@ async function fetchFinancialStatementsData(
       .select()
       .eq("farmSlug", slug)
       .eq("siteSlug", siteSlug)
-      .lte("start", dateMax);
+      .lt("start", dateMax);
   } else {
     return await supabase
       .from("financialStatements")

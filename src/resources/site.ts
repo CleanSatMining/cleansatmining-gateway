@@ -1,7 +1,7 @@
 import { GET_GATEWAY_SITE } from "@/constants/apis";
 import { DailyMiningReport } from "@/types/MiningReport";
 import { fetchSiteOperationalData } from "./operationaldata";
-import { getSiteDailyMiningReports } from "@/tools/site";
+import { getSiteDailyMiningReports } from "@/tools/site/miningreport";
 
 export async function fetchSite(farm: string, site: string): Promise<any> {
   const gatewayBaseUrl = process.env.GATEWAY_URL ?? "";

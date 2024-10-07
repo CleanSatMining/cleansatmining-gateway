@@ -7,6 +7,22 @@ import {
 } from "./FinancialSatement";
 import { Database } from "./supabase";
 
+export type MiningReport = {
+  uptime: number;
+  hashrateTHs: number;
+  btcSellPrice: number;
+  expenses: {
+    electricity: FinancialStatementAmount;
+    csm: FinancialStatementAmount;
+    operator: FinancialStatementAmount;
+    other: FinancialStatementAmount;
+  };
+  income: {
+    pool: FinancialStatementAmount;
+    other: FinancialStatementAmount;
+  };
+};
+
 export type DailyMiningReport = {
   day: Date;
   uptime: number;

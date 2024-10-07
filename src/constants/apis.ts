@@ -25,6 +25,14 @@ export type GatewayApi = {
   parameters?: Record<string, string>;
 };
 
+export type MicroServiceApi = {
+  name: string;
+  url: (farm: string, site: string | undefined, btc: number) => string;
+  method: string;
+  headers?: Record<string, string>;
+  parameters?: Record<string, string>;
+};
+
 export function createParameters(parameters: Record<string, string>): string {
   let result = "";
   for (const key in parameters) {
@@ -133,6 +141,22 @@ export const GET_GATEWAY_FINANCIAL_STATEMENTS: GatewayApi = {
     site
       ? `/api/farms/${farm}/sites/${site}/finance/statements`
       : `/api/farms/${farm}/finance/statements`,
+  method: "GET",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  parameters: {
+    start: "start",
+    end: "end",
+  },
+};
+
+export const GET_MICROSERVICE_MINING_REPORT: MicroServiceApi = {
+  name: "GET_MICROSERVICE_MINING_REPORT",
+  url: (farm: string, site: string | undefined, btc: number) =>
+    `/.netlify/functions/miningreports?farm=${farm}&btc=${btc}${
+      site ? "&site=" + site : ""
+    }`,
   method: "GET",
   headers: {
     "Content-Type": "application/json",

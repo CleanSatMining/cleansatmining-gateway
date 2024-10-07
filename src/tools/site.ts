@@ -3,28 +3,13 @@ import { BigNumber } from "bignumber.js";
 import { calculateDailyGrossIncome } from "@/tools/simulator";
 import { Database } from "@/types/supabase";
 import { SimulationResult } from "@/types/Simulator";
+import { PowerCapacityHistory } from "@/types/Container";
+import { calculateContainersPowerHistory } from "./container";
+import { getTodayDate } from "./date";
 import { DailyMiningReport } from "@/types/MiningReport";
-import { getMiningHistoryByDay, getMiningHistoryPeriod } from "./mininghistory";
-import {
-  aggregateFinancialStatementsByDay as aggregateFinancialStatementsByDay,
-  getFinancialStatementsPeriod,
-} from "./financialstatements";
-import {
-  convertToUTCStartOfDay,
-  calculateDaysBetweenDates,
-  convertDateToMapKey,
-  getYesterdayDate,
-} from "./date";
-import {
-  filterMiningReportsByDay,
-  getDailyMiningReportFromPool,
-  getEmptyDailyMiningReport,
-  mergeDayStatementsIntoMiningReport,
-} from "./miningreport";
-import {
-  DailyFinancialStatement,
-  FinancialSource,
-} from "@/types/FinancialSatement";
+import { DetailedBalanceSheet } from "@/types/BalanceSeet";
+import { getDailyMiningReportsPeriod } from "./miningreport";
+import { calculateBalanceSheet } from "./balancesheet";
 
 export function calculateSitePower(
   site: Site,
@@ -102,182 +87,111 @@ export function calculateSiteGrossIncome(
     dailyElectricityBtcCost
   );
 }
-export function getSiteDailyMiningReports(
-  financialStatements: Database["public"]["Tables"]["financialStatements"]["Row"][],
-  miningHistory: Database["public"]["Tables"]["mining"]["Row"][],
+
+export function calculateSitePowerHistory(
   site: Site,
-  btcPrice: number,
-  startDay: Date | undefined = undefined,
-  endDay: Date = getYesterdayDate(23, 59, 59, 999)
-): DailyMiningReport[] {
-  const miningReportByDay = getSiteMiningReportsByDay(
-    financialStatements,
-    miningHistory,
-    site,
+  startDate?: Date,
+  endDate?: Date
+): PowerCapacityHistory[] {
+  const containers = site.containers.filter((container) => {
+    // Check if the container is active
+    if (container.start === null || container.start === undefined) {
+      console.warn(
+        "WARN The container " + container.slug + " has no start date",
+        container.start
+      );
+      return false;
+    }
+    return true;
+  });
+
+  console.log(
+    "calculateSitePowerHistory",
+    site.containers,
+    containers.length,
+    startDate,
+    endDate
+  );
+
+  if (containers.length === 0) {
+    return [];
+  }
+
+  const sortedContainers = containers.sort((a, b) => {
+    const dateA = a.start ? new Date(a.start) : new Date();
+    const dateB = b.start ? new Date(b.start) : new Date();
+    return dateA.getTime() - dateB.getTime();
+  });
+
+  const end: Date = endDate ?? getTodayDate();
+  const start: Date =
+    startDate ??
+    (sortedContainers[0].start
+      ? new Date(sortedContainers[0].start)
+      : getTodayDate());
+
+  return calculateContainersPowerHistory(containers, start, end, []);
+}
+
+export function calculateSiteBalanceSheet(
+  site: Site,
+  miningReports: DailyMiningReport[],
+  btcPrice: number
+): DetailedBalanceSheet {
+  if (miningReports.length === 0) {
+    throw new Error("No mining reports found");
+  }
+
+  const { start: startDay, end: endDay } =
+    getDailyMiningReportsPeriod(miningReports);
+
+  if (!startDay || !endDay) {
+    throw new Error(
+      "Cannot calculate balance sheet without start and end date"
+    );
+  }
+
+  const powerHistory = calculateSitePowerHistory(site, startDay, endDay);
+  const sheet = calculateBalanceSheet(
+    miningReports,
     btcPrice,
     startDay,
     endDay
   );
 
-  const dailyMiningReport: DailyMiningReport[] = Array.from(
-    miningReportByDay.values()
+  console.log(
+    "calculateSiteBalanceSheet powerHistory",
+    JSON.stringify(powerHistory, null, 2)
   );
 
-  // sort the daily accounting by date
-  const sortedDays = dailyMiningReport.sort((a, b) => {
-    const dateA = new Date(a.day);
-    const dateB = new Date(b.day);
-    return dateA.getTime() - dateB.getTime();
-  });
-
-  return sortedDays.filter((report) => {
-    return (
-      (startDay === undefined || report.day >= startDay) && report.day <= endDay
-    );
-  });
-}
-
-export function getSiteMiningReportsByDay(
-  financialStatements: Database["public"]["Tables"]["financialStatements"]["Row"][],
-  miningHistory: Database["public"]["Tables"]["mining"]["Row"][],
-  site: Site,
-  btcPrice: number,
-  start_param: Date | undefined = undefined,
-  end_param: Date = getYesterdayDate(23, 59, 59, 999)
-): Map<string, DailyMiningReport> {
-  const miningReportByDay: Map<string, DailyMiningReport> = new Map();
-
-  // get the mining history data by day
-  const miningHistoryByDay = getMiningHistoryByDay(miningHistory, site);
-
-  // get the period of the financial statements and the mining history
-  const { start: starthistory, end: endhistory } =
-    getMiningHistoryPeriod(miningHistory);
-  const { start: startstatement, end: endstatement } =
-    getFinancialStatementsPeriod(financialStatements);
-
-  // get the longest period between the financial statements and the mining history
-  const startData: Date =
-    startstatement && starthistory > startstatement
-      ? startstatement
-      : starthistory;
-  const endData: Date =
-    endstatement && endhistory < endstatement ? endstatement : endhistory;
-
-  // get the longest period between the data and the parameters
-  const start: Date =
-    start_param && start_param < startData
-      ? convertToUTCStartOfDay(start_param)
-      : startData;
-  const end: Date =
-    endData < end_param ? convertToUTCStartOfDay(end_param) : endData;
-
-  // get the total number of days between the start and end of the financial statements
-  const totalDays = calculateDaysBetweenDates(start, end);
-
-  console.log("start", start);
-  console.log("totalDays", totalDays);
-
-  // aggregate the daily financial statement for each day of the financial statements
-  const financialStatementsByDay = aggregateFinancialStatementsByDay(
-    financialStatements,
-    miningHistory
-  );
-
-  // get the daily financial statement for each day of the financial statements
-  for (let dayIndex = 0; dayIndex < totalDays; dayIndex++) {
-    const day = new Date(start);
-    day.setUTCDate(day.getUTCDate() + dayIndex);
-    const dayKey = convertDateToMapKey(day);
-
-    // get the mining history if exists
-    const dayMiningHistory = miningHistoryByDay.get(dayKey);
-
-    // get the financial statements if exists
-    const dayStatements = financialStatementsByDay.get(dayKey) ?? [];
-
-    // aggregate the data from the mining history and the financial statements
-    const miningReportOfTheDay = aggregateSiteMiningReportData(
-      dayStatements,
-      dayMiningHistory,
-      day,
-      site,
+  const details = powerHistory.map((power) => {
+    return calculateBalanceSheet(
+      miningReports.filter(
+        (report) =>
+          new Date(power.start).getTime() <= new Date(report.day).getTime() &&
+          new Date(report.day).getTime() <= new Date(power.end).getTime()
+      ),
       btcPrice
     );
+  });
 
-    miningReportByDay.set(dayKey, miningReportOfTheDay);
-  }
-
-  // filter the daily accounting by date
-  filterMiningReportsByDay(miningReportByDay, start, end);
-
-  return miningReportByDay;
+  return {
+    start: sheet.start,
+    end: sheet.end,
+    days: sheet.days,
+    balance: sheet.balance,
+    details,
+  };
 }
-export function getSiteDayMiningReportFromPool(
-  site: Site,
-  miningHistoryOfDay: Database["public"]["Tables"]["mining"]["Row"],
-  btcPrice: number,
-  day: Date
-) {
-  const simulationResult = calculateSiteGrossIncome(
-    site,
-    miningHistoryOfDay,
-    btcPrice
-  );
 
-  const dayReportFromPool = getDailyMiningReportFromPool(
-    day,
-    miningHistoryOfDay.uptime,
-    miningHistoryOfDay.hashrateTHs,
-    miningHistoryOfDay.mined,
-    btcPrice,
-    {
-      btc: simulationResult.cost.electricity.total.btc,
-      usd: simulationResult.cost.electricity.total.usd,
-      source: FinancialSource.SIMULATOR,
-    },
-    {
-      btc: simulationResult.cost.csm.btc,
-      usd: simulationResult.cost.csm.usd,
-      source: FinancialSource.SIMULATOR,
-    },
-    {
-      btc: simulationResult.cost.operator.btc,
-      usd: simulationResult.cost.operator.usd,
-      source: FinancialSource.SIMULATOR,
+export function formatSiteDates(site: Site): Site {
+  site.containers.forEach((container) => {
+    if (container.start) {
+      container.start = new Date(container.start).toISOString();
     }
-  );
-  return dayReportFromPool;
-}
-function aggregateSiteMiningReportData(
-  dayStatements: DailyFinancialStatement[],
-  dayMiningHistory: Database["public"]["Tables"]["mining"]["Row"] | undefined,
-  day: Date,
-  site: Site,
-  btcPrice: number
-): DailyMiningReport {
-  const dayMiningReportFromDayStatements = mergeDayStatementsIntoMiningReport(
-    dayStatements,
-    dayMiningHistory
-  );
-
-  if (dayMiningReportFromDayStatements !== undefined) {
-    // day has financial statements : use the mining report from the financial statements
-    // we suppose that the financial statements are complete
-
-    return dayMiningReportFromDayStatements;
-  } else if (dayMiningHistory !== undefined) {
-    // day has no financial statements : use the mining report from the pool
-    const dayReportFromPool = getSiteDayMiningReportFromPool(
-      site,
-      dayMiningHistory,
-      btcPrice,
-      day
-    );
-
-    return dayReportFromPool;
-  } else {
-    // no data for the day
-    return getEmptyDailyMiningReport(day, btcPrice);
-  }
+    if (container.end) {
+      container.end = new Date(container.end).toISOString();
+    }
+  });
+  return site;
 }

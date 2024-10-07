@@ -1,7 +1,9 @@
 import { GET_GATEWAY_FARM } from "@/constants/apis";
 import { DailyMiningReport } from "@/types/MiningReport";
 import { fetchFarmOperationalData } from "./operationaldata";
-import { getFarmDailyMiningReports } from "@/tools/farm";
+import { getFarmDailyMiningReports } from "@/tools/farm/miningreport";
+import { Farm } from "@/types/supabase.extend";
+import { fetchMiningReport } from "./miningreport";
 
 export async function fetchFarm(farm: string): Promise<any> {
   const gatewayBaseUrl = process.env.GATEWAY_URL ?? "";
@@ -59,6 +61,56 @@ export async function fetchFarmDailyReport(
     start_param ? new Date(start_param) : undefined,
     end_param ? new Date(end_param) : undefined
   );
+  return {
+    report: reports,
+    status: 200,
+    ok: true,
+    message: "Success",
+  };
+}
+
+export async function fetchFarmBalanceSheet(
+  farm: string,
+  btc: number,
+  start_param: string | undefined,
+  end_param: string | undefined
+): Promise<{
+  report: any;
+  message: string;
+  status: number;
+  ok: boolean;
+}> {
+  const farmApiResponse: Response = await fetchFarm(farm);
+
+  if (!farmApiResponse.ok) {
+    return {
+      report: {},
+      status: farmApiResponse.status,
+      ok: false,
+      message:
+        "Error while fetching farm " + farm + "! " + farmApiResponse.statusText,
+    };
+  }
+  const farmData: Farm = await farmApiResponse.json();
+
+  const miningReportData = await fetchMiningReport(
+    farm,
+    undefined,
+    btc,
+    start_param,
+    end_param
+  );
+
+  if (!miningReportData.ok || miningReportData.report === undefined) {
+    return {
+      report: [],
+      status: miningReportData.status,
+      ok: false,
+      message: miningReportData.message,
+    };
+  }
+
+  const reports = miningReportData.report;
   return {
     report: reports,
     status: 200,

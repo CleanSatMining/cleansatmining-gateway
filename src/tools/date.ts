@@ -15,7 +15,9 @@ export function convertDateToTimestamptzFormat(date: Date): string {
 }
 
 // Fonction pour calculer le nombre de jours entre deux dates en supposant que les dates sont des jours entiers
-export function calculateDaysBetweenDates(start: Date, end: Date): number {
+// start : AAAA-MM-JJ 00:00:00.000
+// end : AAAA-MM-JJ 23:59:59.999
+export function calculateFullDaysBetweenDates(start: Date, end: Date): number {
   const oneDayInMilliseconds = 24 * 60 * 60 * 1000; // Nombre de millisecondes dans un jour
   const startTime = convertToUTCStartOfDay(start).getTime();
   const endTime = convertToUTCStartOfDay(end).getTime();
@@ -24,8 +26,18 @@ export function calculateDaysBetweenDates(start: Date, end: Date): number {
   return Math.round(differenceInDays) + 1;
 }
 
+export function calculateDaysBetweenDates(start: Date, end: Date): number {
+  const oneDayInMilliseconds = 24 * 60 * 60 * 1000; // Nombre de millisecondes dans un jour
+  const startTime = convertToUTCStartOfDay(start).getTime();
+  const endTime = convertToUTCStartOfDay(end).getTime();
+  const differenceInMilliseconds = endTime - startTime;
+  const differenceInDays = differenceInMilliseconds / oneDayInMilliseconds;
+  return Math.round(differenceInDays);
+}
+
 // Fonction pour convertir une date en UTC avec l'heure réglée à 00:00
-export function convertToUTCStartOfDay(date: Date): Date {
+export function convertToUTCStartOfDay(_date: Date): Date {
+  const date = new Date(_date);
   //const date = new Date(dateString);
   const utcYear = date.getUTCFullYear();
   const utcMonth = date.getUTCMonth();
@@ -48,6 +60,20 @@ export function getYesterdayDate(
 ): Date {
   const today = new Date();
   today.setUTCDate(today.getUTCDate() - 1);
+
+  // Remettre l'heure à 00:00:00.000 pour obtenir le début de la journée en UTC
+  today.setUTCHours(hours, min, sec, ms);
+
+  return today;
+}
+
+export function getTodayDate(
+  hours: number = 0,
+  min: number = 0,
+  sec: number = 0,
+  ms: number = 0
+): Date {
+  const today = new Date();
 
   // Remettre l'heure à 00:00:00.000 pour obtenir le début de la journée en UTC
   today.setUTCHours(hours, min, sec, ms);

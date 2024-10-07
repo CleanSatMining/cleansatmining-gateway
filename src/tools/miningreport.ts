@@ -270,3 +270,28 @@ export function mergeMiningReports(
 
   return mergedReports;
 }
+
+export function getDailyMiningReportsPeriod(reports: DailyMiningReport[]): {
+  start: Date | undefined;
+  end: Date | undefined;
+} {
+  if (reports.length === 0) {
+    return { start: undefined, end: undefined };
+  }
+
+  const start = new Date(
+    reports.reduce((acc, statement) => {
+      return acc < new Date(statement.day) ? acc : new Date(statement.day);
+    }, new Date())
+  );
+  const end = new Date(
+    reports.reduce((acc, statement) => {
+      return acc > new Date(statement.day) ? acc : new Date(statement.day);
+    }, start)
+  );
+
+  // end date finish at 00:00:00, we need to add one day
+  end.setDate(end.getDate() + 1);
+
+  return { start, end };
+}

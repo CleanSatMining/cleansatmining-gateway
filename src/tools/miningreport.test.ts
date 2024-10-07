@@ -1,7 +1,7 @@
 import { Database } from "@/types/supabase";
 import { Site } from "@/types/supabase.extend";
 import {} from "./financialstatements";
-import { getSiteDailyMiningReports } from "./site";
+import { getSiteDailyMiningReports } from "./site/miningreport";
 import { FinancialSource } from "@/types/FinancialSatement";
 import { DailyMiningReport } from "@/types/MiningReport";
 

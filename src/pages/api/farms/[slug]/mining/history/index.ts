@@ -71,7 +71,7 @@ async function fetchMiningData(
       .select()
       .eq("farmSlug", slug)
       .gte("day", dateMin)
-      .lte("day", dateMax);
+      .lt("day", dateMax);
   } else if (dateMin) {
     console.log("Récupération du mining depuis le " + dateMin);
     return await supabase
@@ -85,7 +85,7 @@ async function fetchMiningData(
       .from("mining")
       .select()
       .eq("farmSlug", slug)
-      .lte("day", dateMax);
+      .lt("day", dateMax);
   } else {
     return await supabase.from("mining").select().eq("farmSlug", slug);
   }

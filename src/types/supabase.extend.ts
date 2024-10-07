@@ -1,3 +1,5 @@
+import { formatFarmDates } from "@/tools/farm";
+import { formatSiteDates } from "@/tools/site";
 import { Database } from "@/types/supabase";
 
 export type TableType = keyof Database["public"]["Tables"];
@@ -77,10 +79,10 @@ export function mapContainerApiResponseToContainer(
   };
 }
 
-export function mapSiteApiResponseToSite(site: SiteApiResponse): Site {
+export function mapSiteApiResponseToSite(_site: SiteApiResponse): Site {
   const { locations, contracts, operators, containers, powerPlants, ...rest } =
-    site;
-  return {
+    _site;
+  const site = {
     ...rest,
     location: locations,
     contract: mapContractApiResponseToContract(contracts),
@@ -88,10 +90,12 @@ export function mapSiteApiResponseToSite(site: SiteApiResponse): Site {
     containers: containers.map(mapContainerApiResponseToContainer),
     powerPlant: powerPlants,
   };
+
+  return formatSiteDates(site);
 }
 
-export function mapFarmApiResponseToFarm(farm: FarmApiResponse): Farm {
-  const { locations, societies, tokens, vaults, sites, ...rest } = farm;
+export function mapFarmApiResponseToFarm(_farm: FarmApiResponse): Farm {
+  const { locations, societies, tokens, vaults, sites, ...rest } = _farm;
   return {
     ...rest,
     sites: sites.map(mapSiteApiResponseToSite),

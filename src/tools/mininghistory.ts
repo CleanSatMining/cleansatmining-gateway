@@ -1,6 +1,7 @@
 import { Farm, Site } from "@/types/supabase.extend";
 import { Database } from "@/types/supabase";
-import { convertDateToMapKey } from "@/tools/date";
+import { convertDateToMapKey, getTodayDate } from "@/tools/date";
+import { get } from "http";
 
 export function filterMiningHistoryWithFinancialStatementPeriod(
   financialStatement: Database["public"]["Tables"]["financialStatements"]["Row"],
@@ -43,19 +44,26 @@ export function getMiningHistoryByDay(
 export function getMiningHistoryPeriod(
   financialStatements: Database["public"]["Tables"]["mining"]["Row"][]
 ): {
-  start: Date;
-  end: Date;
+  start: Date | undefined;
+  end: Date | undefined;
 } {
+  if (financialStatements.length === 0) {
+    return { start: undefined, end: undefined };
+  }
+
   const start = new Date(
     financialStatements.reduce((acc, statement) => {
       return acc < new Date(statement.day) ? acc : new Date(statement.day);
-    }, new Date())
+    }, getTodayDate())
   );
   const end = new Date(
     financialStatements.reduce((acc, statement) => {
       return acc > new Date(statement.day) ? acc : new Date(statement.day);
     }, start)
   );
+
+  // end date finish at 00:00:00, we need to add one day
+  end.setDate(end.getDate() + 1);
 
   return { start, end };
 }

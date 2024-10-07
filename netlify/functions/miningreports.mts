@@ -6,16 +6,7 @@ import { fetchFarmDailyReport } from "../../src/resources/farm";
 import { fetchSiteDailyReport } from "../../src/resources/site";
 
 import type { DailyMiningReport } from "../../src/types/MiningReport";
-
-interface ApiResponse {
-  farm: string;
-  site?: string;
-  start?: Date;
-  end?: Date;
-  numberOfDays: number;
-  btcSellPrice: number;
-  data: DailyMiningReport[];
-}
+import type { MicroServiceMiningReportResponse } from "../../src/types/Api";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default async (req: Request, context: Context) => {
@@ -84,11 +75,13 @@ export default async (req: Request, context: Context) => {
 
       const report: DailyMiningReport[] = response.report;
       const numberOfDays = report.length;
-      const dateStart = numberOfDays > 0 ? report[0].day : undefined;
+      const dateStart = numberOfDays > 0 ? new Date(report[0].day) : undefined;
       const dateEnd =
-        numberOfDays > 0 ? report[numberOfDays - 1].day : undefined;
+        numberOfDays > 0 ? new Date(report[numberOfDays - 1].day) : undefined;
+      // add a day to the end date
+      if (dateEnd) dateEnd.setDate(dateEnd.getDate() + 1);
 
-      const apiResponse: ApiResponse = {
+      const apiResponse: MicroServiceMiningReportResponse = {
         farm: farm,
         start: dateStart,
         end: dateEnd,
@@ -116,11 +109,13 @@ export default async (req: Request, context: Context) => {
 
       const report: DailyMiningReport[] = response.report;
       const numberOfDays = report.length;
-      const dateStart = numberOfDays > 0 ? report[0].day : undefined;
+      const dateStart = numberOfDays > 0 ? new Date(report[0].day) : undefined;
       const dateEnd =
-        numberOfDays > 0 ? report[numberOfDays - 1].day : undefined;
+        numberOfDays > 0 ? new Date(report[numberOfDays - 1].day) : undefined;
+      // add a day to the end date
+      if (dateEnd) dateEnd.setDate(dateEnd.getDate() + 1);
 
-      const apiResponse: ApiResponse = {
+      const apiResponse: MicroServiceMiningReportResponse = {
         farm: farm,
         site: site,
         start: dateStart,

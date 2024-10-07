@@ -77,6 +77,9 @@ export function getFinancialStatementsPeriod(
     }, start)
   );
 
+  // end date finish at 00:00:00, we need to add one day
+  end.setDate(end.getDate() + 1);
+
   return { start, end };
 }
 
