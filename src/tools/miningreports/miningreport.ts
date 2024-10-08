@@ -8,7 +8,7 @@ import { convertDailyFinancialStatementToMiningReport } from "@/types/MiningRepo
 import { DailyMiningReport } from "@/types/MiningReport";
 import { Database } from "@/types/supabase";
 
-import { convertToUTCStartOfDay } from "./date";
+import { convertToUTCStartOfDay } from "../date";
 import BigNumber from "bignumber.js";
 
 export function filterMiningReportsByDay(

@@ -1,6 +1,6 @@
 import { Database } from "@/types/supabase";
 import { fetchFinancialStatements } from "@/resources/financialstatements/financialstatement.common";
-import { getFinancialStatementsPeriod } from "@/tools/financialstatements";
+import { getFinancialStatementsPeriod } from "@/tools/financialstatements/financialstatement.commons";
 import { convertDateToTimestamptzFormat } from "@/tools/date";
 import { fetchMiningHistory, MiningHistoryResponse } from "./mininghistory";
 import { MiningData } from "@/types/MiningHistory";

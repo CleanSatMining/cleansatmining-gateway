@@ -1,5 +1,5 @@
 import { getNDaysAgo } from "@/tools/date";
-import { calculateSitePower } from "@/tools/site";
+import { calculateSitePower } from "@/tools/powerhistory/site";
 import {
   APIMiningPoolResponse,
   DayDataFoundry,

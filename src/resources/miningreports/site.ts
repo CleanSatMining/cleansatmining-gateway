@@ -1,4 +1,4 @@
-import { getSiteDailyMiningReports } from "@/tools/site/miningreport";
+import { getSiteDailyMiningReports } from "@/tools/miningreports/site";
 import { DailyMiningReport } from "@/types/MiningReport";
 import { fetchSiteOperationalData } from "../operationalData/site";
 

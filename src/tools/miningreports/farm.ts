@@ -2,8 +2,8 @@ import { DailyMiningReport } from "@/types/MiningReport";
 import { Database } from "@/types/supabase";
 import { Farm } from "@/types/supabase.extend";
 import { getYesterdayDate } from "../date";
-import { mergeMiningReports } from "../miningreport";
-import { getSiteMiningReportsByDay } from "../site/miningreport";
+import { mergeMiningReports } from "./miningreport";
+import { getSiteMiningReportsByDay } from "./site";
 
 export function getFarmDailyMiningReports(
   financialStatements: Database["public"]["Tables"]["financialStatements"]["Row"][],

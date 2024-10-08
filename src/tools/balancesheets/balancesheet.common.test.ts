@@ -1,9 +1,9 @@
 import { FinancialSource } from "@/types/FinancialSatement";
 
 import BigNumber from "bignumber.js";
-import { calculateDaysBetweenDates } from "./date";
+import { calculateDaysBetweenDates } from "../date";
 import { DailyMiningReport } from "@/types/MiningReport";
-import { calculateBalanceSheet } from "./balancesheet";
+import { calculateBalanceSheet } from "./balancesheet.common";
 
 // Exemple de données de test
 const data: DailyMiningReport[] = [

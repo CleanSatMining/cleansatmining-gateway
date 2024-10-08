@@ -15,17 +15,17 @@ import {
 import {
   getFinancialStatementsPeriod,
   aggregateFinancialStatementsByDay,
-} from "../financialstatements";
+} from "../financialstatements/financialstatement.commons";
 import {
   getMiningHistoryByDay,
   getMiningHistoryPeriod,
-} from "../mininghistory";
+} from "../mininghistory/mininghistory.common";
 import {
   filterMiningReportsByDay,
   getDailyMiningReportFromPool,
   mergeDayStatementsIntoMiningReport,
   getEmptyDailyMiningReport,
-} from "../miningreport";
+} from "./miningreport";
 import { calculateSiteGrossIncome } from "../site";
 
 export function getSiteDailyMiningReports(

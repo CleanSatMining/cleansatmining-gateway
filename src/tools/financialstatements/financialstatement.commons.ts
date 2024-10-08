@@ -1,5 +1,5 @@
 import { Database } from "@/types/supabase";
-import { calculateDaysBetweenDates, convertDateToMapKey } from "./date";
+import { calculateDaysBetweenDates, convertDateToMapKey } from "../date";
 import {
   DailyFinancialStatement,
   FinancialStatementAmount,

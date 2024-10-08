@@ -9,7 +9,7 @@ import {
   calculateFullDaysBetweenDates,
 } from "@/tools/date";
 import { BalanceSheet } from "@/types/BalanceSeet";
-import { getDailyMiningReportsPeriod } from "./miningreport";
+import { getDailyMiningReportsPeriod } from "../miningreports/miningreport";
 
 export function calculateBalanceSheet(
   data: DailyMiningReport[],
