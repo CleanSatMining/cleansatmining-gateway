@@ -6,7 +6,7 @@ import {
   signIn,
   signOut,
 } from "../../src/databases/supabase";
-import { fetchMiningHistory } from "../../src/resources/mininghistory";
+import { fetchMiningHistory } from "../../src/resources/operationalData/mininghistory";
 
 import { MiningData } from "../../src/types/MiningHistory";
 import {
@@ -15,8 +15,10 @@ import {
   calculateDaysBetweenDates,
 } from "../../src/tools/date";
 import { DayPoolData } from "../../src/types/Pool";
-import { fetchSitePoolData } from "../../src/resources/site";
+import { fetchSitePoolData } from "../../src/resources/pools/site";
+
 import { SupabaseClient } from "@supabase/supabase-js";
+import { Site } from "../../src/types/supabase.extend";
 
 export default async (req: Request, context: Context) => {
   const url = new URL(req.url);

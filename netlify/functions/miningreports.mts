@@ -2,8 +2,8 @@
 import type { Context } from "@netlify/functions";
 
 import { convertToUTCStartOfDay } from "../../src/tools/date";
-import { fetchFarmDailyReport } from "../../src/resources/farm";
-import { fetchSiteDailyReport } from "../../src/resources/site";
+import { fetchFarmDailyReport } from "../../src/resources/miningreports/farm";
+import { fetchSiteDailyReport } from "../../src/resources/miningreports/site";
 
 import type { DailyMiningReport } from "../../src/types/MiningReport";
 import type { MicroServiceMiningReportResponse } from "../../src/types/Api";

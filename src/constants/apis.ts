@@ -108,6 +108,15 @@ export const GET_GATEWAY_FARM: GatewayApi = {
   },
 };
 
+export const GET_GATEWAY_FARMS: GatewayApi = {
+  name: "GET_GATEWAY_FARM",
+  url: `/api/farms`,
+  method: "GET",
+  headers: {
+    "Content-Type": "application/json",
+  },
+};
+
 export const GET_GATEWAY_SITE: GatewayApi = {
   name: "GET_GATEWAY_FARM",
   url: (farm: string, site?: string) =>

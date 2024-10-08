@@ -4,7 +4,7 @@ import type { Context } from "@netlify/functions";
 import { convertToUTCStartOfDay } from "../../src/tools/date";
 import { fetchFarm } from "../../src/resources/farm";
 import { fetchSite } from "../../src/resources/site";
-import { fetchMiningReport } from "../../src/resources/miningreport";
+import { fetchMiningReport } from "../../src/resources/miningreports/miningreport.common";
 import { calculateFarmBalanceSheet } from "../../src/tools/farm";
 import { calculateSiteBalanceSheet } from "../../src/tools/site";
 

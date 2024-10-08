@@ -1,7 +1,7 @@
 import { Site } from "@/types/supabase.extend";
-import { antpoolHistory } from "./pools/antpool";
-import { foundryHistory } from "./pools/foundry";
-import { luxorHistory } from "./pools/luxor";
+import { antpoolHistory } from "./entities/antpool";
+import { foundryHistory } from "./entities/foundry";
+import { luxorHistory } from "./entities/luxor";
 import { APIMiningPoolResponse, DayPoolData } from "@/types/Pool";
 import { error } from "console";
 import { Pool } from "@/types/Pool";
