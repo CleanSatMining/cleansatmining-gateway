@@ -165,6 +165,7 @@ export const sitesInitRow: Database["public"]["Tables"]["sites"]["Row"] = {
   farmSlug: "",
   localisationSlug: "",
   operatorName: "",
+  started_at: "",
 };
 
 export const societiesInitRow: Database["public"]["Tables"]["societies"]["Row"] =

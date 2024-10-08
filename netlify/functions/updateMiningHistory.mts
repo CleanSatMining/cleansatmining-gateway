@@ -13,12 +13,27 @@ import {
   getYesterdayDate,
   convertToUTCStartOfDay,
   calculateDaysBetweenDates,
+  getTodayDate,
 } from "../../src/tools/date";
 import { DayPoolData } from "../../src/types/Pool";
 import { fetchSitePoolData } from "../../src/resources/pools/site";
+import {
+  fetchPoolData,
+  PoolDataResponse,
+} from "../../src/resources/pools/pools.common";
 
 import { SupabaseClient } from "@supabase/supabase-js";
 import { Site } from "../../src/types/supabase.extend";
+import { fetchFarm } from "../../src/resources/farm";
+
+interface UpdateResponse {
+  farm: string;
+  site: string;
+  lastUpdate?: Date;
+  daysBeforeUpdate: number;
+  updatedData: DayPoolData[];
+  closeAt?: Date;
+}
 
 export default async (req: Request, context: Context) => {
   const url = new URL(req.url);
@@ -29,9 +44,14 @@ export default async (req: Request, context: Context) => {
 
   const supabase = getSupabaseClient();
   await signIn(supabase, username, password);
-
-  const response = await updateMiningHistory(supabase, farm, site);
-
+  let response;
+  if (farm !== "undefined" && site !== "undefined") {
+    response = await updateMiningHistory(supabase, farm, site);
+  } else if (farm !== "undefined") {
+    response = await updateFarmMiningHistory(supabase, farm);
+  } else {
+    response = await updateAllMiningHistory(supabase);
+  }
   await signOut(supabase);
 
   if (!response.ok) {
@@ -59,6 +79,7 @@ async function updateMiningHistory(
   status: number;
   statusText: string;
   data?: {
+    site: string;
     lastUpdate?: Date;
     daysBeforeUpdate: number;
     updatedData: DayPoolData[];
@@ -113,6 +134,7 @@ async function updateMiningHistory(
       status: 204,
       statusText: "No data to update",
       data: {
+        site,
         lastUpdate,
         daysBeforeUpdate,
         updatedData: [],
@@ -121,7 +143,7 @@ async function updateMiningHistory(
     };
   }
   try {
-    insertMiningData(supabase, farm, daysPoolData);
+    insertPoolDataInMiningTable(supabase, farm, daysPoolData);
   } catch (error) {
     return {
       ok: false,
@@ -135,6 +157,7 @@ async function updateMiningHistory(
     status: 200,
     statusText: "sucess",
     data: {
+      site,
       lastUpdate,
       daysBeforeUpdate,
       updatedData: daysPoolData,
@@ -143,22 +166,269 @@ async function updateMiningHistory(
   };
 }
 
-function searchDaysToUpdate(miningData: MiningData[]) {
+async function updateAllMiningHistory(supabase: SupabaseClient): Promise<{
+  ok: boolean;
+  status: number;
+  statusText: string;
+  partial: boolean;
+  data?: UpdateResponse[];
+}> {
+  // fetch the farm data
+  let partialResponse = false;
+  let statusText = "success";
+  let returnData: UpdateResponse[] = [];
+
+  // get all the farms
+  const { data: farmsData, error } = await supabase.from("farms").select("*");
+  if (error) {
+    return {
+      ok: false,
+      partial: false,
+      status: 500,
+      statusText: "Error while fetching farms",
+    };
+  }
+
+  const farms = farmsData as Database["public"]["Tables"]["farms"]["Row"][];
+  for (const farm of farms) {
+    const response = await updateFarmMiningHistory(supabase, farm.slug);
+    if (!response.ok || response.data === undefined) {
+      console.error("UPDATING Error farm", farm.slug);
+      statusText =
+        statusText + "; " + farm.slug + " KO : " + response.statusText;
+      partialResponse = true;
+    } else {
+      console.log("UPDATING success farm", farm.slug, response.data);
+      returnData.push(...response.data);
+    }
+  }
+
+  return {
+    ok: true,
+    partial: partialResponse,
+    status: 200,
+    statusText: statusText,
+    data: returnData,
+  };
+}
+
+async function updateFarmMiningHistory(
+  supabase: SupabaseClient,
+  farmName: string
+): Promise<{
+  ok: boolean;
+  status: number;
+  statusText: string;
+  partial: boolean;
+  data?: UpdateResponse[];
+}> {
+  // fetch the farm data
+  const farmResponse = await fetchFarm(farmName);
+  if (!farmResponse.ok || farmResponse.farmData === undefined) {
+    return {
+      ok: false,
+      partial: false,
+      status: farmResponse.status,
+      statusText: farmResponse.statusText,
+    };
+  }
+
+  const farm = farmResponse.farmData;
+
+  console.log(
+    "UPDATING mining history",
+    farmName,
+    "number of site: " + farm.sites.length
+  );
+
+  const returnData: UpdateResponse[] = [];
+  let partialResponse = false;
+  let statusText = "success";
+  for (const site of farm.sites) {
+    const updateResponse = await updateSiteMiningHistory(supabase, site);
+    if (!updateResponse.ok || updateResponse.data === undefined) {
+      console.error("UPDATING Error site", site.slug);
+      statusText =
+        statusText + "; " + site.slug + " KO : " + updateResponse.statusText;
+      partialResponse = true;
+    } else {
+      console.log("UPDATING success site", site.slug, updateResponse.data.site);
+      returnData.push(updateResponse.data);
+    }
+  }
+
+  return {
+    ok: true,
+    partial: partialResponse,
+    status: 200,
+    statusText: statusText,
+    data: returnData,
+  };
+}
+
+async function updateSiteMiningHistory(
+  supabase: SupabaseClient,
+  site: Site
+): Promise<{
+  ok: boolean;
+  status: number;
+  statusText: string;
+  data?: UpdateResponse;
+}> {
+  console.log("UPDATING mining history", site.farmSlug, site.slug);
+
+  const farmSlug = site.farmSlug;
+  const siteSlug = site.slug;
+
+  // get the last mining data recorded
+  const {
+    data: miningData,
+    ok,
+    status,
+    statusText,
+  } = await fetchMiningHistory(farmSlug, siteSlug, undefined, undefined, 1);
+
+  //console.log("Mining data", JSON.stringify(miningData));
+
+  if (!ok) {
+    // error while fetching mining data
+    return {
+      ok: false,
+      status,
+      statusText,
+    };
+  }
+
+  // get the last pool data recorded
+  let daysPoolData;
+  // search for the number of days to update
+  const { daysBeforeUpdate, lastUpdate } = searchDaysToUpdate(miningData, site);
+
+  console.log("UPDATING Days before update", daysBeforeUpdate, lastUpdate);
+  if (daysBeforeUpdate === 0) {
+    // no data to update
+    return returnNoUpdate(
+      farmSlug,
+      siteSlug,
+      lastUpdate,
+      daysBeforeUpdate,
+      undefined
+    );
+  }
+
+  const poolResponse = await fetchPoolData(site, daysBeforeUpdate);
+
+  if (!poolResponse.ok || poolResponse.poolData === undefined) {
+    return {
+      ok: false,
+      status: poolResponse.status,
+      statusText: poolResponse.statusText,
+    };
+  }
+
+  // filter the data to update in mining table
+  daysPoolData = poolResponse.poolData.filter((d) => {
+    const dayDate = new Date(d.date);
+    return (
+      lastUpdate === undefined || // (ie update all the data)
+      dayDate.getTime() > lastUpdate.getTime()
+    );
+  });
+
+  if (daysPoolData.length === 0) {
+    // no data to update
+    return returnNoUpdate(
+      farmSlug,
+      siteSlug,
+      lastUpdate,
+      daysBeforeUpdate,
+      poolResponse.closedAt
+    );
+  }
+  // insert the data in the mining table
+  try {
+    insertPoolDataInMiningTable(supabase, farmSlug, daysPoolData);
+  } catch (error) {
+    return {
+      ok: false,
+      status: 500,
+      statusText: "Error " + error,
+    };
+  }
+
+  return {
+    ok: true,
+    status: 200,
+    statusText: "sucess",
+    data: {
+      farm: farmSlug,
+      site: siteSlug,
+      lastUpdate,
+      daysBeforeUpdate,
+      updatedData: daysPoolData,
+      closeAt: poolResponse.closedAt,
+    },
+  };
+}
+
+function returnNoUpdate(
+  farmSlug: any,
+  siteSlug: any,
+  lastUpdate: Date | undefined,
+  daysBeforeUpdate: number,
+  closedAt: Date | undefined
+): { ok: boolean; status: number; statusText: string; data?: UpdateResponse } {
+  return {
+    ok: true,
+    status: 204,
+    statusText: "No data to update",
+    data: {
+      farm: farmSlug,
+      site: siteSlug,
+      lastUpdate,
+      daysBeforeUpdate,
+      updatedData: [],
+      closeAt: closedAt,
+    },
+  };
+}
+
+function searchDaysToUpdate(miningData: MiningData[], site?: Site) {
   const updateAll = miningData.length === 0;
   const yesterday = getYesterdayDate();
+  const today = getTodayDate();
   const lastUpdate = updateAll
     ? undefined
     : convertToUTCStartOfDay(new Date((miningData[0] as MiningData).day)); // if undefined, update all the data
-  let daysBeforeUpdate = 500;
-
+  let daysBeforeUpdate = 0;
+  if (updateAll) {
+    if (site?.started_at) {
+      console.log("UPDATING site started at", site.started_at);
+      const start = new Date(site.started_at);
+      daysBeforeUpdate = calculateDaysBetweenDates(start, today);
+    } else {
+      // update max days
+      daysBeforeUpdate = 500;
+    }
+  }
   if (lastUpdate && yesterday.getTime() > lastUpdate.getTime()) {
-    // update mining history
+    // update day requiered
     daysBeforeUpdate = calculateDaysBetweenDates(lastUpdate, yesterday);
   }
+  console.log(
+    "UPDATING Days before update",
+    daysBeforeUpdate,
+    lastUpdate,
+    updateAll
+  );
   return { updateAll, daysBeforeUpdate, lastUpdate };
 }
 
-async function insertMiningData(supabase, farm: string, data: DayPoolData[]) {
+async function insertPoolDataInMiningTable(
+  supabase,
+  farm: string,
+  data: DayPoolData[]
+) {
   if (data.length === 0) return;
 
   const row: Database["public"]["Tables"]["mining"]["Insert"][] = data.map(
@@ -175,9 +445,9 @@ async function insertMiningData(supabase, farm: string, data: DayPoolData[]) {
     }
   );
 
-  /* const { error } = await supabase.from("mining").insert(row).select();
+  const { error } = await supabase.from("mining").insert(row).select();
   if (error) {
     console.error("Error while inserting mining data", error);
     throw new Error("Error while inserting mining data " + error);
-  } */
+  }
 }

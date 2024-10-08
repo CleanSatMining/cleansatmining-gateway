@@ -75,8 +75,8 @@ async function _foundryHistory(
     error: undefined,
   };
   const input_timestamp = getNDaysAgo(first).getTime();
-  const firstMiningDateTimestamp = site.startad_at
-    ? new Date(site.startad_at).getTime()
+  const firstMiningDateTimestamp = site.started_at
+    ? new Date(site.started_at).getTime()
     : input_timestamp;
   const firstDateTimestamp = Math.max(
     input_timestamp,

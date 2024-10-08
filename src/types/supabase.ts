@@ -464,7 +464,7 @@ export type Database = {
           hashrateTHs: number
           id: number
           mined: number
-          siteSlug: string | null
+          siteSlug: string
           uptime: number
         }
         Insert: {
@@ -474,7 +474,7 @@ export type Database = {
           hashrateTHs: number
           id?: number
           mined: number
-          siteSlug?: string | null
+          siteSlug: string
           uptime: number
         }
         Update: {
@@ -484,7 +484,7 @@ export type Database = {
           hashrateTHs?: number
           id?: number
           mined?: number
-          siteSlug?: string | null
+          siteSlug?: string
           uptime?: number
         }
         Relationships: [
@@ -500,20 +500,6 @@ export type Database = {
             columns: ["siteSlug"]
             isOneToOne: false
             referencedRelation: "sites"
-            referencedColumns: ["slug"]
-          },
-          {
-            foreignKeyName: "mining_slug_fkey"
-            columns: ["farmSlug"]
-            isOneToOne: false
-            referencedRelation: "farms"
-            referencedColumns: ["slug"]
-          },
-          {
-            foreignKeyName: "mining_slug_fkey1"
-            columns: ["farmSlug"]
-            isOneToOne: false
-            referencedRelation: "farms"
             referencedColumns: ["slug"]
           },
         ]
@@ -613,7 +599,7 @@ export type Database = {
           operatorName: string
           powerPlantId: number
           slug: string
-          startad_at: string | null
+          started_at: string | null
           updated_at: string
         }
         Insert: {
@@ -627,7 +613,7 @@ export type Database = {
           operatorName: string
           powerPlantId: number
           slug: string
-          startad_at?: string | null
+          started_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -641,7 +627,7 @@ export type Database = {
           operatorName?: string
           powerPlantId?: number
           slug?: string
-          startad_at?: string | null
+          started_at?: string | null
           updated_at?: string
         }
         Relationships: [

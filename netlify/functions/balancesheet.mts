@@ -5,8 +5,8 @@ import { convertToUTCStartOfDay } from "../../src/tools/date";
 import { fetchFarm } from "../../src/resources/farm";
 import { fetchSite } from "../../src/resources/site";
 import { fetchMiningReport } from "../../src/resources/miningreports/miningreport.common";
-import { calculateFarmBalanceSheet } from "../../src/tools/farm";
-import { calculateSiteBalanceSheet } from "../../src/tools/site";
+import { calculateFarmBalanceSheet } from "../../src/tools/balancesheets/farm";
+import { calculateSiteBalanceSheet } from "../../src/tools/balancesheets/site";
 
 import { MicroServiceMiningReportResponse } from "../../src/types/Api";
 import { Farm, Site } from "../../src/types/supabase.extend";

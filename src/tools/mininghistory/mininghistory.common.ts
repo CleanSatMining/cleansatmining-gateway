@@ -1,6 +1,6 @@
-import { Farm, Site } from "@/types/supabase.extend";
+import { Farm } from "@/types/supabase.extend";
 import { Database } from "@/types/supabase";
-import { convertDateToMapKey, getTodayDate } from "@/tools/date";
+import { getTodayDate } from "@/tools/date";
 import { get } from "http";
 
 export function filterMiningHistoryWithFinancialStatementPeriod(
@@ -24,40 +24,23 @@ export function filterMiningHistoryWithFinancialStatementPeriod(
   return history;
 }
 
-export function getMiningHistoryByDay(
-  miningHistory: Database["public"]["Tables"]["mining"]["Row"][],
-  site: Site
-): Map<string, Database["public"]["Tables"]["mining"]["Row"]> {
-  const historyByDay: Map<
-    string,
-    Database["public"]["Tables"]["mining"]["Row"]
-  > = new Map();
-  for (const history of miningHistory) {
-    if (history.farmSlug === site.farmSlug && history.siteSlug === site.slug) {
-      historyByDay.set(convertDateToMapKey(new Date(history.day)), history);
-    }
-  }
-
-  return historyByDay;
-}
-
 export function getMiningHistoryPeriod(
-  financialStatements: Database["public"]["Tables"]["mining"]["Row"][]
+  history: Database["public"]["Tables"]["mining"]["Row"][]
 ): {
   start: Date | undefined;
   end: Date | undefined;
 } {
-  if (financialStatements.length === 0) {
+  if (history.length === 0) {
     return { start: undefined, end: undefined };
   }
 
   const start = new Date(
-    financialStatements.reduce((acc, statement) => {
+    history.reduce((acc, statement) => {
       return acc < new Date(statement.day) ? acc : new Date(statement.day);
     }, getTodayDate())
   );
   const end = new Date(
-    financialStatements.reduce((acc, statement) => {
+    history.reduce((acc, statement) => {
       return acc > new Date(statement.day) ? acc : new Date(statement.day);
     }, start)
   );

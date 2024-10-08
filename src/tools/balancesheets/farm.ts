@@ -1,12 +1,12 @@
-import { DetailedBalanceSheet } from "@/types/BalanceSeet";
+import { DetailedBalanceSheet, BalanceSheet } from "@/types/BalanceSeet";
 import { DailyMiningReport } from "@/types/MiningReport";
-import { Site } from "@/types/supabase.extend";
+import { Farm } from "@/types/supabase.extend";
 import { getDailyMiningReportsPeriod } from "../miningreports/miningreport";
-import { calculateSitePowerHistory } from "../powerhistory/site";
+import { calculateFarmPowerHistory } from "../powerhistory/farm";
 import { calculateBalanceSheet } from "./balancesheet.common";
 
-export function calculateSiteBalanceSheet(
-  site: Site,
+export function calculateFarmBalanceSheet(
+  farm: Farm,
   miningReports: DailyMiningReport[],
   btcPrice: number
 ): DetailedBalanceSheet {
@@ -23,34 +23,33 @@ export function calculateSiteBalanceSheet(
     );
   }
 
-  const powerHistory = calculateSitePowerHistory(site, startDay, endDay);
-  const sheet = calculateBalanceSheet(
+  const powerHistory = calculateFarmPowerHistory(farm, startDay, endDay);
+  const sheet: BalanceSheet = calculateBalanceSheet(
     miningReports,
     btcPrice,
     startDay,
     endDay
   );
 
-  console.log(
-    "calculateSiteBalanceSheet powerHistory",
-    JSON.stringify(powerHistory, null, 2)
-  );
-
-  const details = powerHistory.map((power) => {
-    const balance = calculateBalanceSheet(
+  const details: BalanceSheet[] = powerHistory.map((power) => {
+    const balanceSheet = calculateBalanceSheet(
       miningReports.filter(
         (report) =>
           new Date(power.start).getTime() <= new Date(report.day).getTime() &&
-          new Date(report.day).getTime() <= new Date(power.end).getTime()
+          new Date(report.day).getTime() < new Date(power.end).getTime()
       ),
       btcPrice
     );
-    balance.containerIds = site.containers.map((container) => container.id);
-    return balance;
+    balanceSheet.containerIds = power.containers.map(
+      (container) => container.containerId
+    );
+    return balanceSheet;
   });
 
-  // get container ids
-  const containerIds = site.containers.map((container) => container.id);
+  // get all container ids
+  const containerIds = farm.sites.reduce((acc, site) => {
+    return acc.concat(site.containers.map((container) => container.id));
+  }, [] as number[]);
 
   return {
     start: sheet.start,

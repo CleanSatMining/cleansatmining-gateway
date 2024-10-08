@@ -213,7 +213,7 @@ function convertAPIDataToStandard(site: Site, periodsData: DayDataAntpool[]) {
       new Date(day.timestamp)
     );
 
-    console.log("ANTPOOL", day.timestamp, hashrateMax, units);
+    //console.log("ANTPOOL", day.timestamp, hashrateMax, units);
 
     const efficiency = new BigNumber(day.hashrate_unit)
       .dividedBy(1000000000000)

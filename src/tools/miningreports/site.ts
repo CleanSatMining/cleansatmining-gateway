@@ -16,10 +16,8 @@ import {
   getFinancialStatementsPeriod,
   aggregateFinancialStatementsByDay,
 } from "../financialstatements/financialstatement.commons";
-import {
-  getMiningHistoryByDay,
-  getMiningHistoryPeriod,
-} from "../mininghistory/mininghistory.common";
+import { getMiningHistoryPeriod } from "../mininghistory/mininghistory.common";
+import { getSiteMiningHistoryByDay } from "../mininghistory/site";
 import {
   filterMiningReportsByDay,
   getDailyMiningReportFromPool,
@@ -74,7 +72,7 @@ export function getSiteMiningReportsByDay(
   const miningReportByDay: Map<string, DailyMiningReport> = new Map();
 
   // get the mining history data by day
-  const miningHistoryByDay = getMiningHistoryByDay(miningHistory, site);
+  const miningHistoryByDay = getSiteMiningHistoryByDay(miningHistory, site);
 
   // get the period of the financial statements and the mining history
   const { start: starthistory, end: endhistory } =

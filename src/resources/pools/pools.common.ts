@@ -3,7 +3,7 @@ import { antpoolHistory } from "./entities/antpool";
 import { foundryHistory } from "./entities/foundry";
 import { luxorHistory } from "./entities/luxor";
 import { APIMiningPoolResponse, DayPoolData } from "@/types/Pool";
-import { error } from "console";
+
 import { Pool } from "@/types/Pool";
 import { getNDaysAgo } from "@/tools/date";
 
@@ -65,7 +65,7 @@ export async function fetchPoolData(
     return {
       ok: false,
       status: 500,
-      statusText: "Error " + error,
+      statusText: "Error " + data.error,
     };
   }
 
