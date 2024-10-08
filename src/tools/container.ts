@@ -10,7 +10,8 @@ import {
 export function calculateContainersPower(
   _containers: Container[],
   day: Date
-): { watts: number; hashrateTHs: number } {
+): { watts: number; hashrateTHs: number; units: number } {
+  const _day = convertToUTCStartOfDay(day);
   const containers = _containers.filter((container) => {
     // Check if the container is active
     if (container.start === null || container.start === undefined) {
@@ -18,13 +19,13 @@ export function calculateContainersPower(
       return false;
     }
 
-    const isStarted = new Date(container.start) <= day;
+    const isStarted = new Date(container.start) <= _day;
 
     let isEnded = false;
 
     // check if the container is still active
     if (container.end !== null && container.end !== undefined) {
-      isEnded = new Date(container.end) <= day;
+      isEnded = new Date(container.end) <= _day;
     }
 
     return isStarted && !isEnded;
@@ -48,7 +49,12 @@ export function calculateContainersPower(
     }, new BigNumber(0))
     .toNumber();
 
-  return { watts, hashrateTHs };
+  // calculate the number of units
+  const units = containers.reduce((acc, container) => {
+    return acc + container.units;
+  }, 0);
+
+  return { watts, hashrateTHs, units };
 }
 export function calculateContainersPowerHistory(
   sortedContainers: Container[],

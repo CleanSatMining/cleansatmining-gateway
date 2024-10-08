@@ -13,3 +13,21 @@ export function getSupabaseClient(): SupabaseClient<any, "public", any> {
 
   return createClient(supabaseUrl, apiKey);
 }
+
+export async function signIn(
+  supabase: SupabaseClient,
+  username: string,
+  password: string
+) {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: username,
+    password: password,
+  });
+
+  return { data, error };
+}
+
+export async function signOut(supabase: SupabaseClient) {
+  const { error } = await supabase.auth.signOut();
+  return { error };
+}

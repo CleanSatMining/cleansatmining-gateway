@@ -5,12 +5,14 @@ export type BalanceSheet = {
   end: Date;
   days: number;
   balance: MiningReport;
+  containerIds?: number[];
 };
 
 export type DetailedBalanceSheet = {
   start: Date;
   end: Date;
   days: number;
+  containerIds: number[];
   balance: MiningReport;
   details: BalanceSheet[];
 };

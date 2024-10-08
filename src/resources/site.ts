@@ -2,8 +2,20 @@ import { GET_GATEWAY_SITE } from "@/constants/apis";
 import { DailyMiningReport } from "@/types/MiningReport";
 import { fetchSiteOperationalData } from "./operationaldata";
 import { getSiteDailyMiningReports } from "@/tools/site/miningreport";
+import { fetchPoolData, PoolDataResponse } from "./pools";
+import { Site } from "@/types/supabase.extend";
 
-export async function fetchSite(farm: string, site: string): Promise<any> {
+export interface SiteApiResponse {
+  ok: boolean;
+  status: number;
+  statusText: string;
+  siteData?: Site;
+}
+
+export async function fetchSite(
+  farm: string,
+  site: string
+): Promise<SiteApiResponse> {
   const gatewayBaseUrl = process.env.GATEWAY_URL ?? "";
   const path =
     typeof GET_GATEWAY_SITE.url === "function"
@@ -15,10 +27,25 @@ export async function fetchSite(farm: string, site: string): Promise<any> {
   console.log(apiurl.toString());
 
   try {
-    return await fetch(apiurl.toString(), {
+    const response = await fetch(apiurl.toString(), {
       method: GET_GATEWAY_SITE.method,
       headers: GET_GATEWAY_SITE.headers,
     });
+    console.log("RESPONSE fetchSite", response.ok, response.status);
+    if (!response.ok) {
+      return {
+        ok: false,
+        status: response.status,
+        statusText: response.statusText,
+      };
+    }
+    const data = await response.json();
+    return {
+      ok: true,
+      status: response.status,
+      statusText: response.statusText,
+      siteData: data,
+    };
   } catch (error) {
     console.error("Error api financial statements " + error);
     throw new Error("Error api financial statements " + error);
@@ -67,4 +94,27 @@ export async function fetchSiteDailyReport(
     ok: true,
     message: "Success",
   };
+}
+
+export async function fetchSitePoolData(
+  _farm: string,
+  _site: string,
+  first?: number,
+  start?: string,
+  end?: string
+): Promise<PoolDataResponse> {
+  // fetch site
+  const siteResponse = await fetchSite(_farm, _site);
+  console.log("RESPONSE fetchSite", siteResponse.ok, siteResponse.status);
+  if (!siteResponse.ok || siteResponse.siteData === undefined) {
+    return {
+      ok: false,
+      status: siteResponse.status,
+      statusText: siteResponse.statusText,
+    };
+  }
+  const site = siteResponse.siteData;
+
+  //fatch pool data
+  return await fetchPoolData(site, first);
 }

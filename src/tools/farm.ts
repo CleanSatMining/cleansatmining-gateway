@@ -1,12 +1,43 @@
 import { PowerCapacityHistory } from "@/types/Container";
 import { Site, Farm } from "@/types/supabase.extend";
-import { calculateContainersPowerHistory } from "./container";
+import {
+  calculateContainersPower,
+  calculateContainersPowerHistory,
+} from "./container";
 import { getTodayDate } from "./date";
 import { DailyMiningReport } from "@/types/MiningReport";
-import { DetailedBalanceSheet } from "@/types/BalanceSeet";
+import { BalanceSheet, DetailedBalanceSheet } from "@/types/BalanceSeet";
 import { calculateBalanceSheet } from "./balancesheet";
 import { getDailyMiningReportsPeriod } from "./miningreport";
 import { formatSiteDates } from "./site";
+
+export function calculateFarmPower(
+  farm: Farm,
+  day: Date
+): {
+  watts: number;
+  hashrateTHs: number;
+  units: number;
+} {
+  const containers = farm.sites.reduce((acc, site) => {
+    return acc.concat(site.containers);
+  }, [] as Site["containers"]);
+
+  const activeContainers = containers.filter((container) => {
+    // Check if the container is active
+    if (container.start === null || container.start === undefined) {
+      console.warn("Container is not active", container.id, container.start);
+      return false;
+    }
+    return true;
+  });
+
+  if (activeContainers.length === 0) {
+    return { watts: 0, hashrateTHs: 0, units: 0 };
+  }
+
+  return calculateContainersPower(activeContainers, day);
+}
 
 export function calculateFarmPowerHistory(
   farm: Farm,
@@ -68,25 +99,15 @@ export function calculateFarmBalanceSheet(
   }
 
   const powerHistory = calculateFarmPowerHistory(farm, startDay, endDay);
-  const sheet = calculateBalanceSheet(
+  const sheet: BalanceSheet = calculateBalanceSheet(
     miningReports,
     btcPrice,
     startDay,
     endDay
   );
 
-  console.log("calculateFarmBalanceSheet", powerHistory.length, sheet.days);
-  console.log(
-    "calculateFarmBalanceSheet",
-    JSON.stringify(powerHistory, null, 2)
-  );
-  console.log(
-    "calculateFarmBalanceSheet",
-    JSON.stringify(miningReports, null, 2)
-  );
-
-  const details = powerHistory.map((power) => {
-    return calculateBalanceSheet(
+  const details: BalanceSheet[] = powerHistory.map((power) => {
+    const balanceSheet = calculateBalanceSheet(
       miningReports.filter(
         (report) =>
           new Date(power.start).getTime() <= new Date(report.day).getTime() &&
@@ -94,13 +115,23 @@ export function calculateFarmBalanceSheet(
       ),
       btcPrice
     );
+    balanceSheet.containerIds = power.containers.map(
+      (container) => container.containerId
+    );
+    return balanceSheet;
   });
+
+  // get all container ids
+  const containerIds = farm.sites.reduce((acc, site) => {
+    return acc.concat(site.containers.map((container) => container.id));
+  }, [] as number[]);
 
   return {
     start: sheet.start,
     end: sheet.end,
     days: sheet.days,
     balance: sheet.balance,
+    containerIds: containerIds,
     details,
   };
 }

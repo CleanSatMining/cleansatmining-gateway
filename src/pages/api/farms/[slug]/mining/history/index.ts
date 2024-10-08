@@ -1,19 +1,50 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { SupabaseClient } from "@supabase/supabase-js";
-import { convertDateToTimestamptzFormat } from "@/tools/date";
+import {
+  convertDateToTimestamptzFormat,
+  convertToUTCStartOfDay,
+} from "@/tools/date";
 import { getSupabaseClient } from "@/databases/supabase";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { slug, start, end } = req.query;
+  const { slug, start, end, first } = req.query;
+
+  const todayUTC = convertToUTCStartOfDay(new Date());
 
   if (!slug) {
-    return res.status(400).json({ error: "Paramètre slug manquant." });
+    return res.status(400).json({ error: "Parameter farm missing." });
   }
 
-  console.log("start", start);
+  if (start && (typeof start !== "string" || !Date.parse(start))) {
+    return new Response("Invalid start date", { status: 400 });
+  }
+  if (end && (typeof end !== "string" || !Date.parse(end))) {
+    return new Response("Invalid end date", { status: 400 });
+  }
+
+  if (start && end && new Date(start) >= new Date(end)) {
+    return new Response("Start date is greater than end date", { status: 400 });
+  }
+  if (start && end && new Date(start) >= todayUTC) {
+    return new Response("Start date is greater than current date", {
+      status: 400,
+    });
+  }
+
+  if (end && new Date(end) > todayUTC) {
+    return new Response("End date is greater than current date", {
+      status: 400,
+    });
+  }
+
+  if (first && isNaN(Number(first))) {
+    return new Response("Invalid parameter 'first'", { status: 400 });
+  }
+
+  //console.log("first", first);
 
   const dateMin = start
     ? convertDateToTimestamptzFormat(new Date(start.toString()))
@@ -21,9 +52,6 @@ export default async function handler(
   const dateMax = end
     ? convertDateToTimestamptzFormat(new Date(end.toString()))
     : undefined;
-
-  console.log("dateMin", dateMin);
-  console.log("dateMax", dateMax);
 
   try {
     console.log("Récupération du mining  " + slug);
@@ -34,7 +62,8 @@ export default async function handler(
       supabaseClient,
       farmSlug,
       dateMin,
-      dateMax
+      dateMax,
+      first ? Number(first) : undefined
     );
 
     if (miningError) {
@@ -60,7 +89,8 @@ async function fetchMiningData(
   supabase: SupabaseClient,
   slug: string,
   dateMin: string | undefined,
-  dateMax: string | undefined
+  dateMax: string | undefined,
+  first?: number
 ): Promise<{ data: unknown; error: unknown }> {
   if (dateMin && dateMax) {
     console.log(
@@ -86,6 +116,14 @@ async function fetchMiningData(
       .select()
       .eq("farmSlug", slug)
       .lt("day", dateMax);
+  } else if (first) {
+    console.log("Récupération des " + first + " dernières lignes de mining");
+    return await supabase
+      .from("mining")
+      .select()
+      .eq("farmSlug", slug)
+      .order("day", { ascending: false })
+      .limit(first);
   } else {
     return await supabase.from("mining").select().eq("farmSlug", slug);
   }

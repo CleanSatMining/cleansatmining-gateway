@@ -10,6 +10,7 @@ import { calculateSiteBalanceSheet } from "../../src/tools/site";
 
 import { MicroServiceMiningReportResponse } from "../../src/types/Api";
 import { Farm, Site } from "../../src/types/supabase.extend";
+import { DetailedBalanceSheet } from "../../src/types/BalanceSeet";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default async (req: Request, context: Context) => {
@@ -41,10 +42,14 @@ export default async (req: Request, context: Context) => {
     return new Response("Invalid end date", { status: 400 });
   }
 
-  if (start_input && end_input && new Date(start_input) > new Date(end_input)) {
+  if (
+    start_input &&
+    end_input &&
+    new Date(start_input) >= new Date(end_input)
+  ) {
     return new Response("Start date is greater than end date", { status: 400 });
   }
-  if (start_input && end_input && new Date(start_input) > todayUTC) {
+  if (start_input && end_input && new Date(start_input) >= todayUTC) {
     return new Response("Start date is greater than current date", {
       status: 400,
     });
@@ -64,13 +69,13 @@ export default async (req: Request, context: Context) => {
       console.log("api farm", farm);
       const farmResponse = await fetchFarm(farm);
 
-      if (!farmResponse.ok) {
-        return new Response(farmResponse.message, {
+      if (!farmResponse.ok || farmResponse.farmData === undefined) {
+        return new Response(farmResponse.statusText, {
           status: farmResponse.status,
         });
       }
 
-      const farmData: Farm = await farmResponse.json();
+      const farmData: Farm = farmResponse.farmData;
 
       // Fetch farm report
       const microserviceResponse = await fetchMiningReport(
@@ -93,7 +98,11 @@ export default async (req: Request, context: Context) => {
       const report: MicroServiceMiningReportResponse =
         microserviceResponse.report;
 
-      const balance = calculateFarmBalanceSheet(farmData, report.data, btc);
+      const balance: DetailedBalanceSheet = calculateFarmBalanceSheet(
+        farmData,
+        report.data,
+        btc
+      );
 
       return new Response(JSON.stringify(balance), {
         headers: { "content-type": "application/json" },
@@ -103,13 +112,13 @@ export default async (req: Request, context: Context) => {
       console.log("api site", farm, site);
       const siteResponse = await fetchSite(farm, site);
 
-      if (!siteResponse.ok) {
-        return new Response(siteResponse.message, {
+      if (!siteResponse.ok || siteResponse.siteData === undefined) {
+        return new Response(siteResponse.statusText, {
           status: siteResponse.status,
         });
       }
 
-      const siteData: Site = await siteResponse.json();
+      const siteData: Site = await siteResponse.siteData;
 
       // Fetch farm report
       const microserviceResponse = await fetchMiningReport(
@@ -132,7 +141,11 @@ export default async (req: Request, context: Context) => {
       const report: MicroServiceMiningReportResponse =
         microserviceResponse.report;
 
-      const balance = calculateSiteBalanceSheet(siteData, report.data, btc);
+      const balance: DetailedBalanceSheet = calculateSiteBalanceSheet(
+        siteData,
+        report.data,
+        btc
+      );
 
       return new Response(JSON.stringify(balance), {
         headers: { "content-type": "application/json" },

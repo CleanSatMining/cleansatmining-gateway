@@ -17,9 +17,9 @@ export function calculateBalanceSheet(
   startDay?: Date,
   endDay?: Date
 ): BalanceSheet {
-  console.log("");
-  console.log("=>");
-  console.log("calculateBalanceSheet", data.length, startDay, endDay);
+  //console.log("");
+  //console.log("=>");
+  //console.log("calculateBalanceSheet", data.length, startDay, endDay);
   //filter the data by date
   const filteredData = data.filter((report) => {
     return (
@@ -33,15 +33,13 @@ export function calculateBalanceSheet(
   const { start: startDayReport, end: endDayReport } =
     getDailyMiningReportsPeriod(filteredData);
   if (startDayReport === undefined || endDayReport === undefined) {
-    console.log(
+    console.warn(
       "WARN calculateBalanceSheet",
       data.length,
       filteredData.length,
       startDay,
       endDay
     );
-    console.log("XXX");
-    console.log("");
     throw new Error("calculateBalanceSheet - No mining reports found ");
   }
 
@@ -85,12 +83,6 @@ function _calculateBalanceSheet(
   const start = data[0].day;
   const end = new Date(data[data.length - 1].day);
   const days = calculateFullDaysBetweenDates(start, end);
-
-  console.log("");
-  console.log("");
-  console.log("BALANCE SHEET", days, start, end);
-  console.log("");
-  console.log("");
 
   //console.log("BALANCE SHEET data", JSON.stringify(data, null, 2));
 

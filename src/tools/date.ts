@@ -80,3 +80,15 @@ export function getTodayDate(
 
   return today;
 }
+
+export function getNDaysAgo(N: number): Date {
+  const today = new Date();
+  const targetDate = new Date(today);
+  targetDate.setDate(today.getDate() - N);
+
+  // Réinitialiser l'heure à 00:00:00.000
+  targetDate.setUTCHours(0, 0, 0, 0);
+
+  // Retourner le timestamp
+  return targetDate;
+}

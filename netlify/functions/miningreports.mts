@@ -38,10 +38,14 @@ export default async (req: Request, context: Context) => {
     return new Response("Invalid end date", { status: 400 });
   }
 
-  if (start_input && end_input && new Date(start_input) > new Date(end_input)) {
+  if (
+    start_input &&
+    end_input &&
+    new Date(start_input) >= new Date(end_input)
+  ) {
     return new Response("Start date is greater than end date", { status: 400 });
   }
-  if (start_input && end_input && new Date(start_input) > todayUTC) {
+  if (start_input && end_input && new Date(start_input) >= todayUTC) {
     return new Response("Start date is greater than current date", {
       status: 400,
     });
@@ -71,7 +75,7 @@ export default async (req: Request, context: Context) => {
         });
       }
 
-      console.log("api farm response", response.report.length);
+      //console.log("api farm response", response.report.length);
 
       const report: DailyMiningReport[] = response.report;
       const numberOfDays = report.length;

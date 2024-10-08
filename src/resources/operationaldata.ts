@@ -2,10 +2,11 @@ import { Database } from "@/types/supabase";
 import { fetchFinancialStatements } from "@/resources/financialstatement";
 import { getFinancialStatementsPeriod } from "@/tools/financialstatements";
 import { convertDateToTimestamptzFormat } from "@/tools/date";
-import { fetchMiningHistory } from "./mininghistory";
+import { fetchMiningHistory, MiningHistoryResponse } from "./mininghistory";
 import { Farm, Site } from "@/types/supabase.extend";
 import { fetchFarm } from "./farm";
 import { fetchSite } from "./site";
+import { MiningData } from "@/types/MiningHistory";
 
 export async function fetchOperationalData(
   farm: string,
@@ -74,12 +75,13 @@ export async function fetchOperationalData(
   console.log("endMining", endMiningTimestampz);
 
   // Fetch mining history data
-  const miningHistoryApiresponse: Response = await fetchMiningHistory(
-    farm,
-    site,
-    startMiningTimestampz,
-    endMiningTimestampz
-  );
+  const miningHistoryApiresponse: MiningHistoryResponse =
+    await fetchMiningHistory(
+      farm,
+      site,
+      startMiningTimestampz,
+      endMiningTimestampz
+    );
   if (!miningHistoryApiresponse.ok) {
     return {
       financialStatementsData: [],
@@ -95,8 +97,7 @@ export async function fetchOperationalData(
     };
   }
 
-  const miningHistoryData: Database["public"]["Tables"]["mining"]["Row"][] =
-    await miningHistoryApiresponse.json();
+  const miningHistoryData: MiningData[] = miningHistoryApiresponse.data;
 
   return {
     financialStatementsData,
@@ -119,9 +120,9 @@ export async function fetchFarmOperationalData(
   status: number;
   ok: boolean;
 }> {
-  const farmApiResponse: Response = await fetchFarm(farm);
+  const farmApiResponse = await fetchFarm(farm);
 
-  if (!farmApiResponse.ok) {
+  if (!farmApiResponse.ok || farmApiResponse.farmData === undefined) {
     return {
       financialStatementsData: [],
       miningHistoryData: [],
@@ -132,7 +133,7 @@ export async function fetchFarmOperationalData(
         "Error while fetching farm " + farm + "! " + farmApiResponse.statusText,
     };
   }
-  const farmData: Farm = await farmApiResponse.json();
+  const farmData: Farm = farmApiResponse.farmData;
 
   const operationalData = await fetchOperationalData(
     farm,
@@ -174,9 +175,9 @@ export async function fetchSiteOperationalData(
   status: number;
   ok: boolean;
 }> {
-  const siteApiResponse: Response = await fetchSite(farm, site);
+  const siteApiResponse = await fetchSite(farm, site);
 
-  if (!siteApiResponse.ok) {
+  if (!siteApiResponse.ok || siteApiResponse.siteData === undefined) {
     return {
       financialStatementsData: [],
       miningHistoryData: [],
@@ -192,7 +193,7 @@ export async function fetchSiteOperationalData(
         siteApiResponse.statusText,
     };
   }
-  const siteData: Site = await siteApiResponse.json();
+  const siteData: Site = siteApiResponse.siteData;
 
   const operationalData = await fetchOperationalData(farm, site, start, end);
   if (!operationalData.ok) {

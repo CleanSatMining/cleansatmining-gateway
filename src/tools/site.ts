@@ -4,7 +4,10 @@ import { calculateDailyGrossIncome } from "@/tools/simulator";
 import { Database } from "@/types/supabase";
 import { SimulationResult } from "@/types/Simulator";
 import { PowerCapacityHistory } from "@/types/Container";
-import { calculateContainersPowerHistory } from "./container";
+import {
+  calculateContainersPower,
+  calculateContainersPowerHistory,
+} from "./container";
 import { getTodayDate } from "./date";
 import { DailyMiningReport } from "@/types/MiningReport";
 import { DetailedBalanceSheet } from "@/types/BalanceSeet";
@@ -14,45 +17,10 @@ import { calculateBalanceSheet } from "./balancesheet";
 export function calculateSitePower(
   site: Site,
   day: Date
-): { watts: number; hashrateTHs: number } {
-  const containers = site.containers.filter((container) => {
-    // Check if the container is active
-    if (container.start === null || container.start === undefined) {
-      console.warn("The container has no start date", container);
-      return false;
-    }
+): { watts: number; hashrateTHs: number; units: number } {
+  const containers = site.containers;
 
-    const isStarted = new Date(container.start) <= day;
-
-    let isEnded = false;
-
-    // check if the container is still active
-    if (container.end !== null && container.end !== undefined) {
-      isEnded = new Date(container.end) <= day;
-    }
-
-    return isStarted && !isEnded;
-  });
-
-  // Calculate the electricity power of the site
-  const watts = containers
-    .reduce((acc, container) => {
-      return acc.plus(
-        new BigNumber(container.units).times(container.asics.powerW)
-      );
-    }, new BigNumber(0))
-    .toNumber();
-
-  // Calculate the hashrate of the site
-  const hashrateTHs = containers
-    .reduce((acc, container) => {
-      return acc.plus(
-        new BigNumber(container.units).times(container.asics.hashrateTHs)
-      );
-    }, new BigNumber(0))
-    .toNumber();
-
-  return { watts, hashrateTHs };
+  return calculateContainersPower(containers, day);
 }
 
 export function calculateSiteGrossIncome(
@@ -165,7 +133,7 @@ export function calculateSiteBalanceSheet(
   );
 
   const details = powerHistory.map((power) => {
-    return calculateBalanceSheet(
+    const balance = calculateBalanceSheet(
       miningReports.filter(
         (report) =>
           new Date(power.start).getTime() <= new Date(report.day).getTime() &&
@@ -173,13 +141,19 @@ export function calculateSiteBalanceSheet(
       ),
       btcPrice
     );
+    balance.containerIds = site.containers.map((container) => container.id);
+    return balance;
   });
+
+  // get container ids
+  const containerIds = site.containers.map((container) => container.id);
 
   return {
     start: sheet.start,
     end: sheet.end,
     days: sheet.days,
     balance: sheet.balance,
+    containerIds: containerIds,
     details,
   };
 }
