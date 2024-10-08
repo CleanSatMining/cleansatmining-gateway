@@ -91,14 +91,16 @@ export async function luxorHistory(
       console.error("LUXOR Revenu summary error" + JSON.stringify(erreur));
     }
   } catch (err) {
+    const erreur: APIMiningPoolResponse = {
+      site: site.slug,
+      updated: new Date().getTime(),
+      days: [],
+      error: err,
+    };
+    json = erreur; // JSON.stringify(erreur);
     console.error("LUXOR Revenu summary error" + err);
   }
-  return {
-    days: [],
-    error: json,
-    site: site.slug,
-    updated: new Date().getTime(),
-  };
+  return json;
 }
 
 export async function luxorData(

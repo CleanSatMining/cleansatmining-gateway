@@ -165,7 +165,7 @@ function getApiSecrets(site: Site): string {
       apiKey = process.env.FOUNDRY_D_PECOS_API_KEY_ACCOUNT ?? "";
       break;
     }
-    case "missouri": {
+    case "gamma-missouri": {
       apiKey = process.env.FOUNDRY_G_API_KEY_ACCOUNT ?? "";
       break;
     }

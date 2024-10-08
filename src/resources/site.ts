@@ -31,7 +31,7 @@ export async function fetchSite(
       method: GET_GATEWAY_SITE.method,
       headers: GET_GATEWAY_SITE.headers,
     });
-    console.log("RESPONSE fetchSite", response.ok, response.status);
+
     if (!response.ok) {
       return {
         ok: false,
@@ -105,7 +105,7 @@ export async function fetchSitePoolData(
 ): Promise<PoolDataResponse> {
   // fetch site
   const siteResponse = await fetchSite(_farm, _site);
-  console.log("RESPONSE fetchSite", siteResponse.ok, siteResponse.status);
+
   if (!siteResponse.ok || siteResponse.siteData === undefined) {
     return {
       ok: false,

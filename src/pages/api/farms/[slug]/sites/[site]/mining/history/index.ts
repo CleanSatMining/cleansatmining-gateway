@@ -58,7 +58,7 @@ export default async function handler(
     : undefined;
 
   try {
-    console.log("Récupération du mining  " + slug);
+    console.log("MINING HISTORY  " + slug + " " + site);
     const farmSlug = slug.toString();
     const supabaseClient = getSupabaseClient();
 
@@ -92,21 +92,23 @@ export default async function handler(
 
 async function fetchMiningData(
   supabase: SupabaseClient,
-  slug: string,
-  siteSlug: string,
+  farm: string,
+  site: string,
   dateMin: string | undefined,
   dateMax: string | undefined,
   first?: number
 ): Promise<{ data: unknown; error: unknown }> {
+  console.log("SUPABASE mining history", farm, site);
   if (dateMin && dateMax) {
     console.log(
       "Récupération du mining depuis le " + dateMin + " jusqu'au " + dateMax
     );
+
     return await supabase
       .from("mining")
       .select()
-      .eq("farmSlug", slug)
-      .eq("siteSlug", siteSlug)
+      .eq("farmSlug", farm)
+      .eq("siteSlug", site)
       .gte("day", dateMin)
       .lt("day", dateMax);
   } else if (dateMin) {
@@ -114,30 +116,31 @@ async function fetchMiningData(
     return await supabase
       .from("mining")
       .select()
-      .eq("farmSlug", slug)
-      .eq("siteSlug", siteSlug)
+      .eq("farmSlug", farm)
+      .eq("siteSlug", site)
       .gte("day", dateMin);
   } else if (dateMax) {
     console.log("Récupération du mining jusqu'au " + dateMax);
     return await supabase
       .from("mining")
       .select()
-      .eq("farmSlug", slug)
-      .eq("siteSlug", siteSlug)
+      .eq("farmSlug", farm)
+      .eq("siteSlug", site)
       .lt("day", dateMax);
   } else if (first) {
     console.log("Récupération des " + first + " dernières lignes de mining");
     return await supabase
       .from("mining")
       .select()
-      .eq("farmSlug", slug)
+      .eq("farmSlug", farm)
+      .eq("siteSlug", site)
       .order("day", { ascending: false })
       .limit(first);
   } else {
     return await supabase
       .from("mining")
       .select()
-      .eq("farmSlug", slug)
-      .eq("siteSlug", siteSlug);
+      .eq("farmSlug", farm)
+      .eq("siteSlug", site);
   }
 }

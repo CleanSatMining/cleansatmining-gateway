@@ -11,8 +11,8 @@ export type DayPoolData = {
 
 export enum Pool {
   Antpool = 1,
-  Luxor = 2,
-  Foundry = 3,
+  Foundry = 2,
+  Luxor = 3,
 }
 
 export type APIMiningPoolQuery = {

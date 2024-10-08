@@ -24,7 +24,7 @@ export default async function handler(
   }
 
   try {
-    console.log("Récupération du site +" + site + "+");
+    //console.log("Récupération du site +" + site + "+");
     const siteApiResponse = await fetchSite(
       getSupabaseClient(),
       site.toString()
@@ -50,7 +50,7 @@ async function fetchSite(
 ): Promise<SiteApiResponse | null> {
   const selectQuery = GET_SUPABASE_SITES.parameters.select.full();
 
-  console.log("Parametres :", selectQuery);
+  //console.log("Parametres :", selectQuery);
 
   const { data, error } = await supabase
     .from("sites")
