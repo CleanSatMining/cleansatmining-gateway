@@ -15,23 +15,23 @@ import { DetailedBalanceSheet } from "../../src/types/BalanceSeet";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default async (req: Request, context: Context) => {
   const url = new URL(req.url);
-  const farm = url.searchParams.get("farm") || "undefined";
-  const site = url.searchParams.get("site") || "undefined";
+  const farm = url.searchParams.get("farm") || undefined;
+  const site = url.searchParams.get("site") || undefined;
   const start_input = url.searchParams.get("start") || undefined;
   const end_input = url.searchParams.get("end") || undefined;
   const btc_input = url.searchParams.get("btc") || undefined;
 
   const todayUTC = convertToUTCStartOfDay(new Date());
 
-  if (farm === "undefined" && site === "undefined") {
-    return new Response("Please provide a farm or a site", { status: 400 });
+  if (farm === undefined) {
+    return new Response("Please provide a farm", { status: 400 });
   }
 
   if (btc_input === undefined) {
     return new Response("Please provide a btc price", { status: 400 });
   }
 
-  if (btc_input && isNaN(Number(btc_input))) {
+  if (btc_input && (isNaN(Number(btc_input)) || Number(btc_input) <= 0)) {
     return new Response("Invalid btc price", { status: 400 });
   }
 
@@ -49,7 +49,7 @@ export default async (req: Request, context: Context) => {
   ) {
     return new Response("Start date is greater than end date", { status: 400 });
   }
-  if (start_input && end_input && new Date(start_input) >= todayUTC) {
+  if (start_input && new Date(start_input) >= todayUTC) {
     return new Response("Start date is greater than current date", {
       status: 400,
     });
@@ -64,7 +64,7 @@ export default async (req: Request, context: Context) => {
   const btc = Number(btc_input);
 
   try {
-    if (site === "undefined") {
+    if (site === undefined) {
       // Fetch farm
       console.log("api farm", farm);
       const farmResponse = await fetchFarm(farm);
@@ -92,8 +92,8 @@ export default async (req: Request, context: Context) => {
         });
       }
 
-      const startInput = start_input ? new Date(start_input) : undefined;
-      const endInput = end_input ? new Date(end_input) : undefined;
+      //const startInput = start_input ? new Date(start_input) : undefined;
+      //const endInput = end_input ? new Date(end_input) : undefined;
 
       const report: MicroServiceMiningReportResponse =
         microserviceResponse.report;

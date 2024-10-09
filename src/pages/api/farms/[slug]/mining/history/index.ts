@@ -26,9 +26,9 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { slug, start, end, first } = req.query;
+  const { slug: farm, start, end, first } = req.query;
 
-  if (!slug) {
+  if (!farm) {
     return res.status(400).json({ error: "Parameter farm missing." });
   }
 
@@ -59,16 +59,8 @@ export default async function handler(
     return res.status(400).json({ error: "Invalid parameter 'first'" });
   }
 
-  console.log("first", first);
-
-  const dateMin = start
-    ? convertDateToTimestamptzFormat(new Date(start.toString()))
-    : undefined;
-  const dateMax = end
-    ? convertDateToTimestamptzFormat(new Date(end.toString()))
-    : undefined;
-
-  const cacheKey = `mining-history_${slug}${start ? "_start_" + start : ""}${
+  // Cache management
+  const cacheKey = `mining-history_${farm}${start ? "_start_" + start : ""}${
     end ? "_end_" + end : ""
   }${first ? "_first_" + first : ""}`;
   console.log("MINING cacheKey", cacheKey);
@@ -84,9 +76,19 @@ export default async function handler(
     return res.status(200).json(cachedData.data);
   }
 
+  // fetch mining data
+  console.log("first", first);
+
+  const dateMin = start
+    ? convertDateToTimestamptzFormat(new Date(start.toString()))
+    : undefined;
+  const dateMax = end
+    ? convertDateToTimestamptzFormat(new Date(end.toString()))
+    : undefined;
+
   try {
-    console.log("Récupération du mining  " + slug);
-    const farmSlug = slug.toString();
+    console.log("Récupération du mining  " + farm);
+    const farmSlug = farm.toString();
     const supabaseClient = getSupabaseClient();
 
     const { data: miningData, error: miningError } = await fetchMiningData(

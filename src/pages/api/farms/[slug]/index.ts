@@ -24,12 +24,12 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { slug } = req.query;
-  if (!slug) {
+  const { slug: farm } = req.query;
+  if (!farm) {
     return res.status(400).json({ error: "Farm name parameter missing" });
   }
 
-  const cacheKey = `farm_${slug}`;
+  const cacheKey = `farm_${farm}`;
   const cachedData = cache.get(cacheKey);
   if (cachedData) {
     console.log("GET FARM PASS WITH CACHE");
@@ -37,10 +37,10 @@ export default async function handler(
   }
 
   try {
-    console.log("Récupération de la ferme " + slug);
+    console.log("Récupération de la ferme " + farm);
     const farmApiResponse = await fetchFarm(
       getSupabaseClient(),
-      slug.toString()
+      farm.toString()
     );
 
     //const farmApiResponse = await getFarmByApi(slug.toString());
@@ -48,14 +48,14 @@ export default async function handler(
       return res.status(404).json({ error: DATA_NOT_FOUND });
     }
 
-    const farm: Farm = mapFarmApiResponseToFarm(farmApiResponse);
+    const farmData: Farm = mapFarmApiResponseToFarm(farmApiResponse);
 
     // Mettre en cache la réponse pour la durée spécifiée
-    cache.set(cacheKey, farm);
+    cache.set(cacheKey, farmData);
     console.log("GET FARM PASS NO CACHE");
 
     // Retourner la réponse
-    return res.status(200).json(farm);
+    return res.status(200).json(farmData);
   } catch (error) {
     console.error("Erreur lors de la récupération de la ferme :", error);
     return res

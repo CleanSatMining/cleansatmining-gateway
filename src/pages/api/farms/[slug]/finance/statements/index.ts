@@ -16,9 +16,9 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { slug, start, end } = req.query;
+  const { slug: farm, start, end } = req.query;
 
-  if (!slug) {
+  if (!farm) {
     return res.status(400).json({ error: "Farm name parameter missing." });
   }
   if (start && (typeof start !== "string" || !Date.parse(start))) {
@@ -44,7 +44,7 @@ export default async function handler(
       .json({ error: "End date is greater than current date" });
   }
 
-  const cacheKey = `financial-statements_${slug}${
+  const cacheKey = `financial-statements_${farm}${
     start ? "_start_" + start : ""
   }${end ? "_end_" + end : ""}`;
   const cachedData = cache.get(cacheKey);
@@ -60,13 +60,13 @@ export default async function handler(
     ? convertDateToTimestamptzFormat(new Date(end.toString()))
     : undefined;
 
-  console.log("Statements ", slug);
+  console.log("Statements ", farm);
   console.log("dateMin", dateMin);
   console.log("dateMax", dateMax);
 
   try {
-    console.log("Récupération du mining  " + slug);
-    const farmSlug = slug.toString();
+    console.log("Récupération du mining  " + farm);
+    const farmSlug = farm.toString();
     const supabaseClient = getSupabaseClient();
 
     const { data: financialData, error: financialError } =

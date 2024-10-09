@@ -1,25 +1,39 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { SupabaseClient } from "@supabase/supabase-js";
 import {
+  convertDateToKey,
   convertDateToTimestamptzFormat,
   convertToUTCStartOfDay,
 } from "@/tools/date";
 import { getSupabaseClient } from "@/databases/supabase";
+import { Database } from "@/types/supabase";
+import { LRUCache } from "lru-cache";
+
+const CACHE_DURATION_SECONDS = 8 * 60 * 60; // 8 heures
+/* eslint-disable */
+const cache = new LRUCache<string, any>({
+  max: 500,
+  ttl: 1000 * CACHE_DURATION_SECONDS,
+});
+/* eslint-enable */
+
+interface CachedData {
+  upatedAt: string;
+  data: Database["public"]["Tables"]["mining"]["Row"][];
+}
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { slug, site, start, end, first } = req.query;
+  const { slug: farm, site, start, end, first } = req.query;
 
-  if (!slug) {
-    return res
-      .status(400)
-      .json({ error: "Paramètre nom de la ferme manquant." });
+  if (!farm) {
+    return res.status(400).json({ error: "Parameter farm missing." });
   }
 
   if (!site) {
-    return res.status(400).json({ error: "Paramètre nom du site manquant." });
+    return res.status(400).json({ error: "Parameter site missing." });
   }
 
   const todayUTC = convertToUTCStartOfDay(new Date());
@@ -46,8 +60,24 @@ export default async function handler(
     });
   }
 
-  if (first && isNaN(Number(first))) {
+  if (first && (isNaN(Number(first)) || Number(first) <= 0)) {
     return new Response("Invalid parameter 'first'", { status: 400 });
+  }
+
+  // Cache management
+  const cacheKey = `mining-history_${farm}_${site}${
+    start ? "_start_" + start : ""
+  }${end ? "_end_" + end : ""}${first ? "_first_" + first : ""}`;
+  console.log("MINING cacheKey", cacheKey);
+
+  const cachedData: CachedData = cache.get(cacheKey);
+  console.log(
+    "MINING cachedData",
+    JSON.stringify(cachedData?.upatedAt, null, 2)
+  );
+  if (cachedData && new Date(cachedData.upatedAt) >= todayUTC) {
+    console.log("GET MINING HISTORY PASS WITH CACHE");
+    return res.status(200).json(cachedData.data);
   }
 
   const dateMin = start
@@ -58,8 +88,8 @@ export default async function handler(
     : undefined;
 
   try {
-    console.log("MINING HISTORY  " + slug + " " + site);
-    const farmSlug = slug.toString();
+    console.log("MINING HISTORY  " + farm + " " + site);
+    const farmSlug = farm.toString();
     const supabaseClient = getSupabaseClient();
 
     const { data: miningData, error: miningError } = await fetchMiningData(
@@ -81,6 +111,17 @@ export default async function handler(
       });
     }
 
+    // Cache the response for future use
+    const newCachedData: CachedData = {
+      upatedAt: convertDateToKey(new Date()),
+      data: miningData,
+    };
+    cache.set(cacheKey, newCachedData);
+    console.log(
+      "GET MINING HISTORY PASS NO CACHE",
+      JSON.stringify(newCachedData.upatedAt)
+    );
+
     return res.status(200).json(miningData);
   } catch (error) {
     console.error("Erreur lors de la récupération de la ferme :", error);
@@ -97,50 +138,73 @@ async function fetchMiningData(
   dateMin: string | undefined,
   dateMax: string | undefined,
   first?: number
-): Promise<{ data: unknown; error: unknown }> {
+): Promise<{
+  data: Database["public"]["Tables"]["mining"]["Row"][];
+  error: unknown;
+}> {
   console.log("SUPABASE mining history", farm, site);
   if (dateMin && dateMax) {
     console.log(
       "Récupération du mining depuis le " + dateMin + " jusqu'au " + dateMax
     );
 
-    return await supabase
+    const { data, error } = await supabase
       .from("mining")
       .select()
       .eq("farmSlug", farm)
       .eq("siteSlug", site)
       .gte("day", dateMin)
       .lt("day", dateMax);
+    return {
+      data: data as Database["public"]["Tables"]["mining"]["Row"][],
+      error: error,
+    };
   } else if (dateMin) {
     console.log("Récupération du mining depuis le " + dateMin);
-    return await supabase
+    const { data, error } = await supabase
       .from("mining")
       .select()
       .eq("farmSlug", farm)
       .eq("siteSlug", site)
       .gte("day", dateMin);
+    return {
+      data: data as Database["public"]["Tables"]["mining"]["Row"][],
+      error: error,
+    };
   } else if (dateMax) {
     console.log("Récupération du mining jusqu'au " + dateMax);
-    return await supabase
+    const { data, error } = await supabase
       .from("mining")
       .select()
       .eq("farmSlug", farm)
       .eq("siteSlug", site)
       .lt("day", dateMax);
+    return {
+      data: data as Database["public"]["Tables"]["mining"]["Row"][],
+      error: error,
+    };
   } else if (first) {
     console.log("Récupération des " + first + " dernières lignes de mining");
-    return await supabase
+    const { data, error } = await supabase
       .from("mining")
       .select()
       .eq("farmSlug", farm)
       .eq("siteSlug", site)
       .order("day", { ascending: false })
       .limit(first);
+    return {
+      data: data as Database["public"]["Tables"]["mining"]["Row"][],
+      error: error,
+    };
   } else {
-    return await supabase
+    const { data, error } = await supabase
       .from("mining")
       .select()
       .eq("farmSlug", farm)
       .eq("siteSlug", site);
+    return {
+      data: data as Database["public"]["Tables"]["mining"]["Row"][],
+      error: error,
+    };
   }
 }
