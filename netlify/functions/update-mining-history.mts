@@ -17,10 +17,7 @@ import {
 } from "../../src/tools/date";
 import { DayPoolData } from "../../src/types/Pool";
 import { fetchSitePoolData } from "../../src/resources/pools/site";
-import {
-  fetchPoolData,
-  PoolDataResponse,
-} from "../../src/resources/pools/pools.common";
+import { fetchPoolData } from "../../src/resources/pools/pools.common";
 
 import { SupabaseClient } from "@supabase/supabase-js";
 import { Site } from "../../src/types/supabase.extend";
@@ -70,7 +67,7 @@ export default async (req: Request, context: Context) => {
   );
 };
 
-async function updateMiningHistory(
+export async function updateMiningHistory(
   supabase: SupabaseClient,
   farm: string,
   site: string
@@ -166,7 +163,9 @@ async function updateMiningHistory(
   };
 }
 
-async function updateAllMiningHistory(supabase: SupabaseClient): Promise<{
+export async function updateAllMiningHistory(
+  supabase: SupabaseClient
+): Promise<{
   ok: boolean;
   status: number;
   statusText: string;
@@ -198,7 +197,7 @@ async function updateAllMiningHistory(supabase: SupabaseClient): Promise<{
         statusText + "; " + farm.slug + " KO : " + response.statusText;
       partialResponse = true;
     } else {
-      console.log("UPDATING success farm", farm.slug, response.data);
+      console.log("UPDATING success farm", farm.slug);
       returnData.push(...response.data);
     }
   }
@@ -212,7 +211,7 @@ async function updateAllMiningHistory(supabase: SupabaseClient): Promise<{
   };
 }
 
-async function updateFarmMiningHistory(
+export async function updateFarmMiningHistory(
   supabase: SupabaseClient,
   farmName: string
 ): Promise<{
@@ -266,7 +265,7 @@ async function updateFarmMiningHistory(
   };
 }
 
-async function updateSiteMiningHistory(
+export async function updateSiteMiningHistory(
   supabase: SupabaseClient,
   site: Site
 ): Promise<{
