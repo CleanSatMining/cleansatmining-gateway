@@ -31,7 +31,7 @@ export async function fetchMiningReport(
     url.searchParams.append("end", end);
   }
 
-  console.log(url.toString());
+  console.log("FETCH MINING REPORT", url.toString());
 
   try {
     const response = await fetch(url.toString(), {

@@ -254,11 +254,6 @@ describe("financialstatements.ts", () => {
       mockMiningHistory
     );
 
-    console.log(
-      "Financial statement by day",
-      JSON.stringify(financialStatementByDay, null, 2)
-    );
-
     const statements = Array.from(financialStatementByDay.values());
 
     expect(statements.length).toBe(10);

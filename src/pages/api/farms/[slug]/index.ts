@@ -1,11 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { createParameters, GET_SUPABASE_FARMS } from "@/constants/apis";
+import { GET_SUPABASE_FARMS } from "@/constants/apis";
 import {
   FarmApiResponse,
   Farm,
   mapFarmApiResponseToFarm,
 } from "@/types/supabase.extend";
-import { OP } from "@/constants/supabase.config";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { getSupabaseClient } from "@/databases/supabase";
 import { LRUCache } from "lru-cache";
@@ -37,7 +36,7 @@ export default async function handler(
   }
 
   try {
-    console.log("Récupération de la ferme " + farm);
+    console.log("Get the farm " + farm);
     const farmApiResponse = await fetchFarm(
       getSupabaseClient(),
       farm.toString()
@@ -57,41 +56,11 @@ export default async function handler(
     // Retourner la réponse
     return res.status(200).json(farmData);
   } catch (error) {
-    console.error("Erreur lors de la récupération de la ferme :", error);
+    console.error("Error while fetching farm " + farm, error);
     return res
       .status(500)
-      .json({ error: "Erreur serveur lors de la récupération de la ferme." });
+      .json({ error: "Error while fetching farm " + farm + " : " + error });
   }
-}
-
-async function getFarmByApi(slug: string): Promise<FarmApiResponse> {
-  const parameters = createParameters({
-    select: GET_SUPABASE_FARMS.parameters.select.full(),
-    slug: OP.EQUALS(slug.toString()),
-  });
-
-  console.log("Parametres :", parameters);
-
-  const url =
-    process.env.SUPABASE_API_URL + GET_SUPABASE_FARMS.url + parameters;
-  const apiKey = process.env.SUPABASE_API_KEY;
-  if (!apiKey) {
-    //return res.status(500).json({ error: "API key is missing." });
-    throw new Error("API key is missing.");
-  }
-  //const headers = GET_FARMS.headers
-  const response = await fetch(url, {
-    method: GET_SUPABASE_FARMS.method, // ou "POST", "PUT", etc.
-    headers: {
-      ...GET_SUPABASE_FARMS.headers,
-      apiKey: apiKey, // Ajouter la clé apiKey dans les headers
-    } as HeadersInit,
-  });
-
-  const jsonData: FarmApiResponse[] = await response.json();
-  const farmApiResponse = jsonData[0];
-
-  return farmApiResponse;
 }
 
 async function fetchFarm(

@@ -63,10 +63,19 @@ export default async (req: Request, context: Context) => {
 
   const btc = Number(btc_input);
 
+  console.log(
+    "MICROSERVICE BALANCE SHEET",
+    farm,
+    site,
+    "$" + btc,
+    start_input,
+    end_input
+  );
+
   try {
     if (site === undefined) {
       // Fetch farm
-      console.log("api farm", farm);
+
       const farmResponse = await fetchFarm(farm);
 
       if (!farmResponse.ok || farmResponse.farmData === undefined) {
@@ -109,7 +118,6 @@ export default async (req: Request, context: Context) => {
       });
     } else {
       // Fetch site
-      console.log("api site", farm, site);
       const siteResponse = await fetchSite(farm, site);
 
       if (!siteResponse.ok || siteResponse.siteData === undefined) {

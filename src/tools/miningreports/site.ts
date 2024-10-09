@@ -111,10 +111,6 @@ export function getSiteMiningReportsByDay(
   // get the total number of days between the start and end of the financial statements
   const totalDays = calculateDaysBetweenDates(start, end);
 
-  console.log("mining report start", start);
-  console.log("mining report end", end, endstatement, endhistory, end_param);
-  console.log("mining report totalDays", totalDays);
-
   // aggregate the daily financial statement for each day of the financial statements
   const financialStatementsByDay = aggregateFinancialStatementsByDay(
     financialStatements,

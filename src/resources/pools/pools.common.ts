@@ -25,12 +25,9 @@ export async function fetchPoolData(
 
   // calculate the date to start fetching the data
   const dataStartDay = getNDaysAgo(first);
-  console.log("POOL end date", siteEndDate);
-  console.log("POOL data start date", dataStartDay, _first);
-  console.log("Pool ID", poolId);
 
   if (siteEndDate && dataStartDay.getTime() <= siteEndDate.getTime()) {
-    console.log(
+    console.warn(
       "Pool data start date is after the site closed date, no need to fetch data"
     );
     return {
@@ -46,22 +43,23 @@ export async function fetchPoolData(
 
   switch (poolId) {
     case Pool.Antpool:
+      console.log("FETCH POOL DATA", "ANTPOOL", site.slug, "first : " + first);
       data = await antpoolHistory(first, site);
       break;
     case Pool.Foundry:
+      console.log("FETCH POOL DATA", "FOUNDRY", site.slug, "first : " + first);
       data = await foundryHistory(first, site);
       break;
     case Pool.Luxor:
+      console.log("FETCH POOL DATA", "LUXOR", site.slug, "first : " + first);
       data = await luxorHistory(first, site);
       break;
     default:
       throw new Error("Pool not supported");
   }
 
-  console.log("Pool data", data.days.length);
-
   if (data.error !== undefined) {
-    console.error("ERROR fetching pool data", data.error);
+    console.error("FETCH POOL DATA ERROR", data.error);
     return {
       ok: false,
       status: 500,

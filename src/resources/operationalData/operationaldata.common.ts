@@ -37,8 +37,6 @@ export async function fetchOperationalData(
   const financialStatementsData: Database["public"]["Tables"]["financialStatements"]["Row"][] =
     await financialStatementsApiResponse.json();
 
-  console.log("financialStatementsData", financialStatementsData.length);
-
   const { start: startStatement, end: endstatement } =
     getFinancialStatementsPeriod(financialStatementsData);
 
@@ -67,9 +65,6 @@ export async function fetchOperationalData(
   const endMiningTimestampz = endMining
     ? convertDateToTimestamptzFormat(endMining)
     : undefined;
-
-  console.log("startMining", startMiningTimestampz);
-  console.log("endMining", endMiningTimestampz);
 
   // Fetch mining history data
   const miningHistoryApiresponse: MiningHistoryResponse =

@@ -28,12 +28,16 @@ export default async function handler(
 ) {
   const { slug: farm, site, start, end, first } = req.query;
 
-  if (!farm) {
-    return res.status(400).json({ error: "Parameter farm missing." });
+  if (!farm || typeof farm !== "string") {
+    return res
+      .status(400)
+      .json({ error: "Parameter farm missing or incorrect." });
   }
 
-  if (!site) {
-    return res.status(400).json({ error: "Parameter site missing." });
+  if (!site || typeof site !== "string") {
+    return res
+      .status(400)
+      .json({ error: "Parameter site missing or incorrect." });
   }
 
   const todayUTC = convertToUTCStartOfDay(new Date());
@@ -68,11 +72,10 @@ export default async function handler(
   const cacheKey = `mining-history_${farm}_${site}${
     start ? "_start_" + start : ""
   }${end ? "_end_" + end : ""}${first ? "_first_" + first : ""}`;
-  console.log("MINING cacheKey", cacheKey);
 
   const cachedData: CachedData = cache.get(cacheKey);
   console.log(
-    "MINING cachedData",
+    "MINING HISTORY cachedData",
     JSON.stringify(cachedData?.upatedAt, null, 2)
   );
   if (cachedData && new Date(cachedData.upatedAt) >= todayUTC) {
@@ -88,7 +91,12 @@ export default async function handler(
     : undefined;
 
   try {
-    console.log("MINING HISTORY  " + farm + " " + site);
+    console.log(
+      "GET MINING HISTORY  " + farm + " " + site,
+      dateMin,
+      dateMax,
+      first ? "first: " + first : ""
+    );
     const farmSlug = farm.toString();
     const supabaseClient = getSupabaseClient();
 
@@ -142,12 +150,7 @@ async function fetchMiningData(
   data: Database["public"]["Tables"]["mining"]["Row"][];
   error: unknown;
 }> {
-  console.log("SUPABASE mining history", farm, site);
   if (dateMin && dateMax) {
-    console.log(
-      "Récupération du mining depuis le " + dateMin + " jusqu'au " + dateMax
-    );
-
     const { data, error } = await supabase
       .from("mining")
       .select()
@@ -160,7 +163,6 @@ async function fetchMiningData(
       error: error,
     };
   } else if (dateMin) {
-    console.log("Récupération du mining depuis le " + dateMin);
     const { data, error } = await supabase
       .from("mining")
       .select()
@@ -172,7 +174,6 @@ async function fetchMiningData(
       error: error,
     };
   } else if (dateMax) {
-    console.log("Récupération du mining jusqu'au " + dateMax);
     const { data, error } = await supabase
       .from("mining")
       .select()
@@ -184,7 +185,6 @@ async function fetchMiningData(
       error: error,
     };
   } else if (first) {
-    console.log("Récupération des " + first + " dernières lignes de mining");
     const { data, error } = await supabase
       .from("mining")
       .select()

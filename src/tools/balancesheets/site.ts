@@ -31,11 +31,6 @@ export function calculateSiteBalanceSheet(
     endDay
   );
 
-  console.log(
-    "calculateSiteBalanceSheet powerHistory",
-    JSON.stringify(powerHistory, null, 2)
-  );
-
   const details = powerHistory.map((power) => {
     const balance = calculateBalanceSheet(
       miningReports.filter(

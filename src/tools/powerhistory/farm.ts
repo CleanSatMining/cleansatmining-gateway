@@ -68,8 +68,6 @@ export function calculateFarmPowerHistory(
       ? new Date(sortedContainers[0].start)
       : getTodayDate());
 
-  console.log("start calculateContainersPowerHistory", start, end);
-
   return calculateContainersPowerHistory(sortedContainers, start, end, []);
   //return [];
 }

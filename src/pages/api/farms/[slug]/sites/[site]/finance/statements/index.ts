@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { convertDateToTimestamptzFormat, getTodayDate } from "@/tools/date";
 import { getSupabaseClient } from "@/databases/supabase";
+import { Database } from "@/types/supabase";
 import { LRUCache } from "lru-cache";
 
 const CACHE_DURATION_SECONDS = 8 * 60 * 60; // 8 heures
@@ -18,13 +19,13 @@ export default async function handler(
 ) {
   const { slug: farm, site, start, end } = req.query;
 
-  if (!farm) {
+  if (!farm || typeof farm !== "string") {
     return res
       .status(400)
       .json({ error: "Paramètre nom de la ferme manquant." });
   }
 
-  if (!site) {
+  if (!site || typeof site !== "string") {
     return res.status(400).json({ error: "Paramètre nom du site manquant." });
   }
 
@@ -60,6 +61,7 @@ export default async function handler(
     return res.status(200).json(cachedData);
   }
 
+  console.log("GET FINANCIAL STATEMENTS", farm, site, start, end);
   const dateMin = start
     ? convertDateToTimestamptzFormat(new Date(start.toString()))
     : undefined;
@@ -68,14 +70,13 @@ export default async function handler(
     : undefined;
 
   try {
-    const farmSlug = farm.toString();
     const supabaseClient = getSupabaseClient();
 
     const { data: financialData, error: financialError } =
       await fetchFinancialStatementsData(
         supabaseClient,
-        farmSlug,
-        site.toString(),
+        farm,
+        site,
         dateMin,
         dateMax
       );
@@ -110,42 +111,53 @@ async function fetchFinancialStatementsData(
   siteSlug: string,
   dateMin: string | undefined,
   dateMax: string | undefined
-): Promise<{ data: unknown; error: unknown }> {
+): Promise<{
+  data: Database["public"]["Tables"]["financialStatements"]["Row"][];
+  error: unknown;
+}> {
   if (dateMin && dateMax) {
-    console.log(
-      "Récupération du financial statements depuis le " +
-        dateMin +
-        " jusqu'au " +
-        dateMax
-    );
-    return await supabase
+    const { data, error } = await supabase
       .from("financialStatements")
       .select()
       .eq("farmSlug", slug)
       .eq("siteSlug", siteSlug)
       .gte("end", dateMin)
       .lt("start", dateMax);
+    return {
+      data: data as Database["public"]["Tables"]["financialStatements"]["Row"][],
+      error: error,
+    };
   } else if (dateMin) {
-    console.log("Récupération du financial statements depuis le " + dateMin);
-    return await supabase
+    const { data, error } = await supabase
       .from("financialStatements")
       .select()
       .eq("farmSlug", slug)
       .eq("siteSlug", siteSlug)
       .gte("end", dateMin);
+    return {
+      data: data as Database["public"]["Tables"]["financialStatements"]["Row"][],
+      error: error,
+    };
   } else if (dateMax) {
-    console.log("Récupération du financial statements jusqu'au " + dateMax);
-    return await supabase
+    const { data, error } = await supabase
       .from("financialStatements")
       .select()
       .eq("farmSlug", slug)
       .eq("siteSlug", siteSlug)
       .lt("start", dateMax);
+    return {
+      data: data as Database["public"]["Tables"]["financialStatements"]["Row"][],
+      error: error,
+    };
   } else {
-    return await supabase
+    const { data, error } = await supabase
       .from("financialStatements")
       .select()
       .eq("farmSlug", slug)
       .eq("siteSlug", siteSlug);
+    return {
+      data: data as Database["public"]["Tables"]["financialStatements"]["Row"][],
+      error: error,
+    };
   }
 }

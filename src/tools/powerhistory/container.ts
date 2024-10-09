@@ -120,13 +120,6 @@ export function calculateContainersPowerHistory(
   const nextStartDate =
     endDate < nextContainerDate ? endDate : nextContainerDate;
 
-  console.log(
-    "calculateContainersPowerHistory DATES START",
-    startDate,
-    nextStartDate,
-    nextContainerDate
-  );
-
   const days = calculateDaysBetweenDates(startDate, nextStartDate);
 
   const powerCapacity: PowerCapacityHistory = {

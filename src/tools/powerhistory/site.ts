@@ -31,14 +31,6 @@ export function calculateSitePowerHistory(
     return true;
   });
 
-  console.log(
-    "calculateSitePowerHistory",
-    site.containers,
-    containers.length,
-    startDate,
-    endDate
-  );
-
   if (containers.length === 0) {
     return [];
   }

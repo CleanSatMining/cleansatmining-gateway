@@ -20,7 +20,7 @@ export async function fetchSite(
 
   const apiurl = gatewayBaseUrl + path;
 
-  console.log(apiurl.toString());
+  console.log("FETCH SITE: " + apiurl.toString());
 
   try {
     const response = await fetch(apiurl.toString(), {

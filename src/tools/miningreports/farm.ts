@@ -15,13 +15,6 @@ export function getFarmDailyMiningReports(
 ): DailyMiningReport[] {
   const sitesMiningReportsByDay: Map<string, DailyMiningReport>[] = [];
 
-  console.log("farm", farm.name);
-  console.log("sites", farm.sites.length);
-  console.log("financialStatements", financialStatements.length);
-  console.log("miningHistory", miningHistory.length);
-  console.log("startDay", startDay?.toISOString());
-  console.log("endDay", endDay?.toISOString());
-
   farm.sites.forEach((site) => {
     const siteMiningReportsByDay = getSiteMiningReportsByDay(
       financialStatements,

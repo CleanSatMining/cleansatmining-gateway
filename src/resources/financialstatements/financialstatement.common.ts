@@ -24,7 +24,7 @@ export async function fetchFinancialStatements(
     url.searchParams.append("end", end);
   }
 
-  console.log(url.toString());
+  console.log("FETCH FINANCIAL STATEMENTS", url.toString());
 
   try {
     return await fetch(url.toString(), {

@@ -60,12 +60,9 @@ export default async function handler(
     ? convertDateToTimestamptzFormat(new Date(end.toString()))
     : undefined;
 
-  console.log("Statements ", farm);
-  console.log("dateMin", dateMin);
-  console.log("dateMax", dateMax);
+  console.log("GET FINANCIAL STATEMENTS ", farm, dateMin, dateMax);
 
   try {
-    console.log("Récupération du mining  " + farm);
     const farmSlug = farm.toString();
     const supabaseClient = getSupabaseClient();
 
@@ -108,12 +105,6 @@ async function fetchFinancialStatementsData(
   dateMax: string | undefined
 ): Promise<{ data: unknown; error: unknown }> {
   if (dateMin && dateMax) {
-    console.log(
-      "Récupération du financial statements depuis le " +
-        dateMin +
-        " jusqu'au " +
-        dateMax
-    );
     return await supabase
       .from("financialStatements")
       .select()
@@ -121,14 +112,12 @@ async function fetchFinancialStatementsData(
       .gte("end", dateMin)
       .lt("start", dateMax);
   } else if (dateMin) {
-    console.log("Récupération du financial statements depuis le " + dateMin);
     return await supabase
       .from("financialStatements")
       .select()
       .eq("farmSlug", slug)
       .gte("end", dateMin);
   } else if (dateMax) {
-    console.log("Récupération du financial statements jusqu'au " + dateMax);
     return await supabase
       .from("financialStatements")
       .select()

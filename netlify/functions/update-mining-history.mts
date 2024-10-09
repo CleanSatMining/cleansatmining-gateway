@@ -92,8 +92,6 @@ export async function updateMiningHistory(
     statusText,
   } = await fetchMiningHistory(farm, site, undefined, undefined, 1);
 
-  //console.log("Mining data", JSON.stringify(miningData));
-
   if (!ok) {
     return {
       ok: false,
@@ -192,12 +190,12 @@ export async function updateAllMiningHistory(
   for (const farm of farms) {
     const response = await updateFarmMiningHistory(supabase, farm.slug);
     if (!response.ok || response.data === undefined) {
-      console.error("UPDATING Error farm", farm.slug);
+      console.error("UPDATING mining Error farm", farm.slug);
       statusText =
         statusText + "; " + farm.slug + " KO : " + response.statusText;
       partialResponse = true;
     } else {
-      console.log("UPDATING success farm", farm.slug);
+      console.log("UPDATING mining success farm", farm.slug);
       returnData.push(...response.data);
     }
   }
@@ -234,24 +232,22 @@ export async function updateFarmMiningHistory(
 
   const farm = farmResponse.farmData;
 
-  console.log(
-    "UPDATING mining history",
-    farmName,
-    "number of site: " + farm.sites.length
-  );
-
   const returnData: UpdateResponse[] = [];
   let partialResponse = false;
   let statusText = "success";
   for (const site of farm.sites) {
     const updateResponse = await updateSiteMiningHistory(supabase, site);
     if (!updateResponse.ok || updateResponse.data === undefined) {
-      console.error("UPDATING Error site", site.slug);
+      console.error("UPDATING mining Error site", site.slug);
       statusText =
         statusText + "; " + site.slug + " KO : " + updateResponse.statusText;
       partialResponse = true;
     } else {
-      console.log("UPDATING success site", site.slug, updateResponse.data.site);
+      console.log(
+        "UPDATING mining success site",
+        site.slug,
+        updateResponse.data.site
+      );
       returnData.push(updateResponse.data);
     }
   }
@@ -287,8 +283,6 @@ export async function updateSiteMiningHistory(
     statusText,
   } = await fetchMiningHistory(farmSlug, siteSlug, undefined, undefined, 1);
 
-  //console.log("Mining data", JSON.stringify(miningData));
-
   if (!ok) {
     // error while fetching mining data
     return {
@@ -303,7 +297,6 @@ export async function updateSiteMiningHistory(
   // search for the number of days to update
   const { daysBeforeUpdate, lastUpdate } = searchDaysToUpdate(miningData, site);
 
-  console.log("UPDATING Days before update", daysBeforeUpdate, lastUpdate);
   if (daysBeforeUpdate === 0) {
     // no data to update
     return returnNoUpdate(
@@ -402,10 +395,11 @@ function searchDaysToUpdate(miningData: MiningData[], site?: Site) {
   let daysBeforeUpdate = 0;
   if (updateAll) {
     if (site?.started_at) {
-      console.log("UPDATING site started at", site.started_at);
+      console.log("UPDATING mining site started at", site.started_at);
       const start = new Date(site.started_at);
       daysBeforeUpdate = calculateDaysBetweenDates(start, today);
     } else {
+      console.warn("UPDATING mining ALL DATA", site.slug);
       // update max days
       daysBeforeUpdate = 500;
     }
@@ -414,12 +408,7 @@ function searchDaysToUpdate(miningData: MiningData[], site?: Site) {
     // update day requiered
     daysBeforeUpdate = calculateDaysBetweenDates(lastUpdate, yesterday);
   }
-  console.log(
-    "UPDATING Days before update",
-    daysBeforeUpdate,
-    lastUpdate,
-    updateAll
-  );
+
   return { updateAll, daysBeforeUpdate, lastUpdate };
 }
 

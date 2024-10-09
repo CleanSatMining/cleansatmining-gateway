@@ -23,28 +23,24 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { slug, site } = req.query;
-  if (!slug) {
+  const { slug: farm, site } = req.query;
+  if (!farm || typeof farm !== "string") {
     return res.status(400).json({ error: "Farm name parameter missing" });
   }
-  if (!site) {
+  if (!site || typeof site !== "string") {
     return res.status(400).json({ error: "Site name parameter missing" });
   }
 
-  const cacheKey = `farm_${slug}_site_${site}`;
+  const cacheKey = `farm_${farm}_site_${site}`;
   const cachedData = cache.get(cacheKey);
   if (cachedData) {
     console.log("GET SITE PASS WITH CACHE");
     return res.status(200).json(cachedData);
   }
 
+  console.log("GET SITE", farm, site);
   try {
-    //console.log("Récupération du site +" + site + "+");
-    const siteApiResponse = await fetchSite(
-      getSupabaseClient(),
-      slug.toString(),
-      site.toString()
-    );
+    const siteApiResponse = await fetchSite(getSupabaseClient(), farm, site);
     if (siteApiResponse === null) {
       return res.status(404).json({ error: DATA_NOT_FOUND });
     }
@@ -71,8 +67,6 @@ async function fetchSite(
   site: string
 ): Promise<SiteApiResponse | null> {
   const selectQuery = GET_SUPABASE_SITES.parameters.select.full();
-
-  //console.log("Parametres :", selectQuery);
 
   const { data, error } = await supabase
     .from("sites")

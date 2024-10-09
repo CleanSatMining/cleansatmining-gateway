@@ -23,8 +23,6 @@ export async function fetchMiningHistory(
 
   const apiurl = gatewayBaseUrl + path;
 
-  console.log("CALL Mining history api", apiurl);
-
   const url = new URL(apiurl);
 
   // Ajouter les paramètres de requête
@@ -38,7 +36,7 @@ export async function fetchMiningHistory(
     url.searchParams.append("first", first.toString());
   }
 
-  console.log(url.toString());
+  console.log("FETCH MINING HISTORY", url.toString());
 
   try {
     const response = await fetch(url.toString(), {

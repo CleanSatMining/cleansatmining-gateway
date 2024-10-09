@@ -26,8 +26,6 @@ export async function fetchFarm(farm: string): Promise<FarmApiResponse> {
 
   const apiurl = gatewayBaseUrl + path;
 
-  console.log(apiurl.toString());
-
   try {
     const response = await fetch(apiurl.toString(), {
       method: "GET",
@@ -59,7 +57,7 @@ export async function fetchFarms(): Promise<FarmsApiResponse> {
 
   const apiurl = gatewayBaseUrl + path;
 
-  console.log(apiurl.toString());
+  console.log("FETCH FARM: " + apiurl.toString());
 
   try {
     const response = await fetch(apiurl.toString(), {

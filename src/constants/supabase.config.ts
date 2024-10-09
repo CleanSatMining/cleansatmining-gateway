@@ -113,7 +113,7 @@ export function getQueryTableFields(tablename: string): string[] {
   const table = TABLES[tablename];
   const tableType = table.type;
   if (!tableType) {
-    console.log("Table " + tablename + " not found");
+    console.error("Table " + tablename + " not found");
     throw new Error("Table " + tablename + " not found");
   }
   const fields: string[] = Object.keys(table.row) as string[];
@@ -125,7 +125,7 @@ export function getQueryTableSelect(tablename: string): string {
   const table = TABLES[tablename];
   const tableType = table.type;
   if (!tableType) {
-    console.log("Table " + tablename + " not found");
+    console.error("Table " + tablename + " not found");
     throw new Error("Table " + tablename + " not found");
   }
 

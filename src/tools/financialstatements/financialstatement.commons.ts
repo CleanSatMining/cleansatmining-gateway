@@ -46,9 +46,12 @@ export function getFinancialStatementUptimeWeight(
     new Date(financialStatement.end)
   );
   if (daysInHistory !== days) {
+    console.warn("");
     console.warn(
       `The number of days in the financial statement (${days}) does not match the number of days in the mining history (${daysInHistory}) : ${JSON.stringify(
-        financialStatement
+        financialStatement,
+        null,
+        2
       )}`
     );
   }

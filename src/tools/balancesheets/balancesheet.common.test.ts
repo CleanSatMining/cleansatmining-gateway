@@ -56,8 +56,6 @@ describe("BalanceSheet Calculations", () => {
       new Date(end)
     );
 
-    console.log(JSON.stringify(result, null, 2));
-
     expect(result.balance.uptime).toBeCloseTo((95 + 96) / days);
     expect(result.balance.hashrateTHs).toBeCloseTo((100 + 105) / days);
     expect(result.balance.btcSellPrice).toBe(10);

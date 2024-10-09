@@ -40,7 +40,6 @@ export async function fetchFarmPoolData(
   //fatch pool data
   for (const site of farm.sites) {
     const response = await fetchPoolData(site, first);
-    //console.log("Pool data", response.poolData?.length);
     if (response.ok && response.poolData) {
       poolData.push(...response.poolData);
     } else {
@@ -51,7 +50,6 @@ export async function fetchFarmPoolData(
     }
   }
 
-  //console.log("Pool data", poolData.length);
   // merge data by day
   const dataPerDay: Map<string, DayPoolData[]> = new Map();
   for (const data of poolData) {
