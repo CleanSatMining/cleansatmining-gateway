@@ -7,8 +7,8 @@ export default function Home() {
       <main className={styles.main}>
         <Image
           className={styles.logo}
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
+          src="./logo.svg"
+          alt="CSM logo"
           width={180}
           height={38}
           priority
