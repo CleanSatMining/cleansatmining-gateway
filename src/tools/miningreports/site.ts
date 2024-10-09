@@ -9,7 +9,7 @@ import {
   getYesterdayDate,
   convertToUTCStartOfDay,
   calculateDaysBetweenDates,
-  convertDateToMapKey,
+  convertDateToKey,
   getTodayDate,
 } from "../date";
 import {
@@ -125,7 +125,7 @@ export function getSiteMiningReportsByDay(
   for (let dayIndex = 0; dayIndex < totalDays; dayIndex++) {
     const day = new Date(start);
     day.setUTCDate(day.getUTCDate() + dayIndex);
-    const dayKey = convertDateToMapKey(day);
+    const dayKey = convertDateToKey(day);
 
     // get the mining history if exists
     const dayMiningHistory = miningHistoryByDay.get(dayKey);

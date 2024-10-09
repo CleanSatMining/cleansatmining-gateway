@@ -1,7 +1,16 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { SupabaseClient } from "@supabase/supabase-js";
-import { convertDateToTimestamptzFormat } from "@/tools/date";
+import { convertDateToTimestamptzFormat, getTodayDate } from "@/tools/date";
 import { getSupabaseClient } from "@/databases/supabase";
+import { LRUCache } from "lru-cache";
+
+const CACHE_DURATION_SECONDS = 8 * 60 * 60; // 8 heures
+/* eslint-disable */
+const cache = new LRUCache<string, any>({
+  max: 500,
+  ttl: 1000 * CACHE_DURATION_SECONDS,
+});
+/* eslint-enable */
 
 export default async function handler(
   req: NextApiRequest,
@@ -10,9 +19,38 @@ export default async function handler(
   const { slug, start, end } = req.query;
 
   if (!slug) {
+    return res.status(400).json({ error: "Farm name parameter missing." });
+  }
+  if (start && (typeof start !== "string" || !Date.parse(start))) {
+    return res.status(400).json({ error: "Invalid start date" });
+  }
+  if (end && (typeof end !== "string" || !Date.parse(end))) {
+    return res.status(400).json({ error: "Invalid end date" });
+  }
+  if (start && end && new Date(start) >= new Date(end)) {
     return res
       .status(400)
-      .json({ error: "Paramètre nom de la ferme manquant." });
+      .json({ error: "Start date is greater or equal than end date" });
+  }
+  const todayUTC = getTodayDate();
+  if (start && new Date(start) >= todayUTC) {
+    return res
+      .status(400)
+      .json({ error: "Start date is greater or equal than current date" });
+  }
+  if (end && new Date(end) > todayUTC) {
+    return res
+      .status(400)
+      .json({ error: "End date is greater than current date" });
+  }
+
+  const cacheKey = `financial-statements_${slug}${
+    start ? "_start_" + start : ""
+  }${end ? "_end_" + end : ""}`;
+  const cachedData = cache.get(cacheKey);
+  if (cachedData) {
+    console.log("GET FINANCIAL STATEMENTS PASS WITH CACHE");
+    return res.status(200).json(cachedData);
   }
 
   const dateMin = start
@@ -49,6 +87,11 @@ export default async function handler(
       });
     }
 
+    // Mettre en cache la réponse pour la durée spécifiée
+    cache.set(cacheKey, financialData);
+    console.log("GET FINANCIAL STATEMENTS PASS NO CACHE");
+
+    // Retourner la réponse
     return res.status(200).json(financialData);
   } catch (error) {
     console.error("Erreur lors de la récupération de la ferme :", error);

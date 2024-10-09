@@ -48,7 +48,7 @@ export function convertToUTCStartOfDay(_date: Date): Date {
   return utcStartOfDay;
 }
 
-export function convertDateToMapKey(date: Date): string {
+export function convertDateToKey(date: Date): string {
   return convertToUTCStartOfDay(date).toISOString();
 }
 

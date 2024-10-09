@@ -1,5 +1,5 @@
 import { Database } from "@/types/supabase";
-import { calculateDaysBetweenDates, convertDateToMapKey } from "../date";
+import { calculateDaysBetweenDates, convertDateToKey } from "../date";
 import {
   DailyFinancialStatement,
   FinancialStatementAmount,
@@ -130,7 +130,7 @@ export function convertFinancialStatementInDailyPeriod(
       );
     });
 
-    const key = convertDateToMapKey(day);
+    const key = convertDateToKey(day);
 
     // Calculate the uptime and the total amount of the statement for the day
     if (dayMiningHistory.length > 0) {

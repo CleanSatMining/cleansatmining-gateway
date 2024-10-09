@@ -1,6 +1,6 @@
 import { Database } from "@/types/supabase";
 import { Site } from "@/types/supabase.extend";
-import { convertDateToMapKey } from "../date";
+import { convertDateToKey } from "../date";
 
 export function getSiteMiningHistoryByDay(
   miningHistory: Database["public"]["Tables"]["mining"]["Row"][],
@@ -12,7 +12,7 @@ export function getSiteMiningHistoryByDay(
   > = new Map();
   for (const history of miningHistory) {
     if (history.farmSlug === site.farmSlug && history.siteSlug === site.slug) {
-      historyByDay.set(convertDateToMapKey(new Date(history.day)), history);
+      historyByDay.set(convertDateToKey(new Date(history.day)), history);
     }
   }
 

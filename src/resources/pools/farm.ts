@@ -1,4 +1,4 @@
-import { convertDateToMapKey } from "@/tools/date";
+import { convertDateToKey } from "@/tools/date";
 import { DayPoolData } from "@/types/Pool";
 import BigNumber from "bignumber.js";
 import { fetchFarm } from "../farm";
@@ -55,7 +55,7 @@ export async function fetchFarmPoolData(
   // merge data by day
   const dataPerDay: Map<string, DayPoolData[]> = new Map();
   for (const data of poolData) {
-    const key = convertDateToMapKey(new Date(data.date));
+    const key = convertDateToKey(new Date(data.date));
     if (!dataPerDay.has(key)) {
       dataPerDay.set(key, []);
     }

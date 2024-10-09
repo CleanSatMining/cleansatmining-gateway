@@ -45,7 +45,7 @@ export default async (req: Request, context: Context) => {
   ) {
     return new Response("Start date is greater than end date", { status: 400 });
   }
-  if (start_input && end_input && new Date(start_input) >= todayUTC) {
+  if (start_input && new Date(start_input) >= todayUTC) {
     return new Response("Start date is greater than current date", {
       status: 400,
     });

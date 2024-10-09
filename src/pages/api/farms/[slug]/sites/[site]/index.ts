@@ -5,9 +5,17 @@ import {
   Site,
   mapSiteApiResponseToSite,
 } from "@/types/supabase.extend";
-
 import { SupabaseClient } from "@supabase/supabase-js";
 import { getSupabaseClient } from "@/databases/supabase";
+import { LRUCache } from "lru-cache";
+
+const CACHE_DURATION_SECONDS = 8 * 60 * 60; // 8 heures
+/* eslint-disable */
+const cache = new LRUCache<string, any>({
+  max: 500,
+  ttl: 1000 * CACHE_DURATION_SECONDS,
+});
+/* eslint-enable */
 
 const DATA_NOT_FOUND = "Data not found";
 
@@ -17,16 +25,24 @@ export default async function handler(
 ) {
   const { slug, site } = req.query;
   if (!slug) {
-    return res.status(400).json({ error: "Paramètre ferme manquant." });
+    return res.status(400).json({ error: "Farm name parameter missing" });
   }
   if (!site) {
-    return res.status(400).json({ error: "Paramètre site manquant." });
+    return res.status(400).json({ error: "Site name parameter missing" });
+  }
+
+  const cacheKey = `farm_${slug}_site_${site}`;
+  const cachedData = cache.get(cacheKey);
+  if (cachedData) {
+    console.log("GET SITE PASS WITH CACHE");
+    return res.status(200).json(cachedData);
   }
 
   try {
     //console.log("Récupération du site +" + site + "+");
     const siteApiResponse = await fetchSite(
       getSupabaseClient(),
+      slug.toString(),
       site.toString()
     );
     if (siteApiResponse === null) {
@@ -35,6 +51,11 @@ export default async function handler(
 
     const siteData: Site = mapSiteApiResponseToSite(siteApiResponse);
 
+    // Mettre en cache la réponse pour la durée spécifiée
+    cache.set(cacheKey, siteData);
+    console.log("GET SITE PASS NO CACHE");
+
+    // Retourner la réponse
     return res.status(200).json(siteData);
   } catch (error) {
     console.error("Erreur lors de la récupération du site :", error);
@@ -46,7 +67,8 @@ export default async function handler(
 
 async function fetchSite(
   supabase: SupabaseClient,
-  slug: string
+  farm: string,
+  site: string
 ): Promise<SiteApiResponse | null> {
   const selectQuery = GET_SUPABASE_SITES.parameters.select.full();
 
@@ -55,7 +77,8 @@ async function fetchSite(
   const { data, error } = await supabase
     .from("sites")
     .select()
-    .eq("slug", slug.trim())
+    .eq("slug", site.trim())
+    .eq("farmSlug", farm.trim())
     .select(selectQuery);
 
   if (error) {
@@ -67,7 +90,7 @@ async function fetchSite(
     console.error(DATA_NOT_FOUND);
     return null;
   }
-  const farm: SiteApiResponse = data[0] as unknown as SiteApiResponse;
+  const siteData: SiteApiResponse = data[0] as unknown as SiteApiResponse;
 
-  return farm;
+  return siteData;
 }
