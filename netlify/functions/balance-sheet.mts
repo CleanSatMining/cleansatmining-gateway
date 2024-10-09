@@ -135,9 +135,6 @@ export default async (req: Request, context: Context) => {
         });
       }
 
-      const startInput = start_input ? new Date(start_input) : undefined;
-      const endInput = end_input ? new Date(end_input) : undefined;
-
       const report: MicroServiceMiningReportResponse =
         microserviceResponse.report;
 

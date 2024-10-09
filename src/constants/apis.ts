@@ -163,7 +163,7 @@ export const GET_GATEWAY_FINANCIAL_STATEMENTS: GatewayApi = {
 export const GET_MICROSERVICE_MINING_REPORT: MicroServiceApi = {
   name: "GET_MICROSERVICE_MINING_REPORT",
   url: (farm: string, site: string | undefined, btc: number) =>
-    `/.netlify/functions/miningreports?farm=${farm}&btc=${btc}${
+    `/.netlify/functions/mining-reports?farm=${farm}&btc=${btc}${
       site ? "&site=" + site : ""
     }`,
   method: "GET",
