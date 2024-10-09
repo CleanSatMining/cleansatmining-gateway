@@ -1,13 +1,14 @@
 import { getSiteDailyMiningReports } from "@/tools/miningreports/site";
-import { DailyMiningReport } from "@/types/MiningReport";
+import { DailyMiningReport, FinancialSource } from "@/types/MiningReport";
 import { fetchSiteOperationalData } from "../operationalData/site";
 
-export async function fetchSiteDailyReport(
+export async function fetchSiteDailyMiningReport(
   farm: string,
   site: string,
   btc: number,
   start_param: string | undefined,
-  end_param: string | undefined
+  end_param: string | undefined,
+  financial_sources?: FinancialSource[]
 ): Promise<{
   report: DailyMiningReport[];
   message: string;
@@ -18,7 +19,8 @@ export async function fetchSiteDailyReport(
     farm,
     site,
     start_param,
-    end_param
+    end_param,
+    financial_sources
   );
 
   if (!operationalData.ok || operationalData.siteData === undefined) {

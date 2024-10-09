@@ -1,7 +1,5 @@
-import {
-  FinancialSource,
-  resolveFinancialSource,
-} from "@/types/FinancialSatement";
+import { resolveFinancialSource } from "@/types/FinancialSatement";
+import { FinancialSource } from "@/types/MiningReport";
 import { DailyMiningReport, MiningReport } from "@/types/MiningReport";
 import { BigNumber } from "bignumber.js";
 import {

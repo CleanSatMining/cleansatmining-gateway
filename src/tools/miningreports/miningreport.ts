@@ -1,9 +1,9 @@
 import {
   addFinancialAmount,
   DailyFinancialStatement,
-  FinancialSource,
   FinancialStatementAmount,
 } from "@/types/FinancialSatement";
+import { FinancialSource } from "@/types/MiningReport";
 import { convertDailyFinancialStatementToMiningReport } from "@/types/MiningReport";
 import { DailyMiningReport } from "@/types/MiningReport";
 import { Database } from "@/types/supabase";

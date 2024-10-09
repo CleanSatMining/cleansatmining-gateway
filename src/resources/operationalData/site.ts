@@ -2,12 +2,14 @@ import { Database } from "@/types/supabase";
 import { Site } from "@/types/supabase.extend";
 import { fetchSite } from "../site";
 import { fetchOperationalData } from "./operationaldata.common";
+import { FinancialSource } from "@/types/MiningReport";
 
 export async function fetchSiteOperationalData(
   farm: string,
   site: string,
   start: string | undefined,
-  end: string | undefined
+  end: string | undefined,
+  financial_sources?: FinancialSource[]
 ): Promise<{
   financialStatementsData: Database["public"]["Tables"]["financialStatements"]["Row"][];
   miningHistoryData: Database["public"]["Tables"]["mining"]["Row"][];
@@ -36,7 +38,13 @@ export async function fetchSiteOperationalData(
   }
   const siteData: Site = siteApiResponse.siteData;
 
-  const operationalData = await fetchOperationalData(farm, site, start, end);
+  const operationalData = await fetchOperationalData(
+    farm,
+    site,
+    start,
+    end,
+    financial_sources
+  );
   if (!operationalData.ok) {
     return {
       financialStatementsData: [],

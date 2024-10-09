@@ -3,9 +3,13 @@ import type { Context } from "@netlify/functions";
 
 import { convertToUTCStartOfDay } from "../../src/tools/date";
 import { fetchFarmDailyReport } from "../../src/resources/miningreports/farm";
-import { fetchSiteDailyReport } from "../../src/resources/miningreports/site";
+import { fetchSiteDailyMiningReport } from "../../src/resources/miningreports/site";
 
-import type { DailyMiningReport } from "../../src/types/MiningReport";
+import {
+  FinancialSource,
+  isValidFinancialSource,
+  type DailyMiningReport,
+} from "../../src/types/MiningReport";
 import type { MicroServiceMiningReportResponse } from "../../src/types/Api";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -16,6 +20,8 @@ export default async (req: Request, context: Context) => {
   const start_input = url.searchParams.get("start") || undefined;
   const end_input = url.searchParams.get("end") || undefined;
   const btc_input = url.searchParams.get("btc") || undefined;
+  const financial_sources =
+    url.searchParams.get("financial_sources") || undefined;
 
   const todayUTC = convertToUTCStartOfDay(new Date());
 
@@ -57,7 +63,20 @@ export default async (req: Request, context: Context) => {
     });
   }
 
+  if (
+    financial_sources &&
+    !financial_sources
+      .split(",")
+      .every((source) => isValidFinancialSource(source))
+  ) {
+    //!isValidFinancialSource(financial_sources)
+    return new Response("Invalid financial_sources", { status: 400 });
+  }
+
   const btc = Number(btc_input);
+  const financialSources = financial_sources
+    ?.split(",")
+    .map((source) => source as FinancialSource);
 
   try {
     if (site === undefined) {
@@ -67,7 +86,8 @@ export default async (req: Request, context: Context) => {
         farm,
         btc,
         start_input,
-        end_input
+        end_input,
+        financialSources
       );
       if (!response.ok) {
         return new Response(response.message, {
@@ -99,12 +119,13 @@ export default async (req: Request, context: Context) => {
       });
     } else {
       // Site report
-      const response = await fetchSiteDailyReport(
+      const response = await fetchSiteDailyMiningReport(
         farm,
         site,
         btc,
         start_input,
-        end_input
+        end_input,
+        financialSources
       );
 
       if (!response.ok) {

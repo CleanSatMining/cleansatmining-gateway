@@ -1,3 +1,5 @@
+import { FinancialSource } from "./MiningReport";
+
 export type DailyFinancialStatement = {
   day: Date;
   uptime: number;
@@ -13,13 +15,6 @@ export type FinancialStatementAmount = {
   usd?: number;
   source: FinancialSource;
 };
-
-export enum FinancialSource {
-  NONE = "none",
-  POOL = "pool",
-  SIMULATOR = "simulator",
-  STATEMENT = "statement",
-}
 
 export enum FinancialFlow {
   IN = "in",

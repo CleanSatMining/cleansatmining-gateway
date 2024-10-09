@@ -6,11 +6,8 @@ import {
 } from "./financialstatement.commons";
 import { filterMiningHistoryWithFinancialStatementPeriod } from "../mininghistory/mininghistory.common";
 
-import {
-  FinancialSource,
-  FinancialFlow,
-  FinancialPartnaire,
-} from "@/types/FinancialSatement";
+import { FinancialFlow, FinancialPartnaire } from "@/types/FinancialSatement";
+import { FinancialSource } from "@/types/MiningReport";
 import { DailyMiningReport } from "@/types/MiningReport";
 
 // Mock data for testing

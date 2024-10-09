@@ -2,7 +2,7 @@ import { Database } from "@/types/supabase";
 import { Site } from "@/types/supabase.extend";
 import {} from "../financialstatements/financialstatement.commons";
 import { getSiteDailyMiningReports } from "./site";
-import { FinancialSource } from "@/types/FinancialSatement";
+import { FinancialSource } from "@/types/MiningReport";
 import { DailyMiningReport } from "@/types/MiningReport";
 
 const mockSite: Site = {

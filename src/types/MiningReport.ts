@@ -2,7 +2,6 @@ import { convertToUTCStartOfDay } from "@/tools/date";
 import {
   DailyFinancialStatement,
   FinancialPartnaire,
-  FinancialSource,
   FinancialStatementAmount,
 } from "./FinancialSatement";
 import { Database } from "./supabase";
@@ -111,4 +110,14 @@ export function convertMiningHistoryToMiningReport(
       other: otherIn,
     },
   };
+}
+export enum FinancialSource {
+  NONE = "none",
+  POOL = "pool",
+  SIMULATOR = "simulator",
+  STATEMENT = "statement",
+}
+
+export function isValidFinancialSource(value: string): boolean {
+  return Object.values(FinancialSource).includes(value as FinancialSource);
 }

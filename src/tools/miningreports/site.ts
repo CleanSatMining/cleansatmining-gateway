@@ -1,7 +1,5 @@
-import {
-  FinancialSource,
-  DailyFinancialStatement,
-} from "@/types/FinancialSatement";
+import { DailyFinancialStatement } from "@/types/FinancialSatement";
+import { FinancialSource } from "@/types/MiningReport";
 import { DailyMiningReport } from "@/types/MiningReport";
 import { Database } from "@/types/supabase";
 import { Site } from "@/types/supabase.extend";

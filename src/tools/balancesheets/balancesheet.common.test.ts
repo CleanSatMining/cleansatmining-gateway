@@ -1,4 +1,4 @@
-import { FinancialSource } from "@/types/FinancialSatement";
+import { FinancialSource } from "@/types/MiningReport";
 
 import BigNumber from "bignumber.js";
 import { calculateDaysBetweenDates } from "../date";

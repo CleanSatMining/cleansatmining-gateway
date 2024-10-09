@@ -2,11 +2,13 @@ import { Database } from "@/types/supabase";
 import { Farm } from "@/types/supabase.extend";
 import { fetchFarm } from "../farm";
 import { fetchOperationalData } from "./operationaldata.common";
+import { FinancialSource } from "@/types/MiningReport";
 
 export async function fetchFarmOperationalData(
   farm: string,
   start_param: string | undefined,
-  end_param: string | undefined
+  end_param: string | undefined,
+  financial_sources?: FinancialSource[]
 ): Promise<{
   financialStatementsData: Database["public"]["Tables"]["financialStatements"]["Row"][];
   miningHistoryData: Database["public"]["Tables"]["mining"]["Row"][];
@@ -34,7 +36,8 @@ export async function fetchFarmOperationalData(
     farm,
     undefined,
     start_param,
-    end_param
+    end_param,
+    financial_sources
   );
   if (!operationalData.ok) {
     return {

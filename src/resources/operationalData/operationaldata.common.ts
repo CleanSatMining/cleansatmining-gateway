@@ -4,12 +4,17 @@ import { getFinancialStatementsPeriod } from "@/tools/financialstatements/financ
 import { convertDateToTimestamptzFormat } from "@/tools/date";
 import { fetchMiningHistory, MiningHistoryResponse } from "./mininghistory";
 import { MiningData } from "@/types/MiningHistory";
+import { FinancialSource } from "@/types/MiningReport";
 
 export async function fetchOperationalData(
   farm: string,
   site: string | undefined,
   start_param: string | undefined,
-  end_param: string | undefined
+  end_param: string | undefined,
+  financial_sources: FinancialSource[] = [
+    FinancialSource.POOL,
+    FinancialSource.STATEMENT,
+  ]
 ): Promise<{
   financialStatementsData: Database["public"]["Tables"]["financialStatements"]["Row"][];
   miningHistoryData: Database["public"]["Tables"]["mining"]["Row"][];
@@ -17,25 +22,28 @@ export async function fetchOperationalData(
   status: number;
   ok: boolean;
 }> {
-  // Fetch financial statements data
-  const financialStatementsApiResponse: Response =
-    await fetchFinancialStatements(farm, site, start_param, end_param);
-  if (!financialStatementsApiResponse.ok) {
-    return {
-      financialStatementsData: [],
-      miningHistoryData: [],
+  let financialStatementsData: Database["public"]["Tables"]["financialStatements"]["Row"][] =
+    [];
+  if (financial_sources.includes(FinancialSource.STATEMENT)) {
+    // Fetch financial statements data
+    const financialStatementsApiResponse: Response =
+      await fetchFinancialStatements(farm, site, start_param, end_param);
+    if (!financialStatementsApiResponse.ok) {
+      return {
+        financialStatementsData: [],
+        miningHistoryData: [],
 
-      status: financialStatementsApiResponse.status,
-      ok: false,
-      message:
-        "Error while fetching financial statements of " +
-        site +
-        "! " +
-        financialStatementsApiResponse.statusText,
-    };
+        status: financialStatementsApiResponse.status,
+        ok: false,
+        message:
+          "Error while fetching financial statements of " +
+          site +
+          "! " +
+          financialStatementsApiResponse.statusText,
+      };
+    }
+    financialStatementsData = await financialStatementsApiResponse.json();
   }
-  const financialStatementsData: Database["public"]["Tables"]["financialStatements"]["Row"][] =
-    await financialStatementsApiResponse.json();
 
   const { start: startStatement, end: endstatement } =
     getFinancialStatementsPeriod(financialStatementsData);
@@ -66,30 +74,33 @@ export async function fetchOperationalData(
     ? convertDateToTimestamptzFormat(endMining)
     : undefined;
 
-  // Fetch mining history data
-  const miningHistoryApiresponse: MiningHistoryResponse =
-    await fetchMiningHistory(
-      farm,
-      site,
-      startMiningTimestampz,
-      endMiningTimestampz
-    );
-  if (!miningHistoryApiresponse.ok) {
-    return {
-      financialStatementsData: [],
-      miningHistoryData: [],
+  let miningHistoryData: MiningData[] = [];
+  if (financial_sources.includes(FinancialSource.POOL)) {
+    // Fetch mining history data
+    const miningHistoryApiresponse: MiningHistoryResponse =
+      await fetchMiningHistory(
+        farm,
+        site,
+        startMiningTimestampz,
+        endMiningTimestampz
+      );
+    if (!miningHistoryApiresponse.ok) {
+      return {
+        financialStatementsData: [],
+        miningHistoryData: [],
 
-      status: miningHistoryApiresponse.status,
-      ok: false,
-      message:
-        "Error while fetchin mining history of site " +
-        site +
-        "! " +
-        miningHistoryApiresponse.statusText,
-    };
+        status: miningHistoryApiresponse.status,
+        ok: false,
+        message:
+          "Error while fetchin mining history of site " +
+          site +
+          "! " +
+          miningHistoryApiresponse.statusText,
+      };
+    }
+
+    miningHistoryData = miningHistoryApiresponse.data;
   }
-
-  const miningHistoryData: MiningData[] = miningHistoryApiresponse.data;
 
   return {
     financialStatementsData,

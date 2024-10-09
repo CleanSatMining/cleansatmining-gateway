@@ -5,8 +5,8 @@ import {
   FinancialStatementAmount,
   FinancialFlow,
   FinancialPartnaire,
-  FinancialSource,
 } from "@/types/FinancialSatement";
+import { FinancialSource } from "@/types/MiningReport";
 import { BigNumber } from "bignumber.js";
 
 function getEmptyDailyFinancialStatement(

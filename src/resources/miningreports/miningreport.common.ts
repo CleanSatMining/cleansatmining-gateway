@@ -1,12 +1,14 @@
 import { GET_MICROSERVICE_MINING_REPORT } from "@/constants/apis";
 import { MicroServiceMiningReportResponse } from "@/types/Api";
+import { FinancialSource } from "@/types/MiningReport";
 
 export async function fetchMiningReport(
   farm: string,
   site: string | undefined = undefined,
   btc: number,
   start: string | undefined = undefined,
-  end: string | undefined = undefined
+  end: string | undefined = undefined,
+  financial_sources?: FinancialSource[]
 ): Promise<{
   report: MicroServiceMiningReportResponse | undefined;
   message: string;
@@ -29,6 +31,10 @@ export async function fetchMiningReport(
   }
   if (end) {
     url.searchParams.append("end", end);
+  }
+  if (financial_sources) {
+    const sources = financial_sources.join(",");
+    url.searchParams.append("financial_sources", sources);
   }
 
   console.log("FETCH MINING REPORT", url.toString());

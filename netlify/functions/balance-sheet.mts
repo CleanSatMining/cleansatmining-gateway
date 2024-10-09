@@ -11,6 +11,10 @@ import { calculateSiteBalanceSheet } from "../../src/tools/balancesheets/site";
 import { MicroServiceMiningReportResponse } from "../../src/types/Api";
 import { Farm, Site } from "../../src/types/supabase.extend";
 import { DetailedBalanceSheet } from "../../src/types/BalanceSeet";
+import {
+  FinancialSource,
+  isValidFinancialSource,
+} from "../../src/types/MiningReport";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default async (req: Request, context: Context) => {
@@ -20,6 +24,8 @@ export default async (req: Request, context: Context) => {
   const start_input = url.searchParams.get("start") || undefined;
   const end_input = url.searchParams.get("end") || undefined;
   const btc_input = url.searchParams.get("btc") || undefined;
+  const financial_sources =
+    url.searchParams.get("financial_sources") || undefined;
 
   const todayUTC = convertToUTCStartOfDay(new Date());
 
@@ -61,7 +67,20 @@ export default async (req: Request, context: Context) => {
     });
   }
 
+  if (
+    financial_sources &&
+    !financial_sources
+      .split(",")
+      .every((source) => isValidFinancialSource(source))
+  ) {
+    //!isValidFinancialSource(financial_sources)
+    return new Response("Invalid financial_sources", { status: 400 });
+  }
+
   const btc = Number(btc_input);
+  const financialSources = financial_sources
+    ?.split(",")
+    .map((source) => source as FinancialSource);
 
   console.log(
     "MICROSERVICE BALANCE SHEET",
@@ -92,7 +111,8 @@ export default async (req: Request, context: Context) => {
         undefined,
         btc,
         start_input,
-        end_input
+        end_input,
+        financialSources
       );
 
       if (!microserviceResponse.ok) {
@@ -134,7 +154,8 @@ export default async (req: Request, context: Context) => {
         site,
         btc,
         start_input,
-        end_input
+        end_input,
+        financialSources
       );
 
       if (!microserviceResponse.ok) {
