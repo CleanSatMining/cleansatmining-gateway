@@ -33,10 +33,14 @@ export function getFinancialStatementUptimeWeight(
   const timestampEnd = new Date(financialStatement.end).getTime();
   let weight = 0;
   let daysInHistory = 0;
-  for (const history of miningHistory) {
-    const timestamp = new Date(history.day).getTime();
-    if (timestamp >= timestampStart && timestamp <= timestampEnd) {
-      weight += history.uptime;
+  for (const mining of miningHistory) {
+    const timestampMiningDay = new Date(mining.day).getTime();
+    if (
+      timestampMiningDay >= timestampStart &&
+      timestampMiningDay < timestampEnd
+    ) {
+      //console.log("mining.uptime", mining.day);
+      weight += mining.uptime;
       daysInHistory++;
     }
   }
@@ -48,11 +52,9 @@ export function getFinancialStatementUptimeWeight(
   if (daysInHistory !== days) {
     console.warn("");
     console.warn(
-      `The number of days in the financial statement (${days}) does not match the number of days in the mining history (${daysInHistory}) : ${JSON.stringify(
-        financialStatement,
-        null,
-        2
-      )}`
+      `The number of days in the financial statement (${days}) does not match the number of days in the mining history (${daysInHistory}/${
+        miningHistory.length
+      }) : ${JSON.stringify(financialStatement, null, 2)}`
     );
   }
 

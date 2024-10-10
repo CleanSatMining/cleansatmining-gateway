@@ -60,13 +60,19 @@ export function getSiteDailyMiningReports(
 }
 
 export function getSiteMiningReportsByDay(
-  financialStatements: Database["public"]["Tables"]["financialStatements"]["Row"][],
-  miningHistory: Database["public"]["Tables"]["mining"]["Row"][],
+  _financialStatements: Database["public"]["Tables"]["financialStatements"]["Row"][],
+  _miningHistory: Database["public"]["Tables"]["mining"]["Row"][],
   site: Site,
   btcPrice: number,
   start_param: Date | undefined = undefined,
   end_param: Date = getTodayDate()
 ): Map<string, DailyMiningReport> {
+  const miningHistory = _miningHistory.filter(
+    (history) => history.siteSlug === site.slug
+  );
+  const financialStatements = _financialStatements.filter(
+    (statement) => statement.siteSlug === site.slug
+  );
   const miningReportByDay: Map<string, DailyMiningReport> = new Map();
 
   // get the mining history data by day
