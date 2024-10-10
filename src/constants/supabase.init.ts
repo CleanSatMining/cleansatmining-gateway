@@ -80,11 +80,12 @@ export const financialStatementsInitRow: Database["public"]["Tables"]["financial
     flow: "",
     id: 0,
     start: "",
-    usd: 0,
+    fiat: 0,
     farmSlug: "",
     siteSlug: "",
     from: null,
     to: null,
+    currency: "",
   };
 
 export const fundraisingsInitRow: Database["public"]["Tables"]["fundraisings"]["Row"] =
