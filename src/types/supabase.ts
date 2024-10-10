@@ -297,43 +297,46 @@ export type Database = {
           btc: number
           btcPrice: number
           created_at: string
+          currency: string | null
           end: string
           farmSlug: string
+          fiat: number
           flow: string
           from: string | null
           id: number
           siteSlug: string
           start: string
           to: string | null
-          usd: number
         }
         Insert: {
           btc: number
           btcPrice: number
           created_at?: string
+          currency?: string | null
           end: string
           farmSlug: string
+          fiat: number
           flow: string
           from?: string | null
           id?: number
           siteSlug: string
           start: string
           to?: string | null
-          usd: number
         }
         Update: {
           btc?: number
           btcPrice?: number
           created_at?: string
+          currency?: string | null
           end?: string
           farmSlug?: string
+          fiat?: number
           flow?: string
           from?: string | null
           id?: number
           siteSlug?: string
           start?: string
           to?: string | null
-          usd?: number
         }
         Relationships: [
           {

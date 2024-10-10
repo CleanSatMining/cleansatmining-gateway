@@ -4,4 +4,4 @@
   functions = "netlify/functions"
 
 [functions."update-mining-history"]
-schedule = "0 1 * * *"
+schedule = "0 2 * * *"

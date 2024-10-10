@@ -109,7 +109,7 @@ export function convertFinancialStatementInDailyPeriod(
   // Get the amount of the statement
   const financialStatementAmount: FinancialStatementAmount = {
     btc: financialStatement.btc,
-    usd: financialStatement.usd,
+    //usd: financialStatement.fiat,
     source: FinancialSource.STATEMENT,
   };
 
@@ -194,9 +194,9 @@ export function convertFinancialStatementInDailyPeriod(
         btcPrice: financialStatement.btcPrice,
         amount: {
           btc: financialStatement.btc / totalDays,
-          usd: financialStatement.usd
-            ? financialStatement.usd / totalDays
-            : undefined,
+          /*usd: financialStatement.fiat
+            ? financialStatement.fiat / totalDays
+            : undefined,*/
           source: FinancialSource.STATEMENT,
         },
         flow: flow,
