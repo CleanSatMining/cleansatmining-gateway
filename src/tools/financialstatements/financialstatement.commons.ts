@@ -54,7 +54,7 @@ export function getFinancialStatementUptimeWeight(
     console.warn(
       `The number of days in the financial statement (${days}) does not match the number of days in the mining history (${daysInHistory}/${
         miningHistory.length
-      }) : ${JSON.stringify(financialStatement, null, 2)}`
+      }) weight is ${weight} : ${JSON.stringify(financialStatement, null, 2)}`
     );
   }
 

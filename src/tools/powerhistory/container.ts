@@ -75,6 +75,7 @@ export function calculateContainersPowerHistory(
         : new Date();
       if (containerStartDate <= startDate && startDate < containerEndDate) {
         // The container is active at the given start date
+        console.log("Container is active", container.id, container.start);
         return true;
       }
       return false;

@@ -82,22 +82,22 @@ export default async (req: Request, context: Context) => {
     if (site === undefined) {
       // Farm report
       console.log("api farm", farm);
-      const response = await fetchFarmDailyReport(
+      const dailyReportsResponse = await fetchFarmDailyReport(
         farm,
         btc,
         start_input,
         end_input,
         financialSources
       );
-      if (!response.ok) {
-        return new Response(response.message, {
-          status: response.status,
+      if (!dailyReportsResponse.ok) {
+        return new Response(dailyReportsResponse.message, {
+          status: dailyReportsResponse.status,
         });
       }
 
       //console.log("api farm response", response.report.length);
 
-      const report: DailyMiningReport[] = response.report;
+      const report: DailyMiningReport[] = dailyReportsResponse.report;
       const numberOfDays = report.length;
       const dateStart = numberOfDays > 0 ? new Date(report[0].day) : undefined;
       const dateEnd =
@@ -105,16 +105,16 @@ export default async (req: Request, context: Context) => {
       // add a day to the end date
       if (dateEnd) dateEnd.setDate(dateEnd.getDate() + 1);
 
-      const apiResponse: MicroServiceMiningReportResponse = {
+      const miningReportsReturn: MicroServiceMiningReportResponse = {
         farm: farm,
         start: dateStart,
         end: dateEnd,
-        numberOfDays: response.report.length,
+        numberOfDays: dailyReportsResponse.report.length,
         btcSellPrice: btc,
-        data: response.report,
+        data: dailyReportsResponse.report,
       };
 
-      return new Response(JSON.stringify(apiResponse), {
+      return new Response(JSON.stringify(miningReportsReturn), {
         headers: { "content-type": "application/json" },
       });
     } else {

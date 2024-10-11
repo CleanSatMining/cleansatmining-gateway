@@ -17,7 +17,7 @@ export function filterMiningReportsByDay(
   endDay: Date
 ): void {
   miningReportByDay.forEach((report, key) => {
-    if (report.day < startDay || report.day > endDay) {
+    if (report.day < startDay || report.day >= endDay) {
       miningReportByDay.delete(key);
     }
   });

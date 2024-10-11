@@ -47,10 +47,9 @@ export function calculateFarmBalanceSheet(
   });
 
   // get all container ids
-  const containerIds = farm.sites.reduce((acc, site) => {
-    return acc.concat(site.containers.map((container) => container.id));
+  const containerIds = details.reduce((acc, detail) => {
+    return detail.containerIds ? acc.concat(detail.containerIds) : acc;
   }, [] as number[]);
-
   return {
     start: sheet.start,
     end: sheet.end,
