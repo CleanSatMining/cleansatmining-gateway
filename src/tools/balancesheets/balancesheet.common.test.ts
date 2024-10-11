@@ -9,6 +9,7 @@ import { calculateBalanceSheet } from "./balancesheet.common";
 const data: DailyMiningReport[] = [
   {
     day: new Date("2023-01-01"),
+    hashrateTHsMax: 100,
     uptime: 95,
     hashrateTHs: 100,
     btcSellPrice: 45000,
@@ -25,6 +26,7 @@ const data: DailyMiningReport[] = [
   },
   {
     day: new Date("2023-01-02"),
+    hashrateTHsMax: 105,
     uptime: 96,
     hashrateTHs: 105,
     btcSellPrice: 46000,

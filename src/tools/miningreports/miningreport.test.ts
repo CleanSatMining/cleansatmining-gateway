@@ -10,6 +10,7 @@ const mockSite: Site = {
   slug: "alpha1",
   farmSlug: "alpha",
   contractId: 1,
+  started_at: "2024-09-02T00:00:00.000Z",
   closed_at: null,
   isClosed: false,
   location: {
@@ -98,11 +99,12 @@ const mockSite: Site = {
 const mockPoolFinancialStatement: Database["public"]["Tables"]["financialStatements"]["Row"] =
   {
     id: 1,
+    currency: "USD",
     start: "2024-01-01T00:00:00.000Z",
     end: "2024-01-10T23:59:59.999Z",
     // Add other necessary fields
     btc: 1,
-    usd: 50000,
+    fiat: 50000,
     flow: "IN",
     btcPrice: 50000,
     created_at: "2024-09-02T00:00:00.000Z",
@@ -115,11 +117,12 @@ const mockPoolFinancialStatement: Database["public"]["Tables"]["financialStateme
 const mockElecFinancialStatement: Database["public"]["Tables"]["financialStatements"]["Row"] =
   {
     id: 2,
+    currency: "USD",
     start: "2024-01-01T00:00:00.000Z",
     end: "2024-01-10T23:59:59.999Z",
     // Add other necessary fields
     btc: 0.5,
-    usd: 25000,
+    fiat: 25000,
     flow: "OUT",
     btcPrice: 50000,
     created_at: "2024-09-02T00:00:00.000Z",
@@ -132,11 +135,12 @@ const mockElecFinancialStatement: Database["public"]["Tables"]["financialStateme
 const mockOpeFinancialStatement: Database["public"]["Tables"]["financialStatements"]["Row"] =
   {
     id: 3,
+    currency: "USD",
     start: "2024-01-01T00:00:00.000Z",
     end: "2024-01-10T23:59:59.999Z",
     // Add other necessary fields
     btc: 0.05,
-    usd: 2500,
+    fiat: 2500,
     flow: "OUT",
     btcPrice: 50000,
     created_at: "2024-09-02T00:00:00.000Z",
@@ -149,11 +153,12 @@ const mockOpeFinancialStatement: Database["public"]["Tables"]["financialStatemen
 const mockCsmFinancialStatement: Database["public"]["Tables"]["financialStatements"]["Row"] =
   {
     id: 4,
+    currency: "USD",
     start: "2024-01-01T00:00:00.000Z",
     end: "2024-01-10T23:59:59.999Z",
     // Add other necessary fields
     btc: 0.025,
-    usd: 1250,
+    fiat: 1250,
     flow: "OUT",
     btcPrice: 50000,
     created_at: "2024-09-02T00:00:00.000Z",
@@ -279,6 +284,7 @@ const mockMiningHistory: Database["public"]["Tables"]["mining"]["Row"][] = [
 const mockDailyAccounting1: DailyMiningReport = {
   day: new Date("2023-01-01"),
   uptime: 10,
+  hashrateTHsMax: 100,
   hashrateTHs: 100,
   btcSellPrice: 50000,
   expenses: {
@@ -295,6 +301,7 @@ const mockDailyAccounting1: DailyMiningReport = {
 
 const mockDailyAccounting2: DailyMiningReport = {
   day: new Date("2023-01-01"),
+  hashrateTHsMax: 100,
   uptime: 10,
   hashrateTHs: 100,
   btcSellPrice: 50000,

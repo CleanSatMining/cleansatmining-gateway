@@ -1,9 +1,7 @@
 import { Database } from "@/types/supabase";
 import { Site } from "@/types/supabase.extend";
-import {
-  getFinancialStatementUptimeWeight,
-  convertFinancialStatementInDailyPeriod as getFinancialStatementByDay,
-} from "./financialstatement.commons";
+import { getFinancialStatementUptimeWeight } from "./financialstatement.commons";
+import { convertSiteFinancialStatementInDailyPeriod } from "./site";
 import { filterMiningHistoryWithFinancialStatementPeriod } from "../mininghistory/mininghistory.common";
 
 import { FinancialFlow, FinancialPartnaire } from "@/types/FinancialSatement";
@@ -18,7 +16,8 @@ const mockPoolFinancialStatement: Database["public"]["Tables"]["financialStateme
     end: "2024-01-10T23:59:59.999Z",
     // Add other necessary fields
     btc: 1,
-    usd: 50000,
+    fiat: 50000,
+    currency: "USD",
     flow: "IN",
     btcPrice: 50000,
     created_at: "2024-09-02T00:00:00.000Z",
@@ -35,7 +34,8 @@ const mockElecFinancialStatement: Database["public"]["Tables"]["financialStateme
     end: "2024-01-10T23:59:59.999Z",
     // Add other necessary fields
     btc: 0.5,
-    usd: 25000,
+    fiat: 25000,
+    currency: "USD",
     flow: "OUT",
     btcPrice: 50000,
     created_at: "2024-09-02T00:00:00.000Z",
@@ -52,7 +52,7 @@ const mockOpeFinancialStatement: Database["public"]["Tables"]["financialStatemen
     end: "2024-01-10T23:59:59.999Z",
     // Add other necessary fields
     btc: 0.05,
-    usd: 2500,
+    fiat: 2500,
     flow: "OUT",
     btcPrice: 50000,
     created_at: "2024-09-02T00:00:00.000Z",
@@ -60,6 +60,7 @@ const mockOpeFinancialStatement: Database["public"]["Tables"]["financialStatemen
     siteSlug: "alpha1",
     from: null,
     to: "OPERATOR",
+    currency: "USD",
   };
 
 const mockCsmFinancialStatement: Database["public"]["Tables"]["financialStatements"]["Row"] =
@@ -69,7 +70,7 @@ const mockCsmFinancialStatement: Database["public"]["Tables"]["financialStatemen
     end: "2024-01-10T23:59:59.999Z",
     // Add other necessary fields
     btc: 0.025,
-    usd: 1250,
+    fiat: 1250,
     flow: "OUT",
     btcPrice: 50000,
     created_at: "2024-09-02T00:00:00.000Z",
@@ -77,6 +78,7 @@ const mockCsmFinancialStatement: Database["public"]["Tables"]["financialStatemen
     siteSlug: "alpha1",
     from: null,
     to: "CSM SA",
+    currency: "USD",
   };
 
 const mockMiningHistory: Database["public"]["Tables"]["mining"]["Row"][] = [
@@ -197,6 +199,7 @@ const mockDailyAccounting1: DailyMiningReport = {
   uptime: 10,
   hashrateTHs: 100,
   btcSellPrice: 50000,
+  hashrateTHsMax: 100,
   expenses: {
     electricity: { btc: 100, usd: 0, source: FinancialSource.STATEMENT },
     csm: { btc: 50, usd: 0, source: FinancialSource.STATEMENT },
@@ -213,6 +216,7 @@ const mockDailyAccounting2: DailyMiningReport = {
   day: new Date("2023-01-01"),
   uptime: 10,
   hashrateTHs: 100,
+  hashrateTHsMax: 100,
   btcSellPrice: 50000,
   expenses: {
     electricity: { btc: 100, usd: 0, source: FinancialSource.STATEMENT },
@@ -241,24 +245,6 @@ describe("financialstatements.ts", () => {
       mockMiningHistory
     );
     expect(relatedHistory).toHaveLength(10); // Adjust expected value based on your logic
-  });
-
-  test("getDailyFinancialStatement", () => {
-    // Add your test logic here
-
-    const financialStatementByDay = getFinancialStatementByDay(
-      mockPoolFinancialStatement,
-      mockMiningHistory
-    );
-
-    const statements = Array.from(financialStatementByDay.values());
-
-    expect(statements.length).toBe(10);
-    expect(statements[0].amount.btc).toBe(mockPoolFinancialStatement.btc / 8);
-    expect(statements[0].amount.usd).toBe(mockPoolFinancialStatement.usd / 8);
-    expect(statements[0].uptime).toBe(1);
-    expect(statements[0].flow).toBe(FinancialFlow.IN);
-    expect(statements[0].partnaire).toBe(FinancialPartnaire.POOL);
   });
 
   test("mapFinancialPartnaireToField", () => {

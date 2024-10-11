@@ -4,6 +4,7 @@ export type DailyFinancialStatement = {
   day: Date;
   uptime: number;
   hashrateTHs: number;
+  hashrateTHsMax: number;
   flow: FinancialFlow;
   partnaire: FinancialPartnaire;
   amount: FinancialStatementAmount;

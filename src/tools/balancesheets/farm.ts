@@ -24,6 +24,8 @@ export function calculateFarmBalanceSheet(
   }
 
   const powerHistory = calculateFarmPowerHistory(farm, startDay, endDay);
+  console.log("=> powerHistory", JSON.stringify(powerHistory, null, 2));
+
   const sheet: BalanceSheet = calculateBalanceSheet(
     miningReports,
     btcPrice,
@@ -55,7 +57,7 @@ export function calculateFarmBalanceSheet(
     end: sheet.end,
     days: sheet.days,
     balance: sheet.balance,
-    containerIds: containerIds,
+    containerIds: Array.from(new Set(containerIds)),
     details,
   };
 }

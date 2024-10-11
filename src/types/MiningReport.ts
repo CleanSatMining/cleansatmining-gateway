@@ -9,6 +9,7 @@ import { Database } from "./supabase";
 export type MiningReport = {
   uptime: number;
   hashrateTHs: number;
+  hashrateTHsMax: number;
   btcSellPrice: number;
   expenses: {
     electricity: FinancialStatementAmount;
@@ -26,6 +27,7 @@ export type DailyMiningReport = {
   day: Date;
   uptime: number;
   hashrateTHs: number;
+  hashrateTHsMax: number;
   btcSellPrice: number;
   expenses: {
     electricity: FinancialStatementAmount;
@@ -45,6 +47,7 @@ export function convertDailyFinancialStatementToMiningReport(
     day: convertToUTCStartOfDay(dayStatement.day),
     uptime: dayStatement.uptime,
     hashrateTHs: dayStatement.hashrateTHs,
+    hashrateTHsMax: dayStatement.hashrateTHsMax,
     btcSellPrice: dayStatement.btcPrice,
     expenses: {
       electricity:
@@ -79,6 +82,7 @@ export function convertDailyFinancialStatementToMiningReport(
 
 export function convertMiningHistoryToMiningReport(
   miningDay: Database["public"]["Tables"]["mining"]["Row"],
+  hashrateTHsMax: number,
   btcPrice?: number,
   electricityCost?: FinancialStatementAmount,
   csmCost?: FinancialStatementAmount,
@@ -98,6 +102,7 @@ export function convertMiningHistoryToMiningReport(
     day: convertToUTCStartOfDay(new Date(miningDay.day)),
     uptime: miningDay.uptime,
     hashrateTHs: miningDay.hashrateTHs,
+    hashrateTHsMax: hashrateTHsMax,
     btcSellPrice: btcPrice ?? 0,
     expenses: {
       electricity: electricity,

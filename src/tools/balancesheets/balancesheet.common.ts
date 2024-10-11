@@ -38,7 +38,7 @@ export function calculateBalanceSheet(
       startDay,
       endDay
     );
-    throw new Error("calculateBalanceSheet - No mining reports found ");
+    return getEmptyBalanceSheet(btcPrice, startDay, endDay);
   }
 
   const start = startDay ?? startDayReport;
@@ -62,6 +62,7 @@ function _calculateBalanceSheet(
     return {
       uptime: 0,
       hashrateTHs: 0,
+      hashrateTHsMax: 0,
       btcSellPrice: btcPrice ?? 1,
       expenses: {
         electricity: { btc: 0, source: FinancialSource.NONE },
@@ -93,6 +94,10 @@ function _calculateBalanceSheet(
       acc.hashrateTHs = new BigNumber(report.hashrateTHs)
         .dividedBy(days)
         .plus(acc.hashrateTHs)
+        .toNumber();
+      acc.hashrateTHsMax = new BigNumber(report.hashrateTHsMax)
+        .dividedBy(days)
+        .plus(acc.hashrateTHsMax)
         .toNumber();
       acc.btcSellPrice = report.btcSellPrice;
       acc.expenses.electricity.btc = new BigNumber(
@@ -147,6 +152,7 @@ function _calculateBalanceSheet(
     {
       uptime: 0,
       hashrateTHs: 0,
+      hashrateTHsMax: 0,
       btcSellPrice: btcPrice ?? 1,
       expenses: {
         electricity: { btc: 0, source: FinancialSource.NONE },
@@ -160,6 +166,12 @@ function _calculateBalanceSheet(
       },
     } as MiningReport
   );
+
+  /*if (total.hashrateTHsMax > 0) {
+    total.uptime = new BigNumber(total.hashrateTHs)
+      .dividedBy(total.hashrateTHsMax)
+      .toNumber();
+  }*/
 
   if (btcPrice) {
     total.btcSellPrice = btcPrice;
@@ -186,4 +198,32 @@ function _calculateBalanceSheet(
   }
 
   return total;
+}
+
+export function getEmptyBalanceSheet(
+  btcPrice: number = 1,
+  startDay: Date = new Date(),
+  endDay: Date = new Date()
+): BalanceSheet {
+  return {
+    start: startDay,
+    end: endDay,
+    days: calculateDaysBetweenDates(startDay, endDay),
+    balance: {
+      uptime: 0,
+      hashrateTHs: 0,
+      hashrateTHsMax: 0,
+      btcSellPrice: btcPrice,
+      expenses: {
+        electricity: { btc: 0, source: FinancialSource.NONE },
+        csm: { btc: 0, source: FinancialSource.NONE },
+        operator: { btc: 0, source: FinancialSource.NONE },
+        other: { btc: 0, source: FinancialSource.NONE },
+      },
+      income: {
+        pool: { btc: 0, source: FinancialSource.NONE },
+        other: { btc: 0, source: FinancialSource.NONE },
+      },
+    },
+  };
 }

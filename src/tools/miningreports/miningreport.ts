@@ -31,6 +31,7 @@ export function getEmptyDailyMiningReport(
     day: convertToUTCStartOfDay(day),
     uptime: 0,
     hashrateTHs: 0,
+    hashrateTHsMax: 0,
     btcSellPrice: btcSellPrice,
     expenses: {
       electricity: { btc: 0, source: FinancialSource.NONE },
@@ -48,6 +49,7 @@ export function getDailyMiningReportFromPool(
   day: Date,
   uptime: number,
   hashrateTHs: number,
+  hashrateTHsMax: number,
   btc: number,
   btcPrice: number,
   electricityCost?: FinancialStatementAmount,
@@ -60,6 +62,7 @@ export function getDailyMiningReportFromPool(
     day: convertToUTCStartOfDay(day),
     uptime: uptime,
     hashrateTHs: hashrateTHs,
+    hashrateTHsMax: hashrateTHsMax,
     btcSellPrice: btcPrice,
     expenses: {
       electricity: electricityCost ?? { btc: 0, source: FinancialSource.NONE },
@@ -98,7 +101,8 @@ export function mergeDayStatementsIntoMiningReport(
 function mergeDayStatmentsMiningReports(
   dayReports: DailyMiningReport[],
   dayUptime?: number,
-  dayHashrateTHs?: number
+  dayHashrateTHs?: number,
+  dayHashrateTHsMax?: number
 ): DailyMiningReport {
   if (dayReports.length === 0) {
     throw new Error("Day Statments : Cannot merge empty Mining Report");
@@ -130,6 +134,7 @@ function mergeDayStatmentsMiningReports(
     day: dayReports[0].day, // Assuming the day is the same for both accounts
     uptime: dayUptime ?? dayReports[0].uptime, // Assuming the uptime is the same for both accounts
     hashrateTHs: dayHashrateTHs ?? dayReports[0].hashrateTHs, // Assuming the hashrate is the same for both accounts
+    hashrateTHsMax: dayHashrateTHsMax ?? dayReports[0].hashrateTHsMax,
     btcSellPrice: dayReports[0].btcSellPrice,
     expenses: {
       electricity: addFinancialAmount(
@@ -189,21 +194,20 @@ export function mergeDayMiningReport(
     throw new Error("Cannot merge Mining Report for different days");
   }
 
-  const hashrateWeight =
-    dayReports[0].hashrateTHs > 0 && dayReports[0].hashrateTHs > 0
-      ? dayReports[0].hashrateTHs + dayReports[1].hashrateTHs
-      : 1;
   const hashrateTHs = dayReports[0].hashrateTHs + dayReports[1].hashrateTHs;
-  const uptime = new BigNumber(dayReports[0].uptime)
-    .times(dayReports[0].hashrateTHs)
-    .plus(new BigNumber(dayReports[1].uptime).times(dayReports[1].hashrateTHs))
-    .dividedBy(hashrateWeight)
-    .toNumber();
+  const hashrateTHsMax =
+    dayReports[0].hashrateTHsMax + dayReports[1].hashrateTHsMax;
+  const hashrateWeight = hashrateTHsMax > 0 ? hashrateTHsMax : 1;
+  const uptime =
+    hashrateTHsMax > 0
+      ? new BigNumber(hashrateTHs).dividedBy(hashrateTHsMax).toNumber()
+      : 0;
 
   const sum: DailyMiningReport = {
     day: dayReports[0].day, // Assuming the day is the same for both accounts
     uptime: uptime,
     hashrateTHs: hashrateTHs,
+    hashrateTHsMax: hashrateTHsMax,
     btcSellPrice: dayReports[0].btcSellPrice,
     expenses: {
       electricity: addFinancialAmount(
@@ -255,15 +259,18 @@ export function mergeMiningReports(
   const mergedReports = new Map<string, DailyMiningReport>();
 
   miningReports.forEach((map) => {
-    map.forEach((value, key) => {
-      if (mergedReports.has(key)) {
-        const existingReport = mergedReports.get(key);
+    map.forEach((newReport, day) => {
+      if (mergedReports.has(day)) {
+        const existingReport = mergedReports.get(day);
         if (existingReport) {
-          const mergedReport = mergeDayMiningReport([existingReport, value]);
-          mergedReports.set(key, mergedReport);
+          const mergedReport = mergeDayMiningReport([
+            existingReport,
+            newReport,
+          ]);
+          mergedReports.set(day, mergedReport);
         }
       } else {
-        mergedReports.set(key, value);
+        mergedReports.set(day, newReport);
       }
     });
   });

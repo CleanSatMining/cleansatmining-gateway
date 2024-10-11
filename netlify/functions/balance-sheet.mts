@@ -170,7 +170,9 @@ export default async (req: Request, context: Context) => {
       const balance: DetailedBalanceSheet = calculateSiteBalanceSheet(
         siteData,
         report.data,
-        btc
+        btc,
+        start_input ? new Date(start_input) : undefined,
+        end_input ? new Date(end_input) : undefined
       );
 
       return new Response(JSON.stringify(balance), {

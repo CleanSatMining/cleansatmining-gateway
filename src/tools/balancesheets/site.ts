@@ -1,17 +1,21 @@
 import { DetailedBalanceSheet } from "@/types/BalanceSeet";
-import { DailyMiningReport } from "@/types/MiningReport";
+import { DailyMiningReport, FinancialSource } from "@/types/MiningReport";
 import { Site } from "@/types/supabase.extend";
 import { getDailyMiningReportsPeriod } from "../miningreports/miningreport";
 import { calculateSitePowerHistory } from "../powerhistory/site";
 import { calculateBalanceSheet } from "./balancesheet.common";
+import { calculateDaysBetweenDates } from "../date";
+import { getActiveContainersOnPeriod } from "../powerhistory/container";
 
 export function calculateSiteBalanceSheet(
   site: Site,
   miningReports: DailyMiningReport[],
-  btcPrice: number
+  btcPrice: number,
+  startInput?: Date,
+  endInput?: Date
 ): DetailedBalanceSheet {
   if (miningReports.length === 0) {
-    throw new Error("No mining reports found");
+    return getEmptyDetailedBalanceSheet(site, btcPrice, startInput, endInput);
   }
 
   const { start: startDay, end: endDay } =
@@ -40,7 +44,11 @@ export function calculateSiteBalanceSheet(
       ),
       btcPrice
     );
-    balance.containerIds = site.containers.map((container) => container.id);
+    balance.containerIds = getActiveContainersOnPeriod(
+      site.containers,
+      balance.start,
+      balance.end
+    ).map((container) => container.id);
     return balance;
   });
 
@@ -54,5 +62,64 @@ export function calculateSiteBalanceSheet(
     balance: sheet.balance,
     containerIds: containerIds,
     details,
+  };
+}
+
+export function getEmptyDetailedBalanceSheet(
+  site: Site,
+  btcPrice: number,
+  startInput?: Date,
+  endInput?: Date
+): DetailedBalanceSheet {
+  const siteStart = site.started_at ? new Date(site.started_at) : undefined;
+  const siteClose = site.closed_at ? new Date(site.closed_at) : undefined;
+
+  const calculStart = startInput ?? siteStart ?? new Date();
+  const calculEnd = endInput ?? siteClose ?? new Date();
+
+  return {
+    start: calculStart,
+    end: calculEnd,
+    days: calculateDaysBetweenDates(calculStart, calculEnd),
+    containerIds: getActiveContainersOnPeriod(
+      site.containers,
+      calculStart,
+      calculEnd
+    ).map((container) => container.id),
+    details: [],
+    balance: {
+      btcSellPrice: btcPrice,
+      hashrateTHs: 0,
+      hashrateTHsMax: 0,
+      uptime: 0,
+      expenses: {
+        electricity: {
+          btc: 0,
+          source: FinancialSource.NONE,
+        },
+        csm: {
+          btc: 0,
+          source: FinancialSource.NONE,
+        },
+        operator: {
+          btc: 0,
+          source: FinancialSource.NONE,
+        },
+        other: {
+          btc: 0,
+          source: FinancialSource.NONE,
+        },
+      },
+      income: {
+        pool: {
+          btc: 0,
+          source: FinancialSource.NONE,
+        },
+        other: {
+          btc: 0,
+          source: FinancialSource.NONE,
+        },
+      },
+    },
   };
 }

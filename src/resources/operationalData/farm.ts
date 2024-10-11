@@ -3,6 +3,7 @@ import { Farm } from "@/types/supabase.extend";
 import { fetchFarm } from "../farm";
 import { fetchOperationalData } from "./operationaldata.common";
 import { FinancialSource } from "@/types/MiningReport";
+import { filterSiteMiningHistoryDataOutOfRange } from "./site";
 
 export async function fetchFarmOperationalData(
   farm: string,
@@ -52,10 +53,29 @@ export async function fetchFarmOperationalData(
 
   return {
     financialStatementsData: operationalData.financialStatementsData,
-    miningHistoryData: operationalData.miningHistoryData,
+    miningHistoryData: filterFarmMiningHistoryDataOutOfRange(
+      operationalData.miningHistoryData,
+      farmData
+    ),
     farmData,
     status: 200,
     ok: true,
     message: "Success",
   };
+}
+
+function filterFarmMiningHistoryDataOutOfRange(
+  miningHistoryData: Database["public"]["Tables"]["mining"]["Row"][],
+  farm: Farm
+): Database["public"]["Tables"]["mining"]["Row"][] {
+  const farmData: Database["public"]["Tables"]["mining"]["Row"][] = [];
+  farm.sites.forEach((site) => {
+    const siteMiningHistoryDataFiltered = filterSiteMiningHistoryDataOutOfRange(
+      miningHistoryData,
+      site
+    );
+    farmData.push(...siteMiningHistoryDataFiltered);
+  });
+
+  return farmData;
 }
