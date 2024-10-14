@@ -7,7 +7,8 @@ export async function fetchFarmDailyReport(
   btc: number,
   start_param: string | undefined,
   end_param: string | undefined,
-  financial_sources?: FinancialSource[]
+  financial_sources?: FinancialSource[],
+  withDetails: boolean = false
 ): Promise<{
   report: DailyMiningReport[];
   message: string;
@@ -36,7 +37,8 @@ export async function fetchFarmDailyReport(
     operationalData.farmData,
     btc,
     start_param ? new Date(start_param) : undefined,
-    end_param ? new Date(end_param) : undefined
+    end_param ? new Date(end_param) : undefined,
+    withDetails
   );
   return {
     report: reports,

@@ -10,10 +10,35 @@ export function calculateSitePower(
   site: Site,
   day: Date
 ): { watts: number; hashrateTHs: number; units: number } {
-  const containers = site.containers;
+  const siteStartedAt = site.started_at
+    ? new Date(site.started_at)
+    : getTodayDate();
+  const siteClosedAt = site.closed_at
+    ? new Date(site.closed_at)
+    : getTodayDate();
 
+  if (
+    day.getTime() < siteStartedAt.getTime() ||
+    siteClosedAt.getTime() <= day.getTime()
+  ) {
+    // site closed
+    console.warn(
+      "Site " + site.slug + " closed at " + siteClosedAt.toISOString()
+    );
+    return { watts: 0, hashrateTHs: 0, units: 0 };
+  }
+  console.log("");
+  console.log(
+    "=> calculateSitePower : Site " +
+      site.slug +
+      " started at " +
+      siteStartedAt.toISOString()
+  );
+
+  const containers = site.containers;
   return calculateContainersPower(containers, day);
 }
+
 export function calculateSitePowerHistory(
   site: Site,
   startDate?: Date,

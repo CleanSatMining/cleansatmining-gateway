@@ -167,12 +167,6 @@ function _calculateBalanceSheet(
     } as MiningReport
   );
 
-  /*if (total.hashrateTHsMax > 0) {
-    total.uptime = new BigNumber(total.hashrateTHs)
-      .dividedBy(total.hashrateTHsMax)
-      .toNumber();
-  }*/
-
   if (btcPrice) {
     total.btcSellPrice = btcPrice;
     total.expenses.electricity.usd = new BigNumber(
@@ -226,4 +220,178 @@ export function getEmptyBalanceSheet(
       },
     },
   };
+}
+
+export function mergeBalanceSheets(sheets: BalanceSheet[]): BalanceSheet {
+  if (sheets.length === 0) {
+    console.error("ERROR mergeBalanceSheets: no balance sheets to merge");
+    throw new Error("ERROR mergeBalanceSheets: no balance sheets to merge");
+  }
+
+  // check if all balance sheets have the same start and end dates
+  const start = sheets[0].start;
+  const end = sheets[0].end;
+
+  if (
+    sheets.some(
+      (sheet) =>
+        sheet.start.getTime() !== start.getTime() ||
+        sheet.end.getTime() !== end.getTime()
+    )
+  ) {
+    console.log(
+      "==> sheets start",
+      JSON.stringify(
+        sheets.map((s) => s.start),
+        null,
+        2
+      )
+    );
+    console.log(
+      "==> sheets end",
+      JSON.stringify(
+        sheets.map((s) => s.end),
+        null,
+        2
+      )
+    );
+    console.error(
+      "ERROR mergeBalanceSheets: sheets have different start or end dates. " +
+        "start: " +
+        start +
+        " end: " +
+        end
+    );
+    throw new Error(
+      "ERROR mergeBalanceSheets: sheets have different start or end dates. " +
+        "start: " +
+        start +
+        " end: " +
+        end
+    );
+  }
+
+  const hashrateTHsMax_ = sheets.reduce(
+    (acc, sheet) => acc + sheet.balance.hashrateTHsMax,
+    0
+  );
+  const hashrateTHsMax = hashrateTHsMax_ > 0 ? hashrateTHsMax_ : 1;
+
+  const balance0 = sheets[0].balance;
+
+  // summarize the balance sheets
+  const balances = sheets
+    .map((s) => s.balance)
+    .reduce(
+      (acc, sheet) => {
+        const uptimeWeight = new BigNumber(sheet.hashrateTHsMax).dividedBy(
+          hashrateTHsMax
+        );
+        acc.uptime = new BigNumber(acc.uptime)
+          .plus(new BigNumber(sheet.uptime).times(uptimeWeight))
+          .toNumber();
+        acc.hashrateTHs = new BigNumber(acc.hashrateTHs)
+          .plus(sheet.hashrateTHs)
+          .toNumber();
+        acc.hashrateTHsMax = new BigNumber(acc.hashrateTHsMax)
+          .plus(sheet.hashrateTHsMax)
+          .toNumber();
+        acc.btcSellPrice = sheet.btcSellPrice;
+        acc.expenses.electricity.btc = new BigNumber(
+          acc.expenses.electricity.btc
+        )
+          .plus(sheet.expenses.electricity.btc)
+          .toNumber();
+        acc.expenses.csm.btc = new BigNumber(acc.expenses.csm.btc)
+          .plus(sheet.expenses.csm.btc)
+          .toNumber();
+        acc.expenses.operator.btc = new BigNumber(acc.expenses.operator.btc)
+          .plus(sheet.expenses.operator.btc)
+          .toNumber();
+        acc.expenses.other.btc = new BigNumber(acc.expenses.other.btc)
+          .plus(sheet.expenses.other.btc)
+          .toNumber();
+        acc.income.pool.btc = new BigNumber(acc.income.pool.btc)
+          .plus(sheet.income.pool.btc)
+          .toNumber();
+        acc.income.other.btc = new BigNumber(acc.income.other.btc)
+          .plus(sheet.income.other.btc)
+          .toNumber();
+        return acc;
+      },
+      {
+        uptime: 0,
+        hashrateTHs: 0,
+        hashrateTHsMax: 0,
+        btcSellPrice: 1,
+        expenses: {
+          electricity: {
+            btc: 0,
+            source: balance0
+              ? balance0.expenses.electricity.source
+              : FinancialSource.NONE,
+          },
+          csm: {
+            btc: 0,
+            source: balance0
+              ? balance0.expenses.csm.source
+              : FinancialSource.NONE,
+          },
+          operator: {
+            btc: 0,
+            source: balance0
+              ? balance0.expenses.operator.source
+              : FinancialSource.NONE,
+          },
+          other: {
+            btc: 0,
+            source: balance0
+              ? balance0.expenses.other.source
+              : FinancialSource.NONE,
+          },
+        },
+        income: {
+          pool: {
+            btc: 0,
+            source: balance0
+              ? balance0.income.pool.source
+              : FinancialSource.NONE,
+          },
+          other: {
+            btc: 0,
+            source: balance0
+              ? balance0.income.other.source
+              : FinancialSource.NONE,
+          },
+        },
+      }
+    );
+  balances.expenses.csm.usd = new BigNumber(balances.expenses.csm.btc)
+    .times(balances.btcSellPrice)
+    .toNumber();
+  balances.expenses.operator.usd = new BigNumber(balances.expenses.operator.btc)
+    .times(balances.btcSellPrice)
+    .toNumber();
+  balances.expenses.other.usd = new BigNumber(balances.expenses.other.btc)
+    .times(balances.btcSellPrice)
+    .toNumber();
+  balances.expenses.electricity.usd = new BigNumber(
+    balances.expenses.electricity.btc
+  )
+    .times(balances.btcSellPrice)
+    .toNumber();
+  balances.income.pool.usd = new BigNumber(balances.income.pool.btc)
+    .times(balances.btcSellPrice)
+    .toNumber();
+  balances.income.other.usd = new BigNumber(balances.income.other.btc)
+    .times(balances.btcSellPrice)
+    .toNumber();
+
+  const mergedSheets: BalanceSheet = {
+    start,
+    end,
+    days: calculateDaysBetweenDates(start, end),
+    balance: balances,
+  };
+  return mergedSheets;
 }

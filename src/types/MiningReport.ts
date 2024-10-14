@@ -23,8 +23,21 @@ export type MiningReport = {
   };
 };
 
+export type SiteMiningReport = {
+  site: string;
+} & MiningReport;
+
+export type DailySiteMiningReport = DailyMiningReport & {
+  site: string;
+};
+
+export type DailyFarmMiningReport = DailyMiningReport & {
+  bySite: Record<string, SiteMiningReport>;
+};
+
 export type DailyMiningReport = {
   day: Date;
+  site?: string;
   uptime: number;
   hashrateTHs: number;
   hashrateTHsMax: number;
@@ -39,7 +52,55 @@ export type DailyMiningReport = {
     pool: FinancialStatementAmount;
     other: FinancialStatementAmount;
   };
+  bySite?: Record<string, SiteMiningReport>;
 };
+
+export function mapDailyMiningReportToSiteMiningReport(
+  report: DailyMiningReport,
+  site: string
+): DailySiteMiningReport {
+  return {
+    day: report.day,
+    site: site,
+    uptime: report.uptime,
+    hashrateTHs: report.hashrateTHs,
+    hashrateTHsMax: report.hashrateTHsMax,
+    btcSellPrice: report.btcSellPrice,
+    expenses: {
+      electricity: report.expenses.electricity,
+      csm: report.expenses.csm,
+      operator: report.expenses.operator,
+      other: report.expenses.other,
+    },
+    income: {
+      pool: report.income.pool,
+      other: report.income.other,
+    },
+  };
+}
+
+export function mapSiteMiningReportToMiningReport(
+  report: DailySiteMiningReport
+): DailyMiningReport {
+  return {
+    day: report.day,
+    uptime: report.uptime,
+    hashrateTHs: report.hashrateTHs,
+    hashrateTHsMax: report.hashrateTHsMax,
+    btcSellPrice: report.btcSellPrice,
+    expenses: {
+      electricity: report.expenses.electricity,
+      csm: report.expenses.csm,
+      operator: report.expenses.operator,
+      other: report.expenses.other,
+    },
+    income: {
+      pool: report.income.pool,
+      other: report.income.other,
+    },
+  };
+}
+
 export function convertDailyFinancialStatementToMiningReport(
   dayStatement: DailyFinancialStatement
 ): DailyMiningReport {

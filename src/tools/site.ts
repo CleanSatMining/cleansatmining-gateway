@@ -16,7 +16,11 @@ export function calculateSiteGrossIncome(
     throw new Error("The mining day is not related to the site " + site.slug);
   }
 
-  const { watts } = calculateSitePower(site, new Date(miningDay.day));
+  const { watts, hashrateTHs } = calculateSitePower(
+    site,
+    new Date(miningDay.day)
+  );
+
   return calculateDailyGrossIncome(
     miningDay.mined,
     btcPrice,

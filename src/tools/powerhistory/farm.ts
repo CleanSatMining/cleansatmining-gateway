@@ -15,6 +15,20 @@ export function calculateFarmPower(
   units: number;
 } {
   const containers = farm.sites.reduce((acc, site) => {
+    const startedAt = site.started_at
+      ? new Date(site.started_at)
+      : getTodayDate();
+    const closedAt = site.closed_at ? new Date(site.closed_at) : getTodayDate();
+    if (
+      day.getTime() < startedAt.getTime() ||
+      closedAt.getTime() <= day.getTime()
+    ) {
+      // site closed
+      console.warn(
+        "Site " + site.slug + " closed at " + closedAt.toISOString()
+      );
+      return acc;
+    }
     return acc.concat(site.containers);
   }, [] as Site["containers"]);
 

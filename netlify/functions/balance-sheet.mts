@@ -164,6 +164,11 @@ export default async (req: Request, context: Context) => {
         });
       }
 
+      console.log(
+        "=> FETCH MINING REPORT",
+        JSON.stringify(microserviceResponse.report, null, 2)
+      );
+
       const report: MicroServiceMiningReportResponse =
         microserviceResponse.report;
 
@@ -180,7 +185,7 @@ export default async (req: Request, context: Context) => {
       });
     }
   } catch (error) {
-    console.error("Error api site " + error);
+    console.error("Error api balance sheet " + error);
     return new Response("Failed to compute mining balance sheet! " + error, {
       status: 500,
     });

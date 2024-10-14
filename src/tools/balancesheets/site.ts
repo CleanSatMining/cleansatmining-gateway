@@ -1,4 +1,4 @@
-import { DetailedBalanceSheet } from "@/types/BalanceSeet";
+import { BalanceSheet, DetailedBalanceSheet } from "@/types/BalanceSeet";
 import { DailyMiningReport, FinancialSource } from "@/types/MiningReport";
 import { Site } from "@/types/supabase.extend";
 import { getDailyMiningReportsPeriod } from "../miningreports/miningreport";
@@ -6,6 +6,8 @@ import { calculateSitePowerHistory } from "../powerhistory/site";
 import { calculateBalanceSheet } from "./balancesheet.common";
 import { calculateDaysBetweenDates } from "../date";
 import { getActiveContainersOnPeriod } from "../powerhistory/container";
+import { calculateGrossIncome } from "../simulator";
+import { FeeRates } from "@/types/Simulator";
 
 export function calculateSiteBalanceSheet(
   site: Site,
@@ -28,7 +30,8 @@ export function calculateSiteBalanceSheet(
   }
 
   const powerHistory = calculateSitePowerHistory(site, startDay, endDay);
-  const sheet = calculateBalanceSheet(
+  const sheet = calculateSiteSummaryBalanceSheet(
+    site,
     miningReports,
     btcPrice,
     startDay,
@@ -36,7 +39,8 @@ export function calculateSiteBalanceSheet(
   );
 
   const details = powerHistory.map((power) => {
-    const balance = calculateBalanceSheet(
+    const balance = calculateSiteSummaryBalanceSheet(
+      site,
       miningReports.filter(
         (report) =>
           new Date(power.start).getTime() <= new Date(report.day).getTime() &&
@@ -63,6 +67,63 @@ export function calculateSiteBalanceSheet(
     containerIds: containerIds,
     details,
   };
+}
+
+function calculateSiteSummaryBalanceSheet(
+  site: Site,
+  miningReports: DailyMiningReport[],
+  btcPrice: number,
+  startDay?: Date,
+  endDay?: Date
+) {
+  const sheet = calculateBalanceSheet(
+    miningReports,
+    btcPrice,
+    startDay,
+    endDay
+  );
+
+  updateSheetBalanceTaxes(site, sheet, btcPrice);
+  return sheet;
+}
+
+function updateSheetBalanceTaxes(
+  site: Site,
+  sheet: BalanceSheet,
+  btcPrice: number
+): BalanceSheet {
+  const csmTaxes: FeeRates = {
+    taxRate: site.contract.csmTaxRate,
+    powerTaxUsd: site.contract.csmPowerTax,
+    profitShareRate: site.contract.csmProfitSharing,
+  };
+  const opTaxes: FeeRates = {
+    taxRate: site.contract.opTaxRate,
+    powerTaxUsd: site.contract.opPowerTax,
+    profitShareRate: site.contract.opProfitSharing,
+  };
+
+  // set real tax values
+  const grossIncome = calculateGrossIncome(
+    sheet.balance.income.pool.btc,
+    sheet.balance.expenses.electricity.btc,
+    site.contract.electricityPrice,
+    csmTaxes,
+    opTaxes,
+    btcPrice,
+    sheet.balance.income.other.btc
+  );
+
+  sheet.balance.expenses.operator.btc =
+    grossIncome.cost.operator.btc > 0 ? grossIncome.cost.operator.btc : 0;
+  sheet.balance.expenses.csm.btc =
+    grossIncome.cost.csm.btc > 0 ? grossIncome.cost.csm.btc : 0;
+  sheet.balance.expenses.operator.usd =
+    grossIncome.cost.operator.usd > 0 ? grossIncome.cost.operator.usd : 0;
+  sheet.balance.expenses.csm.usd =
+    grossIncome.cost.csm.usd > 0 ? grossIncome.cost.csm.usd : 0;
+
+  return sheet;
 }
 
 export function getEmptyDetailedBalanceSheet(

@@ -13,6 +13,7 @@ interface Cost {
   electricity: {
     csmFee: CurrencyDetail;
     operatorFee: CurrencyDetail;
+    providerFee: CurrencyDetail;
     total: CurrencyDetail;
   };
   csm: CurrencyDetail;

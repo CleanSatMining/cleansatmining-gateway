@@ -22,6 +22,7 @@ export default async (req: Request, context: Context) => {
   const btc_input = url.searchParams.get("btc") || undefined;
   const financial_sources =
     url.searchParams.get("financial_sources") || undefined;
+  const detail = url.searchParams.get("detail") || undefined;
 
   const todayUTC = convertToUTCStartOfDay(new Date());
 
@@ -73,6 +74,12 @@ export default async (req: Request, context: Context) => {
     return new Response("Invalid financial_sources", { status: 400 });
   }
 
+  // check if detail is a boolean
+  if (detail && detail !== "true" && detail !== "false") {
+    return new Response("Invalid detail", { status: 400 });
+  }
+
+  const detailRequested = detail === "true";
   const btc = Number(btc_input);
   const financialSources = financial_sources
     ?.split(",")
@@ -81,13 +88,14 @@ export default async (req: Request, context: Context) => {
   try {
     if (site === undefined) {
       // Farm report
-      console.log("api farm", farm);
+      console.log("api farm", farm, "with detail", detailRequested);
       const dailyReportsResponse = await fetchFarmDailyReport(
         farm,
         btc,
         start_input,
         end_input,
-        financialSources
+        financialSources,
+        detailRequested
       );
       if (!dailyReportsResponse.ok) {
         return new Response(dailyReportsResponse.message, {
@@ -155,7 +163,7 @@ export default async (req: Request, context: Context) => {
       });
     }
   } catch (error) {
-    console.error("Error api site " + error);
+    console.error("Error api mining report " + error);
     return new Response("Failed to compute mining report! " + error, {
       status: 500,
     });

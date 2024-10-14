@@ -11,27 +11,11 @@ export function calculateContainersPower(
   _containers: Container[],
   day: Date
 ): { watts: number; hashrateTHs: number; units: number } {
-  const _day = convertToUTCStartOfDay(day);
-  /*const containers = _containers.filter((container) => {
-    // Check if the container is active
-    if (container.start === null || container.start === undefined) {
-      console.warn("The container has no start date", container);
-      return false;
-    }
-
-    const isStarted = new Date(container.start) <= _day;
-
-    let isEnded = false;
-
-    // check if the container is still active
-    if (container.end !== null && container.end !== undefined) {
-      isEnded = new Date(container.end) <= _day;
-    }
-
-    return isStarted && !isEnded;
-  });*/
-
   const containers = getActiveContainers(_containers, day);
+  console.log(
+    "=> calculateContainersPower",
+    containers.map((c) => c.id)
+  );
 
   // Calculate the electricity power of the site
   const watts = containers
@@ -163,13 +147,13 @@ export function getActiveContainers(
       return false;
     }
 
-    const isStarted = new Date(container.start) <= day;
+    const isStarted = new Date(container.start).getTime() <= day.getTime();
 
     let isEnded = false;
 
     // check if the container is still active
     if (container.end !== null && container.end !== undefined) {
-      isEnded = new Date(container.end) <= day;
+      isEnded = new Date(container.end).getTime() <= day.getTime();
     }
 
     return isStarted && !isEnded;

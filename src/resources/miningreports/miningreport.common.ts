@@ -36,6 +36,7 @@ export async function fetchMiningReport(
     const sources = financial_sources.join(",");
     url.searchParams.append("financial_sources", sources);
   }
+  url.searchParams.append("detail", "true");
 
   console.log("FETCH MINING REPORT", url.toString());
 

@@ -1,5 +1,9 @@
 import { DailyFinancialStatement } from "@/types/FinancialSatement";
-import { FinancialSource } from "@/types/MiningReport";
+import {
+  DailySiteMiningReport,
+  FinancialSource,
+  mapDailyMiningReportToSiteMiningReport,
+} from "@/types/MiningReport";
 import { DailyMiningReport } from "@/types/MiningReport";
 import { Database } from "@/types/supabase";
 import { Site } from "@/types/supabase.extend";
@@ -68,7 +72,8 @@ export function getSiteMiningReportsByDay(
   site: Site,
   btcPrice: number,
   start_param: Date | undefined = undefined,
-  end_param: Date | undefined = undefined
+  end_param: Date | undefined = undefined,
+  withDetails: boolean = false
 ): Map<string, DailyMiningReport> {
   const miningReportByDay: Map<string, DailyMiningReport> = new Map();
 
@@ -111,18 +116,11 @@ export function getSiteMiningReportsByDay(
     ? new Date(site.closed_at)
     : getTodayDate();
 
-  // date cannot exede the site period
-  const startParam: Date | undefined = start_param
-    ? start_param < siteStart
-      ? siteStart
-      : start_param
-    : undefined;
-  const endParam: Date | undefined = end_param
-    ? end_param > siteEnd
-      ? siteEnd
-      : end_param
-    : undefined;
+  // get the start consign (default is the site active dates)
+  const startInput: Date = start_param ?? siteStart;
+  const endInput: Date = end_param ?? siteEnd;
 
+  // data date cannot exede the site period
   const realStartData: Date | undefined = startData
     ? startData < siteStart
       ? siteStart
@@ -134,13 +132,15 @@ export function getSiteMiningReportsByDay(
       : endData
     : undefined;
 
-  // get the longest period between the data and the parameters
-  const startInput: Date = startParam ?? siteStart;
-  const endInput: Date = endParam ?? siteEnd;
-
   // get the extended period of data
-  const extentedEnd: Date = realEndData ?? endInput;
-  const extendedStart: Date = realStartData ?? startInput;
+  const extentedEnd: Date =
+    realEndData && realEndData.getTime() > endInput.getTime()
+      ? realEndData
+      : endInput;
+  const extendedStart: Date =
+    realStartData && realStartData.getTime() < startInput.getTime()
+      ? realStartData
+      : startInput;
 
   // get the total number of days between the start and end of the data
   const totalDays = calculateDaysBetweenDates(extendedStart, extentedEnd);
@@ -150,14 +150,6 @@ export function getSiteMiningReportsByDay(
     site,
     financialStatements,
     miningHistory
-  );
-
-  console.log(
-    "=> Mining Report Extended Period",
-    site.slug,
-    totalDays,
-    extendedStart,
-    extentedEnd
   );
 
   // get the daily financial statement for each day of the financial statements
@@ -181,14 +173,18 @@ export function getSiteMiningReportsByDay(
       btcPrice
     );
 
+    if (withDetails) {
+      miningReportOfTheDay.site = site.slug;
+    }
+
     miningReportByDay.set(dayKey, miningReportOfTheDay);
   }
 
   // filter the daily accounting by date
   filterMiningReportsByDay(
     miningReportByDay,
-    startParam ?? extendedStart,
-    endParam ?? extentedEnd
+    start_param ?? extendedStart,
+    end_param ?? extentedEnd
   );
 
   return miningReportByDay;
@@ -250,11 +246,9 @@ function aggregateSiteMiningReportData(
     return dayMiningReportFromDayStatements;
   } else if (dayMiningHistory !== undefined) {
     // day has no financial statements : use the mining report from the pool
-    const dayReportFromPool = getSiteDayMiningReportFromPool(
-      site,
-      dayMiningHistory,
-      btcPrice,
-      day
+    const dayReportFromPool = mapDailyMiningReportToSiteMiningReport(
+      getSiteDayMiningReportFromPool(site, dayMiningHistory, btcPrice, day),
+      site.slug
     );
 
     return dayReportFromPool;

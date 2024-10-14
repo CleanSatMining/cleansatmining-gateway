@@ -197,14 +197,32 @@ export function mergeDayMiningReport(
   const hashrateTHs = dayReports[0].hashrateTHs + dayReports[1].hashrateTHs;
   const hashrateTHsMax =
     dayReports[0].hashrateTHsMax + dayReports[1].hashrateTHsMax;
-  const hashrateWeight = hashrateTHsMax > 0 ? hashrateTHsMax : 1;
   const uptime =
     hashrateTHsMax > 0
       ? new BigNumber(hashrateTHs).dividedBy(hashrateTHsMax).toNumber()
       : 0;
 
+  const bySite: { [key: string]: any } = {};
+  if (dayReports[0].site !== undefined) {
+    bySite[dayReports[0].site] = dayReports[0];
+  }
+  if (dayReports[1].site !== undefined) {
+    bySite[dayReports[1].site] = dayReports[1];
+  }
+  if (dayReports[0].bySite !== undefined) {
+    Object.keys(dayReports[0].bySite).forEach((key) => {
+      if (dayReports[0].bySite) bySite[key] = dayReports[0].bySite[key];
+    });
+  }
+  if (dayReports[1].bySite !== undefined) {
+    Object.keys(dayReports[1].bySite).forEach((key) => {
+      if (dayReports[1].bySite) bySite[key] = dayReports[1].bySite[key];
+    });
+  }
+
   const sum: DailyMiningReport = {
     day: dayReports[0].day, // Assuming the day is the same for both accounts
+    site: undefined,
     uptime: uptime,
     hashrateTHs: hashrateTHs,
     hashrateTHsMax: hashrateTHsMax,
@@ -237,6 +255,7 @@ export function mergeDayMiningReport(
         dayReports[1].income.other
       ),
     },
+    bySite: bySite,
   };
 
   if (dayReports.length === 2) {
@@ -270,6 +289,14 @@ export function mergeMiningReports(
           mergedReports.set(day, mergedReport);
         }
       } else {
+        if (newReport.site !== undefined) {
+          // copy newReport
+          const newReportCopy = JSON.parse(JSON.stringify(newReport));
+          const bySite: { [key: string]: any } = {};
+          bySite[newReport.site] = newReportCopy;
+          newReport.bySite = bySite;
+          newReport.site = undefined;
+        }
         mergedReports.set(day, newReport);
       }
     });
