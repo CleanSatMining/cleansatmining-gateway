@@ -290,7 +290,7 @@ export function mergeMiningReports(
         }
       } else {
         if (newReport.site !== undefined) {
-          console.log("=> by site", newReport.site);
+          //console.log("=> by site", newReport.site);
           // copy newReport
           const newReportCopy = JSON.parse(JSON.stringify(newReport));
           const bySite: { [key: string]: any } = {};

@@ -4,7 +4,7 @@ import {
   calculateContainersPowerHistory,
 } from "./container";
 import { PowerCapacityHistory } from "@/types/Container";
-import { getTodayDate } from "../date";
+import { calculateDaysBetweenDates, getTodayDate } from "../date";
 
 export function calculateFarmPower(
   farm: Farm,
@@ -49,8 +49,8 @@ export function calculateFarmPower(
 }
 export function calculateFarmPowerHistory(
   farm: Farm,
-  startDate?: Date,
-  endDate?: Date
+  startDate: Date,
+  endDate: Date
 ): PowerCapacityHistory[] {
   const containers = farm.sites.reduce((acc, site) => {
     return acc.concat(site.containers);
@@ -66,7 +66,24 @@ export function calculateFarmPowerHistory(
   });
 
   if (activeContainers.length === 0) {
-    return [];
+    console.warn(
+      "WARN The farme " +
+        farm.slug +
+        " has no active containers for the period " +
+        startDate +
+        " to " +
+        endDate
+    );
+    return [
+      {
+        start: startDate,
+        end: endDate,
+        days: calculateDaysBetweenDates(startDate, endDate),
+        hashrateTHs: 0,
+        powerW: 0,
+        containers: [],
+      },
+    ];
   }
 
   const sortedContainers = activeContainers.sort((a, b) => {
@@ -82,6 +99,24 @@ export function calculateFarmPowerHistory(
       ? new Date(sortedContainers[0].start)
       : getTodayDate());
 
-  return calculateContainersPowerHistory(sortedContainers, start, end, []);
-  //return [];
+  const powerHistory = calculateContainersPowerHistory(
+    sortedContainers,
+    start,
+    end,
+    []
+  );
+  if (powerHistory.length === 0) {
+    return [
+      {
+        start: startDate,
+        end: endDate,
+        days: calculateDaysBetweenDates(startDate, endDate),
+        hashrateTHs: 0,
+        powerW: 0,
+        containers: [],
+      },
+    ];
+  }
+
+  return powerHistory;
 }

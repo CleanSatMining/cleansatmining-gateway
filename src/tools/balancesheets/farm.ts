@@ -92,22 +92,22 @@ export function calculateFarmBalanceSheet(
         balanceSheet.containerIds = power.containers.map(
           (container) => container.containerId
         );
-        console.log(
-          "=> siteSheet detail",
-          site.slug,
-          JSON.stringify(balanceSheet, null, 2)
-        );
         return balanceSheet;
       });
-      console.log("=> sites sheets details", site.slug, siteDetails.length);
+      console.log(
+        "=> sites sheets details",
+        site.slug,
+        siteDetails.length,
+        JSON.stringify(siteDetails, null, 2)
+      );
       sheetsDetailsBySite.push(siteDetails);
     }
 
-    console.log("=> sites sheets", sheets.length);
-    console.log(
-      "=> sites sheets detail",
-      JSON.stringify(sheetsDetailsBySite, null, 2)
-    );
+    // console.log("=> sites sheets", sheets.length);
+    // console.log(
+    //   "=> sites sheets detail",
+    //   JSON.stringify(sheetsDetailsBySite, null, 2)
+    // );
 
     // merge all site sheets
     sheet = mergeBalanceSheets(sheets);
@@ -122,13 +122,19 @@ export function calculateFarmBalanceSheet(
         console.log(
           "=> detail sheets site ",
           "number of site " + sheetsDetailsBySite.length,
-          "current " + (siteIndex + 1)
+          "current " + (siteIndex + 1) + "/" + farm.sites.length
         );
 
         console.log(
           "=> detail sheets period ",
-          "nomber of period " + sheetsDetailsBySite[detailIndex].length,
-          "current " + (detailIndex + 1)
+          "nomber of period " + sheetsDetailsBySite[siteIndex].length,
+          "current " +
+            (detailIndex + 1) +
+            "/" +
+            sheetsDetailsBySite.length +
+            "(" +
+            detailsLength +
+            ")"
         );
         // get the balance sheet of each site for the detail period
         periodDetails.push(sheetsDetailsBySite[siteIndex][detailIndex]);
@@ -153,6 +159,8 @@ export function calculateFarmBalanceSheet(
       return balanceSheet;
     });
   }
+
+  console.log("=> hello");
 
   // get all container ids
   const containerIds = details.reduce((acc, detail) => {
