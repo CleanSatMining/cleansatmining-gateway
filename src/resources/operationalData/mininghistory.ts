@@ -13,7 +13,8 @@ export async function fetchMiningHistory(
   site: string | undefined = undefined,
   start: string | undefined = undefined,
   end: string | undefined = undefined,
-  first: number | undefined = undefined
+  first: number | undefined = undefined,
+  cache?: boolean
 ): Promise<MiningHistoryResponse> {
   const gatewayBaseUrl = process.env.GATEWAY_URL ?? "";
   const path =
@@ -34,6 +35,9 @@ export async function fetchMiningHistory(
   }
   if (first) {
     url.searchParams.append("first", first.toString());
+  }
+  if (cache) {
+    url.searchParams.append("cache", cache ? "true" : "false");
   }
 
   console.log("FETCH MINING HISTORY", url.toString());

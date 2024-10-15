@@ -26,7 +26,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { slug: farm, start, end, first } = req.query;
+  const { slug: farm, start, end, first, cache: cacheInput } = req.query;
 
   if (!farm) {
     return res.status(400).json({ error: "Parameter farm missing." });
@@ -64,13 +64,15 @@ export default async function handler(
     end ? "_end_" + end : ""
   }${first ? "_first_" + first : ""}`;
 
+  const cacheEnable = cacheInput ? cacheInput !== "false" : true;
+
   const cachedData: CachedData = cache.get(cacheKey);
   console.log(
     "MINING cachedData",
     JSON.stringify(cachedData?.upatedAt, null, 2)
   );
 
-  if (cachedData && new Date(cachedData.upatedAt) >= todayUTC) {
+  if (cacheEnable && cachedData && new Date(cachedData.upatedAt) >= todayUTC) {
     console.log("GET MINING HISTORY PASS WITH CACHE");
     return res.status(200).json(cachedData.data);
   }

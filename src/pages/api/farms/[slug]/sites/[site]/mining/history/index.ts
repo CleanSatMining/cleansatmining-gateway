@@ -26,7 +26,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { slug: farm, site, start, end, first } = req.query;
+  const { slug: farm, site, start, end, first, cache: cacheInput } = req.query;
 
   if (!farm || typeof farm !== "string") {
     return res
@@ -68,6 +68,8 @@ export default async function handler(
     return new Response("Invalid parameter 'first'", { status: 400 });
   }
 
+  const cacheEnable = cacheInput ? cacheInput !== "false" : true;
+
   // Cache management
   const cacheKey = `mining-history_${farm}_${site}${
     start ? "_start_" + start : ""
@@ -78,7 +80,7 @@ export default async function handler(
     "MINING HISTORY cachedData",
     JSON.stringify(cachedData?.upatedAt, null, 2)
   );
-  if (cachedData && new Date(cachedData.upatedAt) >= todayUTC) {
+  if (cacheEnable && cachedData && new Date(cachedData.upatedAt) >= todayUTC) {
     console.log("GET MINING HISTORY PASS WITH CACHE");
     return res.status(200).json(cachedData.data);
   }
