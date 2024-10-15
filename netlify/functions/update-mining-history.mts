@@ -23,6 +23,8 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import { Site } from "../../src/types/supabase.extend";
 import { fetchFarm } from "../../src/resources/farm";
 
+const RETRY_MAX = 3;
+
 interface UpdateResponse {
   farm: string;
   site: string;
@@ -424,7 +426,8 @@ function searchDaysToUpdate(miningData: MiningData[], site?: Site) {
 async function insertPoolDataInMiningTable(
   supabase,
   farm: string,
-  data: DayPoolData[]
+  data: DayPoolData[],
+  retry: number = 0
 ) {
   if (data.length === 0) return;
 
@@ -445,9 +448,24 @@ async function insertPoolDataInMiningTable(
   const { error } = await supabase.from("mining").insert(row).select();
   if (error) {
     console.error(
-      "Error while inserting mining data. " + JSON.stringify(row),
+      "Retry:" +
+        retry +
+        ". Error while inserting mining data. " +
+        JSON.stringify(row),
       error
     );
-    throw new Error("Error while inserting mining data " + error);
+
+    if (retry < RETRY_MAX) {
+      //wait 100ms before retry
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      await insertPoolDataInMiningTable(supabase, farm, data, retry + 1);
+    } else {
+      throw new Error(
+        "Error while inserting mining data " +
+          JSON.stringify(row) +
+          ". " +
+          error
+      );
+    }
   }
 }
