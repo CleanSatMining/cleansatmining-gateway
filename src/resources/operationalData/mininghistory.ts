@@ -36,7 +36,7 @@ export async function fetchMiningHistory(
   if (first) {
     url.searchParams.append("first", first.toString());
   }
-  if (cache) {
+  if (cache !== undefined) {
     url.searchParams.append("cache", cache ? "true" : "false");
   }
 
