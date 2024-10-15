@@ -92,7 +92,7 @@ export async function updateMiningHistory(
     ok,
     status,
     statusText,
-  } = await fetchMiningHistory(farm, site, undefined, undefined, 1);
+  } = await fetchMiningHistory(farm, site, undefined, undefined, 1, false);
 
   if (!ok) {
     return {
