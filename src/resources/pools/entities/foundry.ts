@@ -33,7 +33,7 @@ export async function foundryHistory(
   const url = site.contract.api.url;
   console.log("FOUNDRY API username", username);
   console.log("FOUNDRY API url", url);
-  console.log("FOUNDRY API apiKey", apiKey);
+  //console.log("FOUNDRY API apiKey", apiKey);
 
   const ret = await _foundryHistory(first, apiKey, `${url}${username}`, site);
 
@@ -52,7 +52,7 @@ export async function foundryData(first: number, site: Site): Promise<any> {
   const url = site.contract.api.url;
   console.log("FOUNDRY API", site.slug);
   console.log("FOUNDRY API username", username);
-  console.log("FOUNDRY API apiKey", apiKey);
+  //console.log("FOUNDRY API apiKey", apiKey);
   console.log("FOUNDRY API url", url);
 
   const ret = await _foundryHistory(first, apiKey, `${url}${username}`, site);

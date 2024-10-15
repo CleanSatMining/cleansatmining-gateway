@@ -435,7 +435,10 @@ async function insertPoolDataInMiningTable(
 
   const { error } = await supabase.from("mining").insert(row).select();
   if (error) {
-    console.error("Error while inserting mining data", error);
+    console.error(
+      "Error while inserting mining data. " + JSON.stringify(row),
+      error
+    );
     throw new Error("Error while inserting mining data " + error);
   }
 }

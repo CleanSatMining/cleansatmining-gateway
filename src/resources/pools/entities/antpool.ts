@@ -47,8 +47,8 @@ export async function antpoolHistory(
   const { apiKey, apiSign } = getApiSecrets(site);
   console.log("ANTPOOL API username", username);
   console.log("ANTPOOL API url", url);
-  console.log("ANTPOOL API apiKey", apiKey);
-  console.log("ANTPOOL API apiSign", apiSign);
+  //console.log("ANTPOOL API apiKey", apiKey);
+  //console.log("ANTPOOL API apiSign", apiSign);
   const ret = await _antPoolHistory(first, apiKey, apiSign, url);
   if (ret.days === undefined)
     return {
@@ -118,7 +118,7 @@ export async function antpoolData(
   const username = site.contract.api.username;
   const url = site.contract.api.url;
   console.log("ANTPOOL API usernames", username);
-  console.log("ANTPOOL API apiKey", apiKey);
+  //console.log("ANTPOOL API apiKey", apiKey);
   console.log("ANTPOOL API apiSign", apiSign);
   console.log("ANTPOOL API url", url);
 

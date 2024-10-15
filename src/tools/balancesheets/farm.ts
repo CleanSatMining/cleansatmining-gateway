@@ -66,10 +66,7 @@ export function calculateFarmBalanceSheet(
           }
         })
         .filter((report) => report !== undefined);
-      console.log(
-        "=> siteMiningReports",
-        JSON.stringify(siteMiningReports, null, 2)
-      );
+
       const siteSheet: BalanceSheet = calculateSiteBalanceSheet(
         site,
         siteMiningReports,
@@ -95,7 +92,11 @@ export function calculateFarmBalanceSheet(
         balanceSheet.containerIds = power.containers.map(
           (container) => container.containerId
         );
-        console.log("=> siteSheet start", balanceSheet.start);
+        console.log(
+          "=> siteSheet detail",
+          site.slug,
+          JSON.stringify(balanceSheet, null, 2)
+        );
         return balanceSheet;
       });
       console.log("=> sites sheets details", site.slug, siteDetails.length);
@@ -103,6 +104,10 @@ export function calculateFarmBalanceSheet(
     }
 
     console.log("=> sites sheets", sheets.length);
+    console.log(
+      "=> sites sheets detail",
+      JSON.stringify(sheetsDetailsBySite, null, 2)
+    );
 
     // merge all site sheets
     sheet = mergeBalanceSheets(sheets);
