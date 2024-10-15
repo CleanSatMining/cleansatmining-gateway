@@ -27,13 +27,6 @@ export function calculateSitePower(
     );
     return { watts: 0, hashrateTHs: 0, units: 0 };
   }
-  console.log("");
-  console.log(
-    "=> calculateSitePower : Site " +
-      site.slug +
-      " started at " +
-      siteStartedAt.toISOString()
-  );
 
   const containers = site.containers;
   return calculateContainersPower(containers, day);

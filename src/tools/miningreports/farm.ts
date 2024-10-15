@@ -46,6 +46,16 @@ export function getFarmDailyMiningReports(
     sitesMiningReportsByDay.push(siteMiningReportsByDay);
   });
 
+  console.log(
+    "=> sitesMiningReportsByDay",
+    "withDetails? " + withDetails,
+    JSON.stringify(
+      sitesMiningReportsByDay[1].get("2023-06-20T00:00:00.000Z"),
+      null,
+      2
+    )
+  );
+
   const miningReportByDay = mergeMiningReports(sitesMiningReportsByDay);
 
   const dailyMiningReport: DailyMiningReport[] = Array.from(

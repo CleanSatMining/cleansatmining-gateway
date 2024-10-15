@@ -175,6 +175,8 @@ export function getSiteMiningReportsByDay(
 
     if (withDetails) {
       miningReportOfTheDay.site = site.slug;
+    } else {
+      miningReportOfTheDay.site = undefined;
     }
 
     miningReportByDay.set(dayKey, miningReportOfTheDay);

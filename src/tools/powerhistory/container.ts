@@ -12,10 +12,6 @@ export function calculateContainersPower(
   day: Date
 ): { watts: number; hashrateTHs: number; units: number } {
   const containers = getActiveContainers(_containers, day);
-  console.log(
-    "=> calculateContainersPower",
-    containers.map((c) => c.id)
-  );
 
   // Calculate the electricity power of the site
   const watts = containers
