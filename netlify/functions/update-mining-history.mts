@@ -283,7 +283,14 @@ export async function updateSiteMiningHistory(
     ok,
     status,
     statusText,
-  } = await fetchMiningHistory(farmSlug, siteSlug, undefined, undefined, 1);
+  } = await fetchMiningHistory(
+    farmSlug,
+    siteSlug,
+    undefined,
+    undefined,
+    1,
+    false
+  );
 
   if (!ok) {
     // error while fetching mining data
