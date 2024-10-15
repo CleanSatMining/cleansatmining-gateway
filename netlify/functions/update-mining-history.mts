@@ -40,6 +40,7 @@ export default async (req: Request, context: Context) => {
   const password = process.env.SUPABASE_ADMIN_PASSWORD ?? "";
 
   const supabase = getSupabaseClient();
+  console.log("UPDATING mining history : sign in");
   await signIn(supabase, username, password);
   let response;
   if (farm !== undefined && site !== undefined) {
@@ -49,6 +50,7 @@ export default async (req: Request, context: Context) => {
   } else {
     response = await updateAllMiningHistory(supabase);
   }
+  console.log("UPDATING mining history : sign out");
   await signOut(supabase);
 
   if (!response.ok) {
