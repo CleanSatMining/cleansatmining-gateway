@@ -143,7 +143,8 @@ export async function updateMiningHistory(
     };
   }
   try {
-    insertPoolDataInMiningTable(supabase, farm, daysPoolData);
+    //insertPoolDataInMiningTable(supabase, farm, daysPoolData);
+    insertPoolDataInMiningTableByApi(farm, daysPoolData);
   } catch (error) {
     return {
       ok: false,
@@ -352,7 +353,8 @@ export async function updateSiteMiningHistory(
   }
   // insert the data in the mining table
   try {
-    insertPoolDataInMiningTable(supabase, farmSlug, daysPoolData);
+    //insertPoolDataInMiningTable(supabase, farmSlug, daysPoolData);
+    insertPoolDataInMiningTableByApi(farmSlug, daysPoolData);
   } catch (error) {
     return {
       ok: false,
@@ -516,5 +518,39 @@ async function insertPoolDataInMiningTable(
           error
       );
     }
+  }
+}
+
+async function insertPoolDataInMiningTableByApi(
+  farm: string,
+  data: DayPoolData[]
+) {
+  if (data.length === 0) {
+    console.warn(farm + ": No data to insert in mining table");
+    return;
+  }
+
+  const username = process.env.SUPABASE_ADMIN_USER ?? "";
+  const password = process.env.SUPABASE_ADMIN_PASSWORD ?? "";
+  const gatewayUrl = process.env.GATEWAY_URL ?? "";
+  const url = `${gatewayUrl}/api/farms/${farm}/mining/history`;
+
+  console.log("Inserting data:", JSON.stringify(data, null, 2));
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      user: username,
+      password: password,
+      rows: data,
+    }),
+  });
+
+  console.log("Response:", response.ok, response.statusText);
+  if (!response.ok) {
+    throw new Error(`Error while posting data: ${response.statusText}`);
   }
 }

@@ -92,7 +92,7 @@ export async function handlePostRequest(
     });
   }
 
-  const supabase = getSupabaseClient();
+  //const supabase = getSupabaseClient();
 
   /*await insertPoolDataInMiningTable(
     supabase,
@@ -109,9 +109,13 @@ export async function handlePostRequest(
     rowsTyped
   );
 
+  if (response.error) {
+    return res.status(500).json({ error: response.error });
+  }
+
   return res
     .status(200)
-    .json({ message: "Data inserted ?" + JSON.stringify(response) });
+    .json({ message: "Data inserted " + JSON.stringify(response) });
 }
 
 export async function handleGetRequest(
