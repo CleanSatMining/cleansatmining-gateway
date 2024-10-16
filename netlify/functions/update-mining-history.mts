@@ -453,20 +453,25 @@ async function insertPoolDataInMiningTable(
   const username = process.env.SUPABASE_ADMIN_USER ?? "";
   const password = process.env.SUPABASE_ADMIN_PASSWORD ?? "";
   console.log("UPDATING mining history : sign in");
-  const { data: signData, error: signError } = await signIn(
-    supabase,
-    username,
-    password
-  );
-  if (signError) {
-    throw new Error("Error while signing in. " + signError);
-  }
+  try {
+    const { data: signData, error: signError } = await signIn(
+      supabase,
+      username,
+      password
+    );
+    if (signError) {
+      throw new Error("Error while signing in. " + signError);
+    }
+    const token = signData.session?.access_token;
 
-  const token = signData.session?.access_token;
-
-  if (!token) {
-    console.error("No access token found");
-    throw new Error("No access token found");
+    if (!token) {
+      console.error("No access token found");
+      await signOut(supabase);
+      throw new Error("No access token found");
+    }
+  } catch (e) {
+    console.error("Error while signing in. " + e);
+    throw new Error("Error while signing in. " + e);
   }
 
   try {
