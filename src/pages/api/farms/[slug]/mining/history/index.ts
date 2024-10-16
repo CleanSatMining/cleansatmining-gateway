@@ -94,7 +94,7 @@ export async function handlePostRequest(
 
   const supabase = getSupabaseClient();
 
-  /*insertPoolDataInMiningTable(
+  /*await insertPoolDataInMiningTable(
     supabase,
     user,
     password,
@@ -102,9 +102,14 @@ export async function handlePostRequest(
     rowsTyped
   );*/
 
-  insertPoolDataInMiningTable2(user, password, farm.toString(), rowsTyped);
+  const response = await insertPoolDataInMiningTable2(
+    user,
+    password,
+    farm.toString(),
+    rowsTyped
+  );
 
-  return res.status(200).json({ message: "Data inserted" });
+  return res.status(200).json({ message: "Data inserted ?" + response });
 }
 
 export async function handleGetRequest(
@@ -402,7 +407,7 @@ async function insertPoolDataInMiningTable2(
   password: string,
   farm: string,
   data: DayPoolData[]
-) {
+): Promise<{ error?: unknown }> {
   const authUrl =
     "https://zlczywhctfaosxqtjwee.supabase.co/auth/v1/token?grant_type=password";
   const authBody = {
@@ -473,5 +478,8 @@ async function insertPoolDataInMiningTable2(
     //console.log("Data posted successfully:", responseData);
   } catch (error) {
     console.error("Error:", error);
+    return { error: error };
   }
+
+  return {};
 }

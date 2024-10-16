@@ -480,20 +480,11 @@ async function insertPoolDataInMiningTable(
 
   try {
     console.log("UPDATING mining history : inserting data");
-    var {
-      error,
-      count,
-      status,
-      statusText,
-      data: dataReturn,
-    } = await supabase.from("mining").insert(row).select();
+    var { error } = await supabase.from("mining").insert(row).select();
     console.log(
       "UPDATING mining history result:",
       JSON.stringify({
-        count,
-        status,
-        statusText,
-        dataReturn,
+        error,
       })
     );
   } catch (e) {
@@ -501,8 +492,8 @@ async function insertPoolDataInMiningTable(
     error = e;
   }
 
-  console.log("UPDATING mining history : sign out");
-  await signOut(supabase);
+  //console.log("UPDATING mining history : sign out");
+  //await signOut(supabase);
 
   if (error) {
     console.error(
