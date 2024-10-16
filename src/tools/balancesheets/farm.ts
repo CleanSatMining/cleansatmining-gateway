@@ -2,7 +2,7 @@ import { DetailedBalanceSheet, BalanceSheet } from "@/types/BalanceSeet";
 import { DailyMiningReport } from "@/types/MiningReport";
 import { Farm } from "@/types/supabase.extend";
 import { getDailyMiningReportsPeriod } from "../miningreports/miningreport";
-import { calculateFarmPowerHistory } from "../powerhistory/farm";
+import { calculateFarmPowerHistory } from "../equipment/farm";
 import {
   calculateBalanceSheet,
   mergeBalanceSheets,
@@ -74,7 +74,7 @@ export function calculateFarmBalanceSheet(
         startDay,
         endDay
       );
-      console.log("=> siteSheet uptime", siteSheet.balance.uptime);
+
       sheets.push(siteSheet);
 
       const siteDetails = powerHistory.map((power) => {
@@ -89,17 +89,9 @@ export function calculateFarmBalanceSheet(
           power.start,
           power.end
         );
-        balanceSheet.containerIds = power.containers.map(
-          (container) => container.containerId
-        );
+
         return balanceSheet;
       });
-      console.log(
-        "=> sites sheets details",
-        site.slug,
-        siteDetails.length,
-        JSON.stringify(siteDetails, null, 2)
-      );
       sheetsDetailsBySite.push(siteDetails);
     }
 
@@ -111,7 +103,7 @@ export function calculateFarmBalanceSheet(
 
     // merge all site sheets
     sheet = mergeBalanceSheets(sheets);
-    console.log("=> sites sheets merged");
+
     const detailsLength = powerHistory.length;
 
     for (let detailIndex = 0; detailIndex < detailsLength; detailIndex++) {
@@ -153,25 +145,17 @@ export function calculateFarmBalanceSheet(
         ),
         btcPrice
       );
-      balanceSheet.containerIds = power.containers.map(
-        (container) => container.containerId
-      );
+
       return balanceSheet;
     });
   }
 
-  console.log("=> hello");
-
-  // get all container ids
-  const containerIds = details.reduce((acc, detail) => {
-    return detail.containerIds ? acc.concat(detail.containerIds) : acc;
-  }, [] as number[]);
   return {
     start: sheet.start,
     end: sheet.end,
     days: sheet.days,
     balance: sheet.balance,
-    containerIds: Array.from(new Set(containerIds)),
+    equipments: sheet.equipments,
     details,
   };
 }

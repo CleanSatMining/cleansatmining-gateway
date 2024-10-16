@@ -2,9 +2,12 @@ import { Site } from "@/types/supabase.extend";
 import {
   calculateContainersPower,
   calculateContainersPowerHistory,
+  getActiveContainers,
 } from "./container";
 import { PowerCapacityHistory } from "@/types/Container";
 import { calculateDaysBetweenDates, getTodayDate } from "../date";
+import { Miners, MiningEquipment } from "@/types/MiningReport";
+import BigNumber from "bignumber.js";
 
 export function calculateSitePower(
   site: Site,
@@ -103,4 +106,38 @@ export function calculateSitePowerHistory(
   }
 
   return powerHistory;
+}
+
+export function getSiteEquipments(site: Site, day: Date): MiningEquipment {
+  const containers = getActiveContainers(site.containers, day);
+
+  const equipments: MiningEquipment = containers.reduce(
+    (acc, container) => {
+      const asics = container.asics;
+      const miners: Miners = {
+        containerId: container.id,
+        units: container.units,
+        manufacturer: asics.manufacturer,
+        model: asics.model,
+        hashrateTHs: asics.hashrateTHs,
+        powerW: asics.powerW,
+      };
+      return {
+        hashrateTHsMax: new BigNumber(acc.hashrateTHsMax)
+          .plus(new BigNumber(asics.hashrateTHs).times(container.units))
+          .toNumber(),
+        powerWMax: new BigNumber(acc.powerWMax)
+          .plus(new BigNumber(asics.powerW).times(container.units))
+          .toNumber(),
+        asics: acc.asics.concat(miners),
+      };
+    },
+    {
+      hashrateTHsMax: 0,
+      powerWMax: 0,
+      asics: [] as Miners[],
+    } as MiningEquipment
+  );
+
+  return equipments;
 }

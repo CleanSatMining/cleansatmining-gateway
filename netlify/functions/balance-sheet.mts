@@ -6,7 +6,7 @@ import { fetchFarm } from "../../src/resources/farm";
 import { fetchSite } from "../../src/resources/site";
 import { fetchMiningReport } from "../../src/resources/miningreports/miningreport.common";
 import { calculateFarmBalanceSheet } from "../../src/tools/balancesheets/farm";
-import { calculateSiteBalanceSheet } from "../../src/tools/balancesheets/site";
+import { calculateSiteBalanceSheet as calculateSiteDetailedBalanceSheet } from "../../src/tools/balancesheets/site";
 
 import { MicroServiceMiningReportResponse } from "../../src/types/Api";
 import { Farm, Site } from "../../src/types/supabase.extend";
@@ -172,7 +172,7 @@ export default async (req: Request, context: Context) => {
       const report: MicroServiceMiningReportResponse =
         microserviceResponse.report;
 
-      const balance: DetailedBalanceSheet = calculateSiteBalanceSheet(
+      const balance: DetailedBalanceSheet = calculateSiteDetailedBalanceSheet(
         siteData,
         report.data,
         btc,

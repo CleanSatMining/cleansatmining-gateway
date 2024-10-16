@@ -25,7 +25,7 @@ import {
   getEmptyDailyMiningReport,
 } from "./miningreport";
 import { calculateSiteGrossIncome } from "../site";
-import { calculateSitePower } from "../powerhistory/site";
+import { calculateSitePower, getSiteEquipments } from "../equipment/site";
 
 export function getSiteDailyMiningReports(
   financialStatements: Database["public"]["Tables"]["financialStatements"]["Row"][],
@@ -197,21 +197,21 @@ export function getSiteDayMiningReportFromPool(
   btcPrice: number,
   day: Date
 ) {
-  const { hashrateTHs: hashrateTHsMax } = calculateSitePower(site, day);
-
   const simulationResult = calculateSiteGrossIncome(
     site,
     miningHistoryOfDay,
     btcPrice
   );
 
+  const equipements = getSiteEquipments(site, day);
+
   const dayReportFromPool = getDailyMiningReportFromPool(
     day,
     miningHistoryOfDay.uptime,
     miningHistoryOfDay.hashrateTHs,
-    hashrateTHsMax,
     miningHistoryOfDay.mined,
     btcPrice,
+    equipements,
     {
       btc: simulationResult.cost.electricity.total.btc,
       usd: simulationResult.cost.electricity.total.usd,
@@ -230,6 +230,7 @@ export function getSiteDayMiningReportFromPool(
   );
   return dayReportFromPool;
 }
+
 function aggregateSiteMiningReportData(
   dayStatements: DailyFinancialStatement[],
   dayMiningHistory: Database["public"]["Tables"]["mining"]["Row"] | undefined,
@@ -237,9 +238,12 @@ function aggregateSiteMiningReportData(
   site: Site,
   btcPrice: number
 ): DailyMiningReport {
+  const equipements = getSiteEquipments(site, day);
+
   const dayMiningReportFromDayStatements = mergeDayStatementsIntoMiningReport(
     dayStatements,
-    dayMiningHistory
+    dayMiningHistory,
+    equipements
   );
 
   if (dayMiningReportFromDayStatements !== undefined) {
@@ -256,6 +260,6 @@ function aggregateSiteMiningReportData(
     return dayReportFromPool;
   } else {
     // no data for the day
-    return getEmptyDailyMiningReport(day, btcPrice);
+    return getEmptyDailyMiningReport(day, equipements, btcPrice);
   }
 }

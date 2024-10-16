@@ -2,7 +2,7 @@ import { Site } from "@/types/supabase.extend";
 import { calculateDailyGrossIncome } from "@/tools/simulator";
 import { Database } from "@/types/supabase";
 import { SimulationResult } from "@/types/Simulator";
-import { calculateSitePower } from "./powerhistory/site";
+import { calculateSitePower } from "./equipment/site";
 
 export function calculateSiteGrossIncome(
   site: Site,

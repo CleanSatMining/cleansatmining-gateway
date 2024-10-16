@@ -2,10 +2,12 @@ import { BalanceSheet, DetailedBalanceSheet } from "@/types/BalanceSeet";
 import { DailyMiningReport, FinancialSource } from "@/types/MiningReport";
 import { Site } from "@/types/supabase.extend";
 import { getDailyMiningReportsPeriod } from "../miningreports/miningreport";
-import { calculateSitePowerHistory } from "../powerhistory/site";
+import {
+  calculateSitePowerHistory,
+  getSiteEquipments,
+} from "../equipment/site";
 import { calculateBalanceSheet } from "./balancesheet.common";
 import { calculateDaysBetweenDates } from "../date";
-import { getActiveContainersOnPeriod } from "../powerhistory/container";
 import { calculateGrossIncome } from "../simulator";
 import { FeeRates } from "@/types/Simulator";
 
@@ -30,7 +32,7 @@ export function calculateSiteBalanceSheet(
   }
 
   const powerHistory = calculateSitePowerHistory(site, startDay, endDay);
-  const sheet = calculateSiteSummaryBalanceSheet(
+  const sheet: BalanceSheet = calculateSiteSummaryBalanceSheet(
     site,
     miningReports,
     btcPrice,
@@ -38,7 +40,7 @@ export function calculateSiteBalanceSheet(
     endDay
   );
 
-  const details = powerHistory.map((power) => {
+  const details: BalanceSheet[] = powerHistory.map((power) => {
     const balance = calculateSiteSummaryBalanceSheet(
       site,
       miningReports.filter(
@@ -48,23 +50,15 @@ export function calculateSiteBalanceSheet(
       ),
       btcPrice
     );
-    balance.containerIds = getActiveContainersOnPeriod(
-      site.containers,
-      balance.start,
-      balance.end
-    ).map((container) => container.id);
     return balance;
   });
-
-  // get container ids
-  const containerIds = site.containers.map((container) => container.id);
 
   return {
     start: sheet.start,
     end: sheet.end,
     days: sheet.days,
     balance: sheet.balance,
-    containerIds: containerIds,
+    equipments: sheet.equipments,
     details,
   };
 }
@@ -84,6 +78,7 @@ function calculateSiteSummaryBalanceSheet(
   );
 
   updateSheetBalanceTaxes(site, sheet, btcPrice);
+
   return sheet;
 }
 
@@ -138,21 +133,22 @@ export function getEmptyDetailedBalanceSheet(
   const calculStart = startInput ?? siteStart ?? new Date();
   const calculEnd = endInput ?? siteClose ?? new Date();
 
+  const equipements = getSiteEquipments(site, calculStart);
+
   return {
     start: calculStart,
     end: calculEnd,
     days: calculateDaysBetweenDates(calculStart, calculEnd),
-    containerIds: getActiveContainersOnPeriod(
-      site.containers,
-      calculStart,
-      calculEnd
-    ).map((container) => container.id),
     details: [],
+    equipments: {
+      asics: equipements.asics,
+      hashrateTHsMax: equipements.hashrateTHsMax,
+      powerWMax: equipements.powerWMax,
+      hashrateTHs: 0,
+      uptime: 0,
+    },
     balance: {
       btcSellPrice: btcPrice,
-      hashrateTHs: 0,
-      hashrateTHsMax: 0,
-      uptime: 0,
       expenses: {
         electricity: {
           btc: 0,

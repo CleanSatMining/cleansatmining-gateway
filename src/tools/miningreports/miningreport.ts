@@ -3,13 +3,14 @@ import {
   DailyFinancialStatement,
   FinancialStatementAmount,
 } from "@/types/FinancialSatement";
-import { FinancialSource } from "@/types/MiningReport";
+import { FinancialSource, MiningEquipment } from "@/types/MiningReport";
 import { convertDailyFinancialStatementToMiningReport } from "@/types/MiningReport";
 import { DailyMiningReport } from "@/types/MiningReport";
 import { Database } from "@/types/supabase";
 
 import { convertToUTCStartOfDay } from "../date";
 import BigNumber from "bignumber.js";
+import { concatUniqueAsics } from "../equipment/asics";
 
 export function filterMiningReportsByDay(
   miningReportByDay: Map<string, DailyMiningReport>,
@@ -25,13 +26,18 @@ export function filterMiningReportsByDay(
 
 export function getEmptyDailyMiningReport(
   day: Date,
+  dayEquipements?: MiningEquipment,
   btcSellPrice: number = 1
 ): DailyMiningReport {
+  const emptyEquipements: MiningEquipment = {
+    hashrateTHsMax: 0,
+    powerWMax: 0,
+    asics: [],
+  };
   return {
     day: convertToUTCStartOfDay(day),
     uptime: 0,
     hashrateTHs: 0,
-    hashrateTHsMax: 0,
     btcSellPrice: btcSellPrice,
     expenses: {
       electricity: { btc: 0, source: FinancialSource.NONE },
@@ -43,15 +49,16 @@ export function getEmptyDailyMiningReport(
       pool: { btc: 0, source: FinancialSource.NONE },
       other: { btc: 0, source: FinancialSource.NONE },
     },
+    equipements: dayEquipements ?? emptyEquipements,
   };
 }
 export function getDailyMiningReportFromPool(
   day: Date,
   uptime: number,
   hashrateTHs: number,
-  hashrateTHsMax: number,
-  btc: number,
+  minedbtc: number,
   btcPrice: number,
+  equipements: MiningEquipment,
   electricityCost?: FinancialStatementAmount,
   csmCost?: FinancialStatementAmount,
   operatorCost?: FinancialStatementAmount,
@@ -62,7 +69,6 @@ export function getDailyMiningReportFromPool(
     day: convertToUTCStartOfDay(day),
     uptime: uptime,
     hashrateTHs: hashrateTHs,
-    hashrateTHsMax: hashrateTHsMax,
     btcSellPrice: btcPrice,
     expenses: {
       electricity: electricityCost ?? { btc: 0, source: FinancialSource.NONE },
@@ -71,18 +77,23 @@ export function getDailyMiningReportFromPool(
       other: otherCost ?? { btc: 0, source: FinancialSource.NONE },
     },
     income: {
-      pool: { btc: btc, source: FinancialSource.POOL },
+      pool: { btc: minedbtc, source: FinancialSource.POOL },
       other: otherIncome ?? { btc: 0, source: FinancialSource.NONE },
     },
+    equipements: equipements,
   };
 }
 
 export function mergeDayStatementsIntoMiningReport(
   dayStatements: DailyFinancialStatement[],
-  miningHistoryOfDay: Database["public"]["Tables"]["mining"]["Row"] | undefined
+  miningHistoryOfDay: Database["public"]["Tables"]["mining"]["Row"] | undefined,
+  dayEquipements: MiningEquipment
 ): DailyMiningReport | undefined {
   const dayStatementMiningReports = dayStatements.map((statement) => {
-    return convertDailyFinancialStatementToMiningReport(statement);
+    return convertDailyFinancialStatementToMiningReport(
+      statement,
+      dayEquipements
+    );
   });
 
   if (dayStatementMiningReports.length === 0) {
@@ -91,6 +102,7 @@ export function mergeDayStatementsIntoMiningReport(
   } else {
     const miningReportFromStatement = mergeDayStatmentsMiningReports(
       dayStatementMiningReports,
+      dayEquipements,
       miningHistoryOfDay?.uptime,
       miningHistoryOfDay?.hashrateTHs
     );
@@ -100,9 +112,9 @@ export function mergeDayStatementsIntoMiningReport(
 
 function mergeDayStatmentsMiningReports(
   dayReports: DailyMiningReport[],
+  dayEquipements: MiningEquipment,
   dayUptime?: number,
-  dayHashrateTHs?: number,
-  dayHashrateTHsMax?: number
+  dayHashrateTHs?: number
 ): DailyMiningReport {
   if (dayReports.length === 0) {
     throw new Error("Day Statments : Cannot merge empty Mining Report");
@@ -134,7 +146,6 @@ function mergeDayStatmentsMiningReports(
     day: dayReports[0].day, // Assuming the day is the same for both accounts
     uptime: dayUptime ?? dayReports[0].uptime, // Assuming the uptime is the same for both accounts
     hashrateTHs: dayHashrateTHs ?? dayReports[0].hashrateTHs, // Assuming the hashrate is the same for both accounts
-    hashrateTHsMax: dayHashrateTHsMax ?? dayReports[0].hashrateTHsMax,
     btcSellPrice: dayReports[0].btcSellPrice,
     expenses: {
       electricity: addFinancialAmount(
@@ -164,6 +175,7 @@ function mergeDayStatmentsMiningReports(
         dayReports[1].income.other
       ),
     },
+    equipements: dayEquipements,
   };
 
   if (dayReports.length === 2) {
@@ -171,12 +183,19 @@ function mergeDayStatmentsMiningReports(
   } else {
     return mergeDayStatmentsMiningReports(
       [sum, ...dayReports.slice(2)],
+      dayEquipements,
       dayUptime,
       dayHashrateTHs
     );
   }
 }
 
+/**
+ * Merge mining reports for the same day
+ * The reports concern different equipements
+ * @param dayReports
+ * @returns
+ */
 export function mergeDayMiningReport(
   dayReports: DailyMiningReport[]
 ): DailyMiningReport {
@@ -193,10 +212,24 @@ export function mergeDayMiningReport(
   ) {
     throw new Error("Cannot merge Mining Report for different days");
   }
+  // verify that the report has not the same equipements
+  const containerIds_0 = dayReports[0].equipements.asics.map(
+    (asic) => asic.containerId
+  );
+  const containerIds_1 = dayReports[1].equipements.asics.map(
+    (asic) => asic.containerId
+  );
+  const intersection = containerIds_0.filter((id) =>
+    containerIds_1.includes(id)
+  );
+  if (intersection.length > 0) {
+    throw new Error("Cannot merge Mining Report for same equipements");
+  }
 
   const hashrateTHs = dayReports[0].hashrateTHs + dayReports[1].hashrateTHs;
   const hashrateTHsMax =
-    dayReports[0].hashrateTHsMax + dayReports[1].hashrateTHsMax;
+    dayReports[0].equipements.hashrateTHsMax +
+    dayReports[1].equipements.hashrateTHsMax;
   const uptime =
     hashrateTHsMax > 0
       ? new BigNumber(hashrateTHs).dividedBy(hashrateTHsMax).toNumber()
@@ -220,12 +253,24 @@ export function mergeDayMiningReport(
     });
   }
 
+  // merge asics and deduplicate by container
+  const asics = concatUniqueAsics(
+    dayReports[0].equipements.asics,
+    dayReports[1].equipements.asics
+  );
+
+  const equipements: MiningEquipment = {
+    hashrateTHsMax: hashrateTHsMax,
+    powerWMax:
+      dayReports[0].equipements.powerWMax + dayReports[1].equipements.powerWMax,
+    asics: asics,
+  };
+
   const sum: DailyMiningReport = {
     day: dayReports[0].day, // Assuming the day is the same for both accounts
     site: undefined,
     uptime: uptime,
     hashrateTHs: hashrateTHs,
-    hashrateTHsMax: hashrateTHsMax,
     btcSellPrice: dayReports[0].btcSellPrice,
     expenses: {
       electricity: addFinancialAmount(
@@ -256,6 +301,7 @@ export function mergeDayMiningReport(
       ),
     },
     bySite: bySite,
+    equipements: equipements,
   };
 
   if (dayReports.length === 2) {

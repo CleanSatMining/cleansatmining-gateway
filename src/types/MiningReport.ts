@@ -9,7 +9,25 @@ import { Database } from "./supabase";
 export type MiningReport = {
   uptime: number;
   hashrateTHs: number;
+  equipements: MiningEquipment;
+} & MiningBalance;
+
+export type MiningEquipment = {
   hashrateTHsMax: number;
+  powerWMax: number;
+  asics: Miners[];
+};
+
+export type Miners = {
+  containerId: number;
+  units: number;
+  manufacturer: string;
+  model: string;
+  hashrateTHs: number;
+  powerW: number;
+};
+
+export type MiningBalance = {
   btcSellPrice: number;
   expenses: {
     electricity: FinancialStatementAmount;
@@ -38,22 +56,8 @@ export type DailyFarmMiningReport = DailyMiningReport & {
 export type DailyMiningReport = {
   day: Date;
   site?: string;
-  uptime: number;
-  hashrateTHs: number;
-  hashrateTHsMax: number;
-  btcSellPrice: number;
-  expenses: {
-    electricity: FinancialStatementAmount;
-    csm: FinancialStatementAmount;
-    operator: FinancialStatementAmount;
-    other: FinancialStatementAmount;
-  };
-  income: {
-    pool: FinancialStatementAmount;
-    other: FinancialStatementAmount;
-  };
   bySite?: Record<string, SiteMiningReport>;
-};
+} & MiningReport;
 
 export function mapDailyMiningReportToSiteMiningReport(
   report: DailyMiningReport,
@@ -64,7 +68,6 @@ export function mapDailyMiningReportToSiteMiningReport(
     site: site,
     uptime: report.uptime,
     hashrateTHs: report.hashrateTHs,
-    hashrateTHsMax: report.hashrateTHsMax,
     btcSellPrice: report.btcSellPrice,
     expenses: {
       electricity: report.expenses.electricity,
@@ -76,6 +79,8 @@ export function mapDailyMiningReportToSiteMiningReport(
       pool: report.income.pool,
       other: report.income.other,
     },
+    equipements: report.equipements,
+    bySite: report.bySite,
   };
 }
 
@@ -86,7 +91,6 @@ export function mapSiteMiningReportToMiningReport(
     day: report.day,
     uptime: report.uptime,
     hashrateTHs: report.hashrateTHs,
-    hashrateTHsMax: report.hashrateTHsMax,
     btcSellPrice: report.btcSellPrice,
     expenses: {
       electricity: report.expenses.electricity,
@@ -98,17 +102,20 @@ export function mapSiteMiningReportToMiningReport(
       pool: report.income.pool,
       other: report.income.other,
     },
+    equipements: report.equipements,
+    bySite: report.bySite,
+    site: report.site,
   };
 }
 
 export function convertDailyFinancialStatementToMiningReport(
-  dayStatement: DailyFinancialStatement
+  dayStatement: DailyFinancialStatement,
+  dayEquipements: MiningEquipment
 ): DailyMiningReport {
   return {
     day: convertToUTCStartOfDay(dayStatement.day),
     uptime: dayStatement.uptime,
     hashrateTHs: dayStatement.hashrateTHs,
-    hashrateTHsMax: dayStatement.hashrateTHsMax,
     btcSellPrice: dayStatement.btcPrice,
     expenses: {
       electricity:
@@ -138,12 +145,13 @@ export function convertDailyFinancialStatementToMiningReport(
           ? dayStatement.amount
           : { btc: 0, source: FinancialSource.NONE },
     },
+    equipements: dayEquipements,
   };
 }
 
 export function convertMiningHistoryToMiningReport(
   miningDay: Database["public"]["Tables"]["mining"]["Row"],
-  hashrateTHsMax: number,
+  dayEquipements: MiningEquipment,
   btcPrice?: number,
   electricityCost?: FinancialStatementAmount,
   csmCost?: FinancialStatementAmount,
@@ -163,7 +171,6 @@ export function convertMiningHistoryToMiningReport(
     day: convertToUTCStartOfDay(new Date(miningDay.day)),
     uptime: miningDay.uptime,
     hashrateTHs: miningDay.hashrateTHs,
-    hashrateTHsMax: hashrateTHsMax,
     btcSellPrice: btcPrice ?? 0,
     expenses: {
       electricity: electricity,
@@ -175,6 +182,7 @@ export function convertMiningHistoryToMiningReport(
       pool: { btc: miningDay.mined, source: FinancialSource.STATEMENT },
       other: otherIn,
     },
+    equipements: dayEquipements,
   };
 }
 export enum FinancialSource {

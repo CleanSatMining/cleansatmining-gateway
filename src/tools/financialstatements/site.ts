@@ -8,7 +8,7 @@ import { Database } from "@/types/supabase";
 import { Site } from "@/types/supabase.extend";
 import BigNumber from "bignumber.js";
 import { calculateDaysBetweenDates, convertDateToKey } from "../date";
-import { calculateSitePower } from "../powerhistory/site";
+import { calculateSitePower } from "../equipment/site";
 import {
   mapFinancialPartnaireToField,
   getFinancialStatementUptimeWeight,

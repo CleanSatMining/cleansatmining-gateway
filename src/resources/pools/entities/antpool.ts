@@ -6,7 +6,7 @@ import {
 import BigNumber from "bignumber.js";
 import * as crypto from "crypto";
 import { Site } from "@/types/supabase.extend";
-import { calculateSitePower } from "@/tools/powerhistory/site";
+import { calculateSitePower } from "@/tools/equipment/site";
 
 const PAGE_SIZE = 50; //page size max
 
