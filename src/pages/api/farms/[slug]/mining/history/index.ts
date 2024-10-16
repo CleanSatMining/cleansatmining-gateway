@@ -362,7 +362,7 @@ async function insertPoolDataInMiningTable(
   }
 
   console.log("UPDATING mining history : sign out");
-  await signOut(supabase);
+  //await signOut(supabase);
 
   if (error) {
     console.error(
@@ -392,5 +392,42 @@ async function insertPoolDataInMiningTable(
           error
       );
     }
+  }
+}
+
+async function insertPoolDataInMiningTable2(
+  username: string,
+  password: string,
+  farm: string,
+  data: DayPoolData[]
+) {
+  const authUrl =
+    "https://zlczywhctfaosxqtjwee.supabase.co/auth/v1/token?grant_type=password";
+  const authBody = {
+    email: username,
+    password: password,
+  };
+
+  try {
+    const authResponse = await fetch(authUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(authBody),
+    });
+
+    if (!authResponse.ok) {
+      throw new Error(`Authentication failed: ${authResponse.statusText}`);
+    }
+
+    const authData = await authResponse.json();
+    const token = authData.access_token;
+
+    if (!token) {
+      throw new Error("No access token found");
+    }
+  } catch (error) {
+    console.error("Error:", error);
   }
 }
