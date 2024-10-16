@@ -109,7 +109,9 @@ export async function handlePostRequest(
     rowsTyped
   );
 
-  return res.status(200).json({ message: "Data inserted ?" + response });
+  return res
+    .status(200)
+    .json({ message: "Data inserted ?" + JSON.stringify(response) });
 }
 
 export async function handleGetRequest(
