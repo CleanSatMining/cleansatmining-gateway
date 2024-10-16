@@ -470,9 +470,24 @@ async function insertPoolDataInMiningTable(
   }
 
   try {
-    var { error } = await supabase.from("mining").insert(row).select();
+    var {
+      error,
+      count,
+      status,
+      statusText,
+      data: dataReturn,
+    } = await supabase.from("mining").insert(row).select();
+    console.log(
+      "UPDATING mining history result:",
+      JSON.stringify({
+        count,
+        status,
+        statusText,
+        dataReturn,
+      })
+    );
   } catch (e) {
-    console.log("Error while inserting mining data. " + e);
+    console.error("Error while inserting mining data. " + e);
     error = e;
   }
 
