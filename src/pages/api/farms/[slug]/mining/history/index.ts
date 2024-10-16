@@ -5,10 +5,11 @@ import {
   convertDateToTimestamptzFormat,
   getTodayDate,
 } from "@/tools/date";
-import { getSupabaseClient } from "@/databases/supabase";
+import { getSupabaseClient, signIn, signOut } from "@/databases/supabase";
 import { Database } from "@/types/supabase";
 import { LRUCache } from "lru-cache";
-
+import { DayPoolData } from "@/types/Pool";
+const RETRY_MAX = 3;
 interface CachedData {
   upatedAt: string;
   data: Database["public"]["Tables"]["mining"]["Row"][];
@@ -23,6 +24,88 @@ const cache = new LRUCache<string, any>({
 /* eslint-enable */
 
 export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method === "POST") {
+    return handlePostRequest(req, res);
+  }
+
+  return handleGetRequest(req, res);
+}
+
+export async function handlePostRequest(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  // get the body of the request
+  const { user, password, rows } = req.body;
+  const { slug: farm } = req.query;
+
+  if (!farm && typeof farm !== "string") {
+    return res.status(400).json({ error: "Invalid farm parameter" });
+  }
+
+  if (!user || !password || !rows) {
+    return res.status(400).json({
+      error: "Missing parameters in the request body",
+    });
+  }
+  if (typeof user !== "string") {
+    return res.status(400).json({
+      error: "Invalid parameter 'user'",
+    });
+  }
+  if (typeof password !== "string") {
+    return res.status(400).json({
+      error: "Invalid parameter 'password'",
+    });
+  }
+  if (!Array.isArray(rows)) {
+    return res.status(400).json({
+      error: "Invalid parameter 'rows'",
+    });
+  }
+  if (rows.length === 0) {
+    return res.status(400).json({
+      error: "Empty parameter 'rows'",
+    });
+  }
+  //verify tha rows ar of type DayPoolData
+  const rowsTyped = rows as DayPoolData[];
+  if (
+    !rowsTyped.every((row) => {
+      return (
+        typeof row.date === "string" &&
+        typeof row.site === "string" &&
+        typeof row.efficiency === "number" &&
+        typeof row.revenue === "number" &&
+        typeof row.uptimePercentage === "number" &&
+        typeof row.uptimeTotalMinutes === "number" &&
+        typeof row.uptimeTotalMachines === "number" &&
+        typeof row.hashrateTHs === "number"
+      );
+    })
+  ) {
+    return res.status(400).json({
+      error: "Invalid parameter 'rows'",
+    });
+  }
+
+  const supabase = getSupabaseClient();
+
+  insertPoolDataInMiningTable(
+    supabase,
+    user,
+    password,
+    farm.toString(),
+    rowsTyped
+  );
+
+  return res.status(200).json({ message: "Data inserted" });
+}
+
+export async function handleGetRequest(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
@@ -194,5 +277,120 @@ async function fetchMiningData(
       data: data as Database["public"]["Tables"]["mining"]["Row"][],
       error: error,
     };
+  }
+}
+
+async function insertPoolDataInMiningTable(
+  supabase: SupabaseClient,
+  username: string,
+  password: string,
+  farm: string,
+  data: DayPoolData[],
+  retry: number = 0
+) {
+  if (data.length === 0) {
+    console.warn(farm + ": No data to insert in mining table");
+    return;
+  }
+
+  let error;
+
+  const row: Database["public"]["Tables"]["mining"]["Insert"][] = data.map(
+    (d) => {
+      //console.log("Inserting mining data", d.date);
+      return {
+        farmSlug: farm,
+        hashrateTHs: d.hashrateTHs,
+        mined: d.revenue,
+        uptime: d.efficiency,
+        siteSlug: d.site,
+        day: d.date,
+      };
+    }
+  );
+
+  //const username = process.env.SUPABASE_ADMIN_USER ?? "";
+  //const password = process.env.SUPABASE_ADMIN_PASSWORD ?? "";
+  console.log("UPDATING mining history : sign in");
+  try {
+    const { data: signData, error: signError } = await signIn(
+      supabase,
+      username,
+      password
+    );
+    console.log(
+      "UPDATING mining history : sign in result",
+      JSON.stringify({ signData, signError })
+    );
+    if (signError) {
+      throw new Error("Error while signing in. " + signError);
+    }
+    const token = signData.session?.access_token;
+
+    if (!token) {
+      console.error("No access token found");
+      await signOut(supabase);
+      throw new Error("No access token found");
+    }
+  } catch (e) {
+    console.error("Error while signing in. " + e);
+    throw new Error("Error while signing in. " + e);
+  }
+
+  try {
+    console.log("UPDATING mining history : inserting data");
+    const {
+      error: errorInsert,
+      count,
+      status,
+      statusText,
+      data: dataReturn,
+    } = await supabase.from("mining").insert(row).select();
+    console.log(
+      "UPDATING mining history result:",
+      JSON.stringify({
+        count,
+        status,
+        statusText,
+        dataReturn,
+      })
+    );
+    error = errorInsert;
+  } catch (e) {
+    console.error("Error while inserting mining data. " + e);
+    error = e;
+  }
+
+  console.log("UPDATING mining history : sign out");
+  await signOut(supabase);
+
+  if (error) {
+    console.error(
+      "Retry:" +
+        retry +
+        ". Error while inserting mining data. " +
+        JSON.stringify(row),
+      error
+    );
+
+    if (retry < RETRY_MAX) {
+      //wait 100ms before retry
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      await insertPoolDataInMiningTable(
+        supabase,
+        username,
+        password,
+        farm,
+        data,
+        retry + 1
+      );
+    } else {
+      throw new Error(
+        "Error while inserting mining data " +
+          JSON.stringify(row) +
+          ". " +
+          error
+      );
+    }
   }
 }
