@@ -16,11 +16,11 @@ export default async (req: Request, context: Context) => {
   const url = new URL(req.url);
   const farm = url.searchParams.get("farm") || undefined;
   const site = url.searchParams.get("site") || undefined;
-  const username = process.env.SUPABASE_ADMIN_USER ?? "";
-  const password = process.env.SUPABASE_ADMIN_PASSWORD ?? "";
+  //const username = process.env.SUPABASE_ADMIN_USER ?? "";
+  //const password = process.env.SUPABASE_ADMIN_PASSWORD ?? "";
 
   const supabase = getSupabaseClient();
-  await signIn(supabase, username, password);
+  //await signIn(supabase, username, password);
   let response;
   if (farm !== undefined && site !== undefined) {
     response = await updateMiningHistory(supabase, farm, site);
@@ -29,7 +29,7 @@ export default async (req: Request, context: Context) => {
   } else {
     response = await updateAllMiningHistory(supabase);
   }
-  await signOut(supabase);
+  //await signOut(supabase);
 
   if (!response.ok) {
     return new Response(response.statusText, { status: response.status });

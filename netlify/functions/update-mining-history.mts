@@ -38,12 +38,12 @@ export default async (req: Request, context: Context) => {
   const url = new URL(req.url);
   const farm = url.searchParams.get("farm") || undefined;
   const site = url.searchParams.get("site") || undefined;
-  const username = process.env.SUPABASE_ADMIN_USER ?? "";
-  const password = process.env.SUPABASE_ADMIN_PASSWORD ?? "";
+  //const username = process.env.SUPABASE_ADMIN_USER ?? "";
+  //const password = process.env.SUPABASE_ADMIN_PASSWORD ?? "";
 
   const supabase = getSupabaseClient();
-  console.log("UPDATING mining history : sign in");
-  await signIn(supabase, username, password);
+  //console.log("UPDATING mining history : sign in");
+  //await signIn(supabase, username, password);
   let response;
   if (farm !== undefined && site !== undefined) {
     response = await updateMiningHistory(supabase, farm, site);
@@ -52,8 +52,8 @@ export default async (req: Request, context: Context) => {
   } else {
     response = await updateAllMiningHistory(supabase);
   }
-  console.log("UPDATING mining history : sign out");
-  await signOut(supabase);
+  //console.log("UPDATING mining history : sign out");
+  //await signOut(supabase);
 
   if (!response.ok) {
     return new Response(response.statusText, { status: response.status });
@@ -128,6 +128,7 @@ export async function updateMiningHistory(
   });
 
   if (daysPoolData.length === 0) {
+    console.log("No data to update", farm, site);
     return {
       ok: true,
       status: 204,
@@ -340,6 +341,7 @@ export async function updateSiteMiningHistory(
 
   if (daysPoolData.length === 0) {
     // no data to update
+    console.log("No data to update", farmSlug, siteSlug);
     return returnNoUpdate(
       farmSlug,
       siteSlug,
@@ -429,7 +431,10 @@ async function insertPoolDataInMiningTable(
   data: DayPoolData[],
   retry: number = 0
 ) {
-  if (data.length === 0) return;
+  if (data.length === 0) {
+    console.warn(farm + ": No data to insert in mining table");
+    return;
+  }
 
   const row: Database["public"]["Tables"]["mining"]["Insert"][] = data.map(
     (d) => {
@@ -445,7 +450,21 @@ async function insertPoolDataInMiningTable(
     }
   );
 
-  const { error } = await supabase.from("mining").insert(row).select();
+  const username = process.env.SUPABASE_ADMIN_USER ?? "";
+  const password = process.env.SUPABASE_ADMIN_PASSWORD ?? "";
+  console.log("UPDATING mining history : sign in");
+  await signIn(supabase, username, password);
+
+  try {
+    var { error } = await supabase.from("mining").insert(row).select();
+  } catch (e) {
+    console.log("Error while inserting mining data. " + e);
+    error = e;
+  }
+
+  console.log("UPDATING mining history : sign out");
+  await signOut(supabase);
+
   if (error) {
     console.error(
       "Retry:" +
