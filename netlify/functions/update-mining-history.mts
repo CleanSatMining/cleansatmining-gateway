@@ -459,6 +459,10 @@ async function insertPoolDataInMiningTable(
       username,
       password
     );
+    console.log(
+      "UPDATING mining history : sign in result",
+      JSON.stringify({ signData, signError })
+    );
     if (signError) {
       throw new Error("Error while signing in. " + signError);
     }
@@ -475,6 +479,7 @@ async function insertPoolDataInMiningTable(
   }
 
   try {
+    console.log("UPDATING mining history : inserting data");
     var {
       error,
       count,
