@@ -426,7 +426,7 @@ function searchDaysToUpdate(miningData: MiningData[], site?: Site) {
 }
 
 async function insertPoolDataInMiningTable(
-  supabase,
+  supabase: SupabaseClient,
   farm: string,
   data: DayPoolData[],
   retry: number = 0
@@ -453,10 +453,28 @@ async function insertPoolDataInMiningTable(
   const username = process.env.SUPABASE_ADMIN_USER ?? "";
   const password = process.env.SUPABASE_ADMIN_PASSWORD ?? "";
   console.log("UPDATING mining history : sign in");
-  await signIn(supabase, username, password);
+  const { data: signData, error: signError } = await signIn(
+    supabase,
+    username,
+    password
+  );
+  if (signError) {
+    throw new Error("Error while signing in. " + signError);
+  }
+
+  const token = signData.session?.access_token;
+
+  if (!token) {
+    console.error("No access token found");
+    throw new Error("No access token found");
+  }
 
   try {
-    var { error } = await supabase.from("mining").insert(row).select();
+    var { error } = await supabase
+      .from("mining")
+      .insert(row)
+      .select()
+      .setAuth(token);
   } catch (e) {
     console.log("Error while inserting mining data. " + e);
     error = e;
