@@ -94,13 +94,15 @@ export async function handlePostRequest(
 
   const supabase = getSupabaseClient();
 
-  insertPoolDataInMiningTable(
+  /*insertPoolDataInMiningTable(
     supabase,
     user,
     password,
     farm.toString(),
     rowsTyped
-  );
+  );*/
+
+  insertPoolDataInMiningTable2(user, password, farm.toString(), rowsTyped);
 
   return res.status(200).json({ message: "Data inserted" });
 }
@@ -408,11 +410,14 @@ async function insertPoolDataInMiningTable2(
     password: password,
   };
 
+  const apikey = process.env.SUPABASE_API_KEY ?? "";
+
   try {
     const authResponse = await fetch(authUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        apikey: apikey,
       },
       body: JSON.stringify(authBody),
     });
@@ -427,6 +432,45 @@ async function insertPoolDataInMiningTable2(
     if (!token) {
       throw new Error("No access token found");
     }
+
+    console.log("Access token:", token);
+
+    const url = "https://zlczywhctfaosxqtjwee.supabase.co/rest/v1/mining";
+
+    const rows: Database["public"]["Tables"]["mining"]["Insert"][] = data.map(
+      (d) => {
+        //console.log("Inserting mining data", d.date);
+        return {
+          farmSlug: farm,
+          hashrateTHs: d.hashrateTHs,
+          mined: d.revenue,
+          uptime: d.efficiency,
+          siteSlug: d.site,
+          day: d.date,
+        };
+      }
+    );
+
+    console.log("Inserting data:", JSON.stringify(rows, null, 2));
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        apikey: apikey,
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify(rows),
+    });
+
+    console.log("Response:", response.ok, response.statusText);
+    if (!response.ok) {
+      throw new Error(`Error while posting data: ${response.statusText}`);
+    }
+
+    //const responseData = await response.json();
+    //console.log("Data posted successfully:", responseData);
   } catch (error) {
     console.error("Error:", error);
   }
