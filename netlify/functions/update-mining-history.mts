@@ -128,7 +128,7 @@ export async function updateMiningHistory(
   });
 
   if (daysPoolData.length === 0) {
-    console.log("No data to update", farm, site);
+    console.warn("No data to update", farm, site);
     return {
       ok: true,
       status: 204,
@@ -341,7 +341,7 @@ export async function updateSiteMiningHistory(
 
   if (daysPoolData.length === 0) {
     // no data to update
-    console.log("No data to update", farmSlug, siteSlug);
+    console.warn("No data to update", farmSlug, siteSlug);
     return returnNoUpdate(
       farmSlug,
       siteSlug,
