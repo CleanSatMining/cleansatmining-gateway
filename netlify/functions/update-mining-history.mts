@@ -470,11 +470,7 @@ async function insertPoolDataInMiningTable(
   }
 
   try {
-    var { error } = await supabase
-      .from("mining")
-      .insert(row)
-      .select()
-      .setAuth(token);
+    var { error } = await supabase.from("mining").insert(row).select();
   } catch (e) {
     console.log("Error while inserting mining data. " + e);
     error = e;
