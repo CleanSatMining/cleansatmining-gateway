@@ -1,7 +1,7 @@
 import { Database } from "@/types/supabase";
 import { fetchFinancialStatements } from "@/resources/financialstatements/financialstatement.common";
 import { getFinancialStatementsPeriod } from "@/tools/financialstatements/financialstatement.commons";
-import { convertDateToTimestamptzFormat } from "@/tools/date";
+import { convertDateToTimestamptzFormat, getTodayDate } from "@/tools/date";
 import { fetchMiningHistory, MiningHistoryResponse } from "./mininghistory";
 import { MiningData } from "@/types/MiningHistory";
 import { FinancialSource } from "@/types/MiningReport";
@@ -66,6 +66,8 @@ export async function fetchOperationalData(
   } else if (end_param) {
     endMining = new Date(end_param);
   }
+  endMining =
+    endMining && endMining < getTodayDate() ? endMining : getTodayDate();
 
   const startMiningTimestampz = startMining
     ? convertDateToTimestamptzFormat(startMining)

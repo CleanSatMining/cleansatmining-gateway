@@ -1,4 +1,8 @@
-import { DailyFinancialStatement } from "@/types/FinancialSatement";
+import {
+  DailyFinancialStatement,
+  FinancialPartnaire,
+  FinancialStatementAmount,
+} from "@/types/FinancialSatement";
 import {
   DailySiteMiningReport,
   FinancialSource,
@@ -25,7 +29,7 @@ import {
   getEmptyDailyMiningReport,
 } from "./miningreport";
 import { calculateSiteGrossIncome } from "../site";
-import { calculateSitePower, getSiteEquipments } from "../equipment/site";
+import { getSiteEquipments } from "../equipment/site";
 
 export function getSiteDailyMiningReports(
   financialStatements: Database["public"]["Tables"]["financialStatements"]["Row"][],
@@ -165,7 +169,7 @@ export function getSiteMiningReportsByDay(
     const dayStatements = financialStatementsByDay.get(dayKey) ?? [];
 
     // aggregate the data from the mining history and the financial statements
-    const miningReportOfTheDay = aggregateSiteMiningReportData(
+    const miningReportOfTheDay = aggregateSiteDayMiningReportData(
       dayStatements,
       dayMiningHistory,
       day,
@@ -191,16 +195,19 @@ export function getSiteMiningReportsByDay(
 
   return miningReportByDay;
 }
+
 export function getSiteDayMiningReportFromPool(
   site: Site,
   miningHistoryOfDay: Database["public"]["Tables"]["mining"]["Row"],
   btcPrice: number,
-  day: Date
+  day: Date,
+  electricityCost?: FinancialStatementAmount
 ) {
   const simulationResult = calculateSiteGrossIncome(
     site,
     miningHistoryOfDay,
-    btcPrice
+    btcPrice,
+    electricityCost?.btc
   );
 
   const equipements = getSiteEquipments(site, day);
@@ -231,7 +238,16 @@ export function getSiteDayMiningReportFromPool(
   return dayReportFromPool;
 }
 
-function aggregateSiteMiningReportData(
+/**
+ * Aggregate the data from the financial statements and the mining history of a given day
+ * @param dayStatements financial statements of the day
+ * @param dayMiningHistory mining history of the day
+ * @param day date of the day
+ * @param site site of the data
+ * @param btcPrice price of bitcoin
+ * @returns
+ */
+function aggregateSiteDayMiningReportData(
   dayStatements: DailyFinancialStatement[],
   dayMiningHistory: Database["public"]["Tables"]["mining"]["Row"] | undefined,
   day: Date,
@@ -242,13 +258,83 @@ function aggregateSiteMiningReportData(
 
   const dayMiningReportFromDayStatements = mergeDayStatementsIntoMiningReport(
     dayStatements,
-    dayMiningHistory,
-    equipements
+    equipements,
+    dayMiningHistory?.uptime,
+    dayMiningHistory?.hashrateTHs
   );
 
   if (dayMiningReportFromDayStatements !== undefined) {
-    // day has financial statements : use the mining report from the financial statements
-    // we suppose that the financial statements are complete
+    // verify that the statements of the day are complete (one per provider)
+    const providers: string[] = Object.values(FinancialPartnaire);
+    const dayStatementsProviders = dayStatements.map((statement) =>
+      statement.partnaire.toString()
+    );
+
+    //get all the provider not in the statements
+    const missingProviders = providers.filter(
+      (provider) => !dayStatementsProviders.includes(provider)
+    );
+
+    if (missingProviders.length > 0 && dayMiningHistory !== undefined) {
+      // the statements are incomplete : use the mining report from the pool
+
+      console.log(
+        "=> WARN Statements " +
+          site.slug +
+          " missing providers for day " +
+          day.toISOString(),
+        JSON.stringify(missingProviders, null, 2)
+      );
+
+      const dayReportFromPool = mapDailyMiningReportToSiteMiningReport(
+        getSiteDayMiningReportFromPool(
+          site,
+          dayMiningHistory,
+          btcPrice,
+          day,
+          dayMiningReportFromDayStatements.expenses.electricity
+        ),
+        site.slug
+      );
+      // console.log(
+      //   "=> dayReportFromPool BEFORE",
+      //   JSON.stringify(dayMiningReportFromDayStatements, null, 2)
+      // );
+
+      if (
+        missingProviders.includes(FinancialPartnaire.ELECTRICITY.toString())
+      ) {
+        // the electricity cost is missing : clompensate with the pool report
+        console.log(" - ", site.slug, day.toISOString(), "update electricity");
+        dayMiningReportFromDayStatements.expenses.electricity =
+          dayReportFromPool.expenses.electricity;
+      }
+
+      if (missingProviders.includes(FinancialPartnaire.CSM.toString())) {
+        // the csm cost is missing : clompensate with the pool report
+        console.log(" - ", site.slug, day.toISOString(), "update csm");
+        dayMiningReportFromDayStatements.expenses.csm =
+          dayReportFromPool.expenses.csm;
+      }
+
+      if (missingProviders.includes(FinancialPartnaire.OPERATOR.toString())) {
+        // the operator cost is missing : clompensate with the pool report
+        console.log(" - ", site.slug, day.toISOString(), "update operator");
+        dayMiningReportFromDayStatements.expenses.operator =
+          dayReportFromPool.expenses.operator;
+      }
+
+      if (missingProviders.includes(FinancialPartnaire.POOL.toString())) {
+        // the pool income is missing : clompensate with the pool report
+        console.log(" - ", site.slug, day.toISOString(), "update pool");
+        dayMiningReportFromDayStatements.income.pool =
+          dayReportFromPool.income.pool;
+      }
+    }
+    // console.log(
+    //   "=> dayReportFromPool AFTER",
+    //   JSON.stringify(dayMiningReportFromDayStatements, null, 2)
+    // );
     return dayMiningReportFromDayStatements;
   } else if (dayMiningHistory !== undefined) {
     // day has no financial statements : use the mining report from the pool

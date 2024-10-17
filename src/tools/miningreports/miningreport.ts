@@ -84,10 +84,19 @@ export function getDailyMiningReportFromPool(
   };
 }
 
+/**
+ * Merge daily financial statements into a mining report
+ * The statements and the mining history must be for the same day
+ * @param dayStatements statements of the day
+ * @param miningHistoryOfDay  mining history of the day
+ * @param dayEquipements
+ * @returns
+ */
 export function mergeDayStatementsIntoMiningReport(
   dayStatements: DailyFinancialStatement[],
-  miningHistoryOfDay: Database["public"]["Tables"]["mining"]["Row"] | undefined,
-  dayEquipements: MiningEquipment
+  dayEquipements: MiningEquipment,
+  uptime?: number,
+  hashrateTHs?: number
 ): DailyMiningReport | undefined {
   const dayStatementMiningReports = dayStatements.map((statement) => {
     return convertDailyFinancialStatementToMiningReport(
@@ -103,8 +112,8 @@ export function mergeDayStatementsIntoMiningReport(
     const miningReportFromStatement = mergeDayStatmentsMiningReports(
       dayStatementMiningReports,
       dayEquipements,
-      miningHistoryOfDay?.uptime,
-      miningHistoryOfDay?.hashrateTHs
+      uptime,
+      hashrateTHs
     );
     return miningReportFromStatement;
   }
@@ -311,6 +320,13 @@ export function mergeDayMiningReport(
   }
 }
 
+/**
+ * Merge daily mining reports
+ * The reports concern different days
+ * The merged report will contain a report by day
+ * @param miningReports list of maps of daily mining reports to be merged
+ * @returns
+ */
 export function mergeMiningReports(
   miningReports: Map<string, DailyMiningReport>[]
 ): Map<string, DailyMiningReport> {
