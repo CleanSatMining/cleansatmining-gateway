@@ -19,6 +19,7 @@ export function calculateSiteBalanceSheet(
   endInput?: Date
 ): DetailedBalanceSheet {
   if (miningReports.length === 0) {
+    console.log("     => WARN No mining reports found for site", site.slug);
     return getEmptyDetailedBalanceSheet(site, btcPrice, startInput, endInput);
   }
 

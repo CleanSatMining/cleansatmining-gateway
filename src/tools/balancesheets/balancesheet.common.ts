@@ -16,6 +16,12 @@ export function calculateBalanceSheet(
   startDay?: Date,
   endDay?: Date
 ): BalanceSheet {
+  console.log(
+    "    => calculateBalanceSheet START",
+    data.length,
+    startDay,
+    endDay
+  );
   const filteredData = data.filter((report) => {
     return (
       (startDay === undefined ||
@@ -27,14 +33,38 @@ export function calculateBalanceSheet(
 
   const { start: startDayReport, end: endDayReport } =
     getDailyMiningReportsPeriod(filteredData);
+  console.log(
+    "    => calculateBalanceSheet START",
+    startDayReport,
+    endDayReport
+  );
   if (startDayReport === undefined || endDayReport === undefined) {
-    console.warn(
-      "WARN calculateBalanceSheet",
-      data.length,
-      filteredData.length,
-      startDay,
-      endDay
+    console.log(
+      "WARN calculateBalanceSheet NO MINING REPORTS",
+      JSON.stringify(
+        {
+          "Data Length ": data.length,
+          "Filtered Data length ": filteredData.length,
+          "start data ": startDay,
+          "end data ": endDay,
+        },
+        null,
+        2
+      )
     );
+    /*console.warn(
+      "WARN calculateBalanceSheet NO MINING REPORTS",
+      JSON.stringify(
+        {
+          "Data Length ": data.length,
+          "Filtered Data length ": filteredData.length,
+          "start data ": startDay,
+          "end data ": endDay,
+        },
+        null,
+        2
+      )
+    );*/
     return getEmptyBalanceSheet(btcPrice, startDay, endDay);
   }
 

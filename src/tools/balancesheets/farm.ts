@@ -20,7 +20,9 @@ export function calculateFarmBalanceSheet(
 
   console.log(
     "=> calculateFarmBalanceSheet",
-    miningReports[0].bySite !== undefined
+    "miningReports",
+    miningReports.length,
+    "BySite? " + miningReports[0].bySite !== undefined
   );
 
   const { start: startDay, end: endDay } =
@@ -39,7 +41,7 @@ export function calculateFarmBalanceSheet(
   let sheet: BalanceSheet;
 
   console.log(
-    "=> BALANCE SHEET",
+    "=> BALANCE SHEET has mining reports",
     miningReports.length > 0 && miningReports[0].bySite !== undefined
   );
   if (miningReports.length > 0 && miningReports[0].bySite !== undefined) {
@@ -67,6 +69,10 @@ export function calculateFarmBalanceSheet(
         })
         .filter((report) => report !== undefined);
 
+      console.log(
+        "=> calculateSiteBalanceSheet for farm " + farm.slug,
+        site.slug
+      );
       const siteSheet: BalanceSheet = calculateSiteBalanceSheet(
         site,
         siteMiningReports,
@@ -78,6 +84,11 @@ export function calculateFarmBalanceSheet(
       sheets.push(siteSheet);
 
       const siteDetails = powerHistory.map((power) => {
+        console.log(
+          "=> calculateBalanceSheet for detail",
+          site.slug,
+          power.start
+        );
         const balanceSheet = calculateBalanceSheet(
           siteMiningReports.filter(
             (report) =>

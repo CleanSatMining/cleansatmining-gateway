@@ -333,9 +333,9 @@ export function mergeMiningReports(
   if (miningReports.length === 0) {
     throw new Error("Mining reports : Cannot merge empty Mining Report");
   }
-  if (miningReports.length === 1) {
+  /*if (miningReports.length === 1) {
     return miningReports[0];
-  }
+  }*/
 
   const mergedReports = new Map<string, DailyMiningReport>();
 

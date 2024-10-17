@@ -281,42 +281,6 @@ const mockMiningHistory: Database["public"]["Tables"]["mining"]["Row"][] = [
   },
 ];
 
-const mockDailyAccounting1: DailyMiningReport = {
-  day: new Date("2023-01-01"),
-  uptime: 10,
-  hashrateTHsMax: 100,
-  hashrateTHs: 100,
-  btcSellPrice: 50000,
-  expenses: {
-    electricity: { btc: 100, usd: 0, source: FinancialSource.STATEMENT },
-    csm: { btc: 50, usd: 0, source: FinancialSource.STATEMENT },
-    operator: { btc: 30, usd: 0, source: FinancialSource.STATEMENT },
-    other: { btc: 20, usd: 0, source: FinancialSource.STATEMENT },
-  },
-  income: {
-    pool: { btc: 200, usd: 0, source: FinancialSource.STATEMENT },
-    other: { btc: 10, usd: 0, source: FinancialSource.STATEMENT },
-  },
-};
-
-const mockDailyAccounting2: DailyMiningReport = {
-  day: new Date("2023-01-01"),
-  hashrateTHsMax: 100,
-  uptime: 10,
-  hashrateTHs: 100,
-  btcSellPrice: 50000,
-  expenses: {
-    electricity: { btc: 100, usd: 0, source: FinancialSource.STATEMENT },
-    csm: { btc: 50, usd: 0, source: FinancialSource.STATEMENT },
-    operator: { btc: 30, usd: 0, source: FinancialSource.STATEMENT },
-    other: { btc: 20, usd: 0, source: FinancialSource.STATEMENT },
-  },
-  income: {
-    pool: { btc: 200, usd: 0, source: FinancialSource.STATEMENT },
-    other: { btc: 10, usd: 0, source: FinancialSource.STATEMENT },
-  },
-};
-
 describe("miningreport.ts", () => {
   test("get Site Daily Mining Reports", () => {
     // Add your test logic here
