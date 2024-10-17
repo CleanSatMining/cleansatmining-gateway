@@ -57,7 +57,7 @@ export function resolveFinancialSource(
   return source1;
 }
 
-export function addFinancialAmount(
+export function addSourceFinancialAmount(
   amount1: FinancialStatementAmount,
   amount2: FinancialStatementAmount
 ): FinancialStatementAmount {
@@ -75,6 +75,78 @@ export function addFinancialAmount(
     btc = amount2.btc;
     usd = amount2.usd;
   }
+
+  return {
+    btc: btc,
+    usd: usd,
+    source: source,
+  };
+}
+
+export function addFinancialAmount(
+  amount1: FinancialStatementAmount,
+  amount2: FinancialStatementAmount
+): FinancialStatementAmount {
+  const source = resolveFinancialSource(amount1.source, amount2.source);
+  // add only if both are of the same source
+  let btc: number = 0;
+  let usd: number | undefined = undefined;
+  //if (amount1.source === amount2.source) {
+  btc = amount1.btc + amount2.btc;
+  usd = amount1.usd && amount2.usd ? amount1.usd + amount2.usd : undefined;
+  /*} else if (amount1.source === source) {
+    btc = amount1.btc;
+    usd = amount1.usd;
+  } else if (amount2.source === source) {
+    btc = amount2.btc;
+    usd = amount2.usd;
+  }*/
+
+  return {
+    btc: btc,
+    usd: usd,
+    source: source,
+  };
+}
+
+export function addFinancialAmounts(
+  amounts: FinancialStatementAmount[]
+): FinancialStatementAmount {
+  let btc: number = 0;
+  let usd: number | undefined = undefined;
+  let source: FinancialSource = FinancialSource.NONE;
+  for (const amount of amounts) {
+    const newAmount = addFinancialAmount({ btc, usd, source }, amount);
+    btc = newAmount.btc;
+    usd = newAmount.usd;
+    source = newAmount.source;
+  }
+
+  return {
+    btc: btc,
+    usd: usd,
+    source: source,
+  };
+}
+
+export function substractFinancialAmount(
+  amount1: FinancialStatementAmount,
+  amount2: FinancialStatementAmount
+): FinancialStatementAmount {
+  const source = resolveFinancialSource(amount1.source, amount2.source);
+  // add only if both are of the same source
+  let btc: number = 0;
+  let usd: number | undefined = undefined;
+  //if (amount1.source === amount2.source) {
+  btc = amount1.btc - amount2.btc;
+  usd = amount1.usd && amount2.usd ? amount1.usd - amount2.usd : undefined;
+  /*} else if (amount1.source === source) {
+    btc = amount1.btc;
+    usd = amount1.usd;
+  } else if (amount2.source === source) {
+    btc = amount2.btc;
+    usd = amount2.usd;
+  }*/
 
   return {
     btc: btc,

@@ -112,6 +112,10 @@ function calculateAverageMiningPerformance(
         pool: { btc: 0, source: FinancialSource.NONE },
         other: { btc: 0, source: FinancialSource.NONE },
       },
+      revenue: {
+        btc: 0,
+        source: FinancialSource.NONE,
+      },
       equipements: {
         asics: [],
         hashrateTHsMax: 0,
@@ -174,6 +178,9 @@ function calculateAverageMiningPerformance(
       acc.income.other.btc = new BigNumber(report.income.other.btc)
         .plus(acc.income.other.btc)
         .toNumber();
+      acc.revenue.btc = new BigNumber(report.revenue.btc)
+        .plus(acc.revenue.btc)
+        .toNumber();
 
       // resolve sources
       acc.expenses.electricity.source = resolveFinancialSource(
@@ -200,6 +207,10 @@ function calculateAverageMiningPerformance(
         acc.income.other.source,
         report.income.other.source
       );
+      acc.revenue.source = resolveFinancialSource(
+        acc.revenue.source,
+        report.revenue.source
+      );
 
       return acc;
     },
@@ -216,6 +227,10 @@ function calculateAverageMiningPerformance(
       income: {
         pool: { btc: 0, source: FinancialSource.NONE },
         other: { btc: 0, source: FinancialSource.NONE },
+      },
+      revenue: {
+        btc: 0,
+        source: FinancialSource.NONE,
       },
       equipements: {
         asics: [],
@@ -286,6 +301,7 @@ export function getEmptyBalanceSheet(
         pool: { btc: 0, source: FinancialSource.NONE },
         other: { btc: 0, source: FinancialSource.NONE },
       },
+      revenue: { btc: 0, source: FinancialSource.NONE },
     },
   };
 }
@@ -410,6 +426,9 @@ export function mergeBalanceSheets(sheets: BalanceSheet[]): BalanceSheet {
     acc.balance.income.other.btc = new BigNumber(acc.balance.income.other.btc)
       .plus(sheet.balance.income.other.btc)
       .toNumber();
+    acc.balance.revenue.btc = new BigNumber(acc.balance.revenue.btc)
+      .plus(sheet.balance.revenue.btc)
+      .toNumber();
 
     // resolve sources
     acc.balance.expenses.electricity.source = resolveFinancialSource(
@@ -467,6 +486,12 @@ export function mergeBalanceSheets(sheets: BalanceSheet[]): BalanceSheet {
     .toNumber();
   mergedSheets.balance.income.other.usd = new BigNumber(
     mergedSheets.balance.income.other.btc
+  )
+    .times(mergedSheets.balance.btcSellPrice)
+    .toNumber();
+
+  mergedSheets.balance.revenue.usd = new BigNumber(
+    mergedSheets.balance.revenue.btc
   )
     .times(mergedSheets.balance.btcSellPrice)
     .toNumber();

@@ -5,6 +5,7 @@ import {
   FinancialStatementAmount,
 } from "./FinancialSatement";
 import { Database } from "./supabase";
+import BigNumber from "bignumber.js";
 
 export type MiningReport = {
   uptime: number;
@@ -39,6 +40,7 @@ export type MiningBalance = {
     pool: FinancialStatementAmount;
     other: FinancialStatementAmount;
   };
+  revenue: FinancialStatementAmount;
 };
 
 export type SiteMiningReport = {
@@ -79,6 +81,7 @@ export function mapDailyMiningReportToSiteMiningReport(
       pool: report.income.pool,
       other: report.income.other,
     },
+    revenue: report.revenue,
     equipements: report.equipements,
     bySite: report.bySite,
   };
@@ -102,6 +105,7 @@ export function mapSiteMiningReportToMiningReport(
       pool: report.income.pool,
       other: report.income.other,
     },
+    revenue: report.revenue,
     equipements: report.equipements,
     bySite: report.bySite,
     site: report.site,
@@ -145,6 +149,10 @@ export function convertDailyFinancialStatementToMiningReport(
           ? dayStatement.amount
           : { btc: 0, source: FinancialSource.NONE },
     },
+    revenue: {
+      btc: 0,
+      source: FinancialSource.NONE,
+    },
     equipements: dayEquipements,
   };
 }
@@ -181,6 +189,16 @@ export function convertMiningHistoryToMiningReport(
     income: {
       pool: { btc: miningDay.mined, source: FinancialSource.STATEMENT },
       other: otherIn,
+    },
+    revenue: {
+      btc: new BigNumber(miningDay.mined)
+        .plus(otherIn.btc)
+        .minus(electricity.btc)
+        .minus(csm.btc)
+        .minus(operator.btc)
+        .minus(otherOut.btc)
+        .toNumber(),
+      source: FinancialSource.STATEMENT,
     },
     equipements: dayEquipements,
   };

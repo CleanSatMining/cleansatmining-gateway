@@ -10,6 +10,7 @@ import { calculateBalanceSheet } from "./balancesheet.common";
 import { calculateDaysBetweenDates } from "../date";
 import { calculateGrossIncome } from "../simulator";
 import { FeeRates } from "@/types/Simulator";
+import BigNumber from "bignumber.js";
 
 export function calculateSiteBalanceSheet(
   site: Site,
@@ -79,6 +80,18 @@ function calculateSiteSummaryBalanceSheet(
   );
 
   updateSheetBalanceTaxes(site, sheet, btcPrice);
+
+  // calculate the revenue
+  const revenue = new BigNumber(sheet.balance.income.pool.btc)
+    .plus(sheet.balance.income.other.btc)
+    .minus(sheet.balance.expenses.electricity.btc)
+    .minus(sheet.balance.expenses.csm.btc)
+    .minus(sheet.balance.expenses.operator.btc)
+    .minus(sheet.balance.expenses.other.btc)
+    .toNumber();
+  sheet.balance.revenue.btc = revenue;
+  sheet.balance.revenue.source = sheet.balance.expenses.electricity.source;
+  sheet.balance.revenue.usd = new BigNumber(revenue).times(btcPrice).toNumber();
 
   return sheet;
 }
@@ -177,6 +190,10 @@ export function getEmptyDetailedBalanceSheet(
           btc: 0,
           source: FinancialSource.NONE,
         },
+      },
+      revenue: {
+        btc: 0,
+        source: FinancialSource.NONE,
       },
     },
   };

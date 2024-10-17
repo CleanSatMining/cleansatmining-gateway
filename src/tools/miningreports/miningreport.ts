@@ -1,7 +1,10 @@
 import {
   addFinancialAmount,
+  addFinancialAmounts,
+  addSourceFinancialAmount,
   DailyFinancialStatement,
   FinancialStatementAmount,
+  substractFinancialAmount,
 } from "@/types/FinancialSatement";
 import { FinancialSource, MiningEquipment } from "@/types/MiningReport";
 import { convertDailyFinancialStatementToMiningReport } from "@/types/MiningReport";
@@ -49,6 +52,7 @@ export function getEmptyDailyMiningReport(
       pool: { btc: 0, source: FinancialSource.NONE },
       other: { btc: 0, source: FinancialSource.NONE },
     },
+    revenue: { btc: 0, source: FinancialSource.NONE },
     equipements: dayEquipements ?? emptyEquipements,
   };
 }
@@ -65,21 +69,56 @@ export function getDailyMiningReportFromPool(
   otherCost?: FinancialStatementAmount,
   otherIncome?: FinancialStatementAmount
 ): DailyMiningReport {
+  const electricity = electricityCost ?? {
+    btc: 0,
+    source: FinancialSource.NONE,
+  };
+  const csm = csmCost ?? { btc: 0, source: FinancialSource.NONE, usd: 0 };
+  const operator = operatorCost ?? {
+    btc: 0,
+    source: FinancialSource.NONE,
+    usd: 0,
+  };
+  const otherOut = otherCost ?? {
+    btc: 0,
+    source: FinancialSource.NONE,
+    usd: 0,
+  };
+  const otherIn = otherIncome ?? {
+    btc: 0,
+    source: FinancialSource.NONE,
+    usd: 0,
+  };
+  const incomePool = {
+    btc: minedbtc,
+    source: FinancialSource.POOL,
+    usd: new BigNumber(minedbtc).times(btcPrice).toNumber(),
+  };
+  const incomeOther = otherIncome ?? {
+    btc: 0,
+    source: FinancialSource.NONE,
+    usd: 0,
+  };
+  const income = addFinancialAmounts([incomePool, incomeOther]);
+  const expenses = addFinancialAmounts([electricity, csm, operator, otherOut]);
+  const revenue = substractFinancialAmount(income, expenses);
+  revenue.usd = new BigNumber(revenue.btc).times(btcPrice).toNumber();
   return {
     day: convertToUTCStartOfDay(day),
     uptime: uptime,
     hashrateTHs: hashrateTHs,
     btcSellPrice: btcPrice,
     expenses: {
-      electricity: electricityCost ?? { btc: 0, source: FinancialSource.NONE },
-      csm: csmCost ?? { btc: 0, source: FinancialSource.NONE },
-      operator: operatorCost ?? { btc: 0, source: FinancialSource.NONE },
-      other: otherCost ?? { btc: 0, source: FinancialSource.NONE },
+      electricity: electricity,
+      csm: csm,
+      operator: operator,
+      other: otherOut,
     },
     income: {
-      pool: { btc: minedbtc, source: FinancialSource.POOL },
-      other: otherIncome ?? { btc: 0, source: FinancialSource.NONE },
+      pool: incomePool,
+      other: otherIn,
     },
+    revenue: revenue,
     equipements: equipements,
   };
 }
@@ -109,7 +148,7 @@ export function mergeDayStatementsIntoMiningReport(
     // No financial statements for the day
     return undefined;
   } else {
-    const miningReportFromStatement = mergeDayStatmentsMiningReports(
+    const miningReportFromStatement = mergeMultisourceDayStatmentsMiningReports(
       dayStatementMiningReports,
       dayEquipements,
       uptime,
@@ -119,7 +158,7 @@ export function mergeDayStatementsIntoMiningReport(
   }
 }
 
-function mergeDayStatmentsMiningReports(
+function mergeMultisourceDayStatmentsMiningReports(
   dayReports: DailyMiningReport[],
   dayEquipements: MiningEquipment,
   dayUptime?: number,
@@ -151,46 +190,65 @@ function mergeDayStatmentsMiningReports(
     throw new Error("Cannot merge Mining Report for different hashrate");
   }
 
+  const sumElec = addSourceFinancialAmount(
+    dayReports[0].expenses.electricity,
+    dayReports[1].expenses.electricity
+  );
+
+  const sumCsm = addSourceFinancialAmount(
+    dayReports[0].expenses.csm,
+    dayReports[1].expenses.csm
+  );
+  const sumOperator = addSourceFinancialAmount(
+    dayReports[0].expenses.operator,
+    dayReports[1].expenses.operator
+  );
+  const sumOtherExpenses = addSourceFinancialAmount(
+    dayReports[0].expenses.other,
+    dayReports[1].expenses.other
+  );
+  const sumPool = addSourceFinancialAmount(
+    dayReports[0].income.pool,
+    dayReports[1].income.pool
+  );
+
+  const sumOtherIncome = addSourceFinancialAmount(
+    dayReports[0].income.other,
+    dayReports[1].income.other
+  );
+
+  const income = addFinancialAmounts([sumPool, sumOtherIncome]);
+  const expenses = addFinancialAmounts([
+    sumElec,
+    sumCsm,
+    sumOperator,
+    sumOtherExpenses,
+  ]);
+  const revenue = substractFinancialAmount(income, expenses);
+
   const sum: DailyMiningReport = {
     day: dayReports[0].day, // Assuming the day is the same for both accounts
     uptime: dayUptime ?? dayReports[0].uptime, // Assuming the uptime is the same for both accounts
     hashrateTHs: dayHashrateTHs ?? dayReports[0].hashrateTHs, // Assuming the hashrate is the same for both accounts
     btcSellPrice: dayReports[0].btcSellPrice,
     expenses: {
-      electricity: addFinancialAmount(
-        dayReports[0].expenses.electricity,
-        dayReports[1].expenses.electricity
-      ),
-      csm: addFinancialAmount(
-        dayReports[0].expenses.csm,
-        dayReports[1].expenses.csm
-      ),
-      operator: addFinancialAmount(
-        dayReports[0].expenses.operator,
-        dayReports[1].expenses.operator
-      ),
-      other: addFinancialAmount(
-        dayReports[0].expenses.other,
-        dayReports[1].expenses.other
-      ),
+      electricity: sumElec,
+      csm: sumCsm,
+      operator: sumOperator,
+      other: sumOtherExpenses,
     },
     income: {
-      pool: addFinancialAmount(
-        dayReports[0].income.pool,
-        dayReports[1].income.pool
-      ),
-      other: addFinancialAmount(
-        dayReports[0].income.other,
-        dayReports[1].income.other
-      ),
+      pool: sumPool,
+      other: sumOtherIncome,
     },
+    revenue: revenue,
     equipements: dayEquipements,
   };
 
   if (dayReports.length === 2) {
     return sum;
   } else {
-    return mergeDayStatmentsMiningReports(
+    return mergeMultisourceDayStatmentsMiningReports(
       [sum, ...dayReports.slice(2)],
       dayEquipements,
       dayUptime,
@@ -275,6 +333,42 @@ export function mergeDayMiningReport(
     asics: asics,
   };
 
+  const sumElec = addFinancialAmount(
+    dayReports[0].expenses.electricity,
+    dayReports[1].expenses.electricity
+  );
+
+  const sumCsm = addFinancialAmount(
+    dayReports[0].expenses.csm,
+    dayReports[1].expenses.csm
+  );
+  const sumOperator = addFinancialAmount(
+    dayReports[0].expenses.operator,
+    dayReports[1].expenses.operator
+  );
+  const sumOtherExpenses = addFinancialAmount(
+    dayReports[0].expenses.other,
+    dayReports[1].expenses.other
+  );
+  const sumPool = addFinancialAmount(
+    dayReports[0].income.pool,
+    dayReports[1].income.pool
+  );
+
+  const sumOtherIncome = addFinancialAmount(
+    dayReports[0].income.other,
+    dayReports[1].income.other
+  );
+
+  const income = addFinancialAmounts([sumPool, sumOtherIncome]);
+  const expenses = addFinancialAmounts([
+    sumElec,
+    sumCsm,
+    sumOperator,
+    sumOtherExpenses,
+  ]);
+  const revenue = substractFinancialAmount(income, expenses);
+
   const sum: DailyMiningReport = {
     day: dayReports[0].day, // Assuming the day is the same for both accounts
     site: undefined,
@@ -282,33 +376,16 @@ export function mergeDayMiningReport(
     hashrateTHs: hashrateTHs,
     btcSellPrice: dayReports[0].btcSellPrice,
     expenses: {
-      electricity: addFinancialAmount(
-        dayReports[0].expenses.electricity,
-        dayReports[1].expenses.electricity
-      ),
-      csm: addFinancialAmount(
-        dayReports[0].expenses.csm,
-        dayReports[1].expenses.csm
-      ),
-      operator: addFinancialAmount(
-        dayReports[0].expenses.operator,
-        dayReports[1].expenses.operator
-      ),
-      other: addFinancialAmount(
-        dayReports[0].expenses.other,
-        dayReports[1].expenses.other
-      ),
+      electricity: sumElec,
+      csm: sumCsm,
+      operator: sumOperator,
+      other: sumOtherExpenses,
     },
     income: {
-      pool: addFinancialAmount(
-        dayReports[0].income.pool,
-        dayReports[1].income.pool
-      ),
-      other: addFinancialAmount(
-        dayReports[0].income.other,
-        dayReports[1].income.other
-      ),
+      pool: sumPool,
+      other: sumOtherIncome,
     },
+    revenue: revenue,
     bySite: bySite,
     equipements: equipements,
   };
