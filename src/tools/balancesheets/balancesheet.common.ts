@@ -108,8 +108,8 @@ function calculateAverageMiningPerformance(
         operator: { btc: 0, source: FinancialSource.NONE },
         other: { btc: 0, source: FinancialSource.NONE },
       },
-      income: {
-        pool: { btc: 0, source: FinancialSource.NONE },
+      incomes: {
+        mining: { btc: 0, source: FinancialSource.NONE },
         other: { btc: 0, source: FinancialSource.NONE },
       },
       revenue: {
@@ -172,11 +172,11 @@ function calculateAverageMiningPerformance(
       acc.expenses.other.btc = new BigNumber(report.expenses.other.btc)
         .plus(acc.expenses.other.btc)
         .toNumber();
-      acc.income.pool.btc = new BigNumber(report.income.pool.btc)
-        .plus(acc.income.pool.btc)
+      acc.incomes.mining.btc = new BigNumber(report.incomes.mining.btc)
+        .plus(acc.incomes.mining.btc)
         .toNumber();
-      acc.income.other.btc = new BigNumber(report.income.other.btc)
-        .plus(acc.income.other.btc)
+      acc.incomes.other.btc = new BigNumber(report.incomes.other.btc)
+        .plus(acc.incomes.other.btc)
         .toNumber();
       acc.revenue.btc = new BigNumber(report.revenue.btc)
         .plus(acc.revenue.btc)
@@ -199,13 +199,13 @@ function calculateAverageMiningPerformance(
         acc.expenses.other.source,
         report.expenses.other.source
       );
-      acc.income.pool.source = resolveFinancialSource(
-        acc.income.pool.source,
-        report.income.pool.source
+      acc.incomes.mining.source = resolveFinancialSource(
+        acc.incomes.mining.source,
+        report.incomes.mining.source
       );
-      acc.income.other.source = resolveFinancialSource(
-        acc.income.other.source,
-        report.income.other.source
+      acc.incomes.other.source = resolveFinancialSource(
+        acc.incomes.other.source,
+        report.incomes.other.source
       );
       acc.revenue.source = resolveFinancialSource(
         acc.revenue.source,
@@ -224,8 +224,8 @@ function calculateAverageMiningPerformance(
         operator: { btc: 0, source: FinancialSource.NONE },
         other: { btc: 0, source: FinancialSource.NONE },
       },
-      income: {
-        pool: { btc: 0, source: FinancialSource.NONE },
+      incomes: {
+        mining: { btc: 0, source: FinancialSource.NONE },
         other: { btc: 0, source: FinancialSource.NONE },
       },
       revenue: {
@@ -256,10 +256,10 @@ function calculateAverageMiningPerformance(
     total.expenses.other.usd = new BigNumber(total.expenses.other.btc)
       .multipliedBy(btcPrice)
       .toNumber();
-    total.income.pool.usd = new BigNumber(total.income.pool.btc)
+    total.incomes.mining.usd = new BigNumber(total.incomes.mining.btc)
       .multipliedBy(btcPrice)
       .toNumber();
-    total.income.other.usd = new BigNumber(total.income.other.btc)
+    total.incomes.other.usd = new BigNumber(total.incomes.other.btc)
       .multipliedBy(btcPrice)
       .toNumber();
   }
@@ -297,8 +297,8 @@ export function getEmptyBalanceSheet(
         operator: { btc: 0, source: FinancialSource.NONE },
         other: { btc: 0, source: FinancialSource.NONE },
       },
-      income: {
-        pool: { btc: 0, source: FinancialSource.NONE },
+      incomes: {
+        mining: { btc: 0, source: FinancialSource.NONE },
         other: { btc: 0, source: FinancialSource.NONE },
       },
       revenue: { btc: 0, source: FinancialSource.NONE },
@@ -420,11 +420,13 @@ export function mergeBalanceSheets(sheets: BalanceSheet[]): BalanceSheet {
     )
       .plus(sheet.balance.expenses.other.btc)
       .toNumber();
-    acc.balance.income.pool.btc = new BigNumber(acc.balance.income.pool.btc)
-      .plus(sheet.balance.income.pool.btc)
+    acc.balance.incomes.mining.btc = new BigNumber(
+      acc.balance.incomes.mining.btc
+    )
+      .plus(sheet.balance.incomes.mining.btc)
       .toNumber();
-    acc.balance.income.other.btc = new BigNumber(acc.balance.income.other.btc)
-      .plus(sheet.balance.income.other.btc)
+    acc.balance.incomes.other.btc = new BigNumber(acc.balance.incomes.other.btc)
+      .plus(sheet.balance.incomes.other.btc)
       .toNumber();
     acc.balance.revenue.btc = new BigNumber(acc.balance.revenue.btc)
       .plus(sheet.balance.revenue.btc)
@@ -447,13 +449,13 @@ export function mergeBalanceSheets(sheets: BalanceSheet[]): BalanceSheet {
       acc.balance.expenses.other.source,
       sheet.balance.expenses.other.source
     );
-    acc.balance.income.pool.source = resolveFinancialSource(
-      acc.balance.income.pool.source,
-      sheet.balance.income.pool.source
+    acc.balance.incomes.mining.source = resolveFinancialSource(
+      acc.balance.incomes.mining.source,
+      sheet.balance.incomes.mining.source
     );
-    acc.balance.income.other.source = resolveFinancialSource(
-      acc.balance.income.other.source,
-      sheet.balance.income.other.source
+    acc.balance.incomes.other.source = resolveFinancialSource(
+      acc.balance.incomes.other.source,
+      sheet.balance.incomes.other.source
     );
     return acc;
   }, getEmptyBalanceSheet(sheets[0].balance.btcSellPrice, start, end));
@@ -479,13 +481,13 @@ export function mergeBalanceSheets(sheets: BalanceSheet[]): BalanceSheet {
   )
     .times(mergedSheets.balance.btcSellPrice)
     .toNumber();
-  mergedSheets.balance.income.pool.usd = new BigNumber(
-    mergedSheets.balance.income.pool.btc
+  mergedSheets.balance.incomes.mining.usd = new BigNumber(
+    mergedSheets.balance.incomes.mining.btc
   )
     .times(mergedSheets.balance.btcSellPrice)
     .toNumber();
-  mergedSheets.balance.income.other.usd = new BigNumber(
-    mergedSheets.balance.income.other.btc
+  mergedSheets.balance.incomes.other.usd = new BigNumber(
+    mergedSheets.balance.incomes.other.btc
   )
     .times(mergedSheets.balance.btcSellPrice)
     .toNumber();

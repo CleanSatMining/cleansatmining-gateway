@@ -82,8 +82,8 @@ function calculateSiteSummaryBalanceSheet(
   updateSheetBalanceTaxes(site, sheet, btcPrice);
 
   // calculate the revenue
-  const revenue = new BigNumber(sheet.balance.income.pool.btc)
-    .plus(sheet.balance.income.other.btc)
+  const revenue = new BigNumber(sheet.balance.incomes.mining.btc)
+    .plus(sheet.balance.incomes.other.btc)
     .minus(sheet.balance.expenses.electricity.btc)
     .minus(sheet.balance.expenses.csm.btc)
     .minus(sheet.balance.expenses.operator.btc)
@@ -114,13 +114,13 @@ function updateSheetBalanceTaxes(
 
   // set real tax values
   const grossIncome = calculateGrossIncome(
-    sheet.balance.income.pool.btc,
+    sheet.balance.incomes.mining.btc,
     sheet.balance.expenses.electricity.btc,
     site.contract.electricityPrice,
     csmTaxes,
     opTaxes,
     btcPrice,
-    sheet.balance.income.other.btc
+    sheet.balance.incomes.other.btc
   );
 
   sheet.balance.expenses.operator.btc =
@@ -181,8 +181,8 @@ export function getEmptyDetailedBalanceSheet(
           source: FinancialSource.NONE,
         },
       },
-      income: {
-        pool: {
+      incomes: {
+        mining: {
           btc: 0,
           source: FinancialSource.NONE,
         },

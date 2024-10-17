@@ -327,8 +327,8 @@ function aggregateSiteDayMiningReportData(
       if (missingProviders.includes(FinancialPartnaire.POOL.toString())) {
         // the pool income is missing : clompensate with the pool report
         console.log(" - ", site.slug, day.toISOString(), "update pool");
-        dayMiningReportFromDayStatements.income.pool =
-          dayReportFromPool.income.pool;
+        dayMiningReportFromDayStatements.incomes.mining =
+          dayReportFromPool.incomes.mining;
       }
     }
     // console.log(

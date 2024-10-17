@@ -298,7 +298,7 @@ describe("miningreport.ts", () => {
 
     expect(dailyReports.length).toBe(10);
     expect(
-      dailyReports.reduce((acc, account) => acc + account.income.pool.btc, 0)
+      dailyReports.reduce((acc, account) => acc + account.incomes.mining.btc, 0)
     ).toBe(mockPoolFinancialStatement.btc);
   });
 

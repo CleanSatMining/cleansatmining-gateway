@@ -36,8 +36,8 @@ export type MiningBalance = {
     operator: FinancialStatementAmount;
     other: FinancialStatementAmount;
   };
-  income: {
-    pool: FinancialStatementAmount;
+  incomes: {
+    mining: FinancialStatementAmount;
     other: FinancialStatementAmount;
   };
   revenue: FinancialStatementAmount;
@@ -77,9 +77,9 @@ export function mapDailyMiningReportToSiteMiningReport(
       operator: report.expenses.operator,
       other: report.expenses.other,
     },
-    income: {
-      pool: report.income.pool,
-      other: report.income.other,
+    incomes: {
+      mining: report.incomes.mining,
+      other: report.incomes.other,
     },
     revenue: report.revenue,
     equipements: report.equipements,
@@ -101,9 +101,9 @@ export function mapSiteMiningReportToMiningReport(
       operator: report.expenses.operator,
       other: report.expenses.other,
     },
-    income: {
-      pool: report.income.pool,
-      other: report.income.other,
+    incomes: {
+      mining: report.incomes.mining,
+      other: report.incomes.other,
     },
     revenue: report.revenue,
     equipements: report.equipements,
@@ -139,8 +139,8 @@ export function convertDailyFinancialStatementToMiningReport(
           ? dayStatement.amount
           : { btc: 0, source: FinancialSource.NONE },
     },
-    income: {
-      pool:
+    incomes: {
+      mining:
         dayStatement.partnaire === FinancialPartnaire.POOL
           ? dayStatement.amount
           : { btc: 0, source: FinancialSource.NONE },
@@ -186,8 +186,8 @@ export function convertMiningHistoryToMiningReport(
       operator: operator,
       other: otherOut,
     },
-    income: {
-      pool: { btc: miningDay.mined, source: FinancialSource.STATEMENT },
+    incomes: {
+      mining: { btc: miningDay.mined, source: FinancialSource.STATEMENT },
       other: otherIn,
     },
     revenue: {

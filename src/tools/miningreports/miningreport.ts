@@ -48,8 +48,8 @@ export function getEmptyDailyMiningReport(
       operator: { btc: 0, source: FinancialSource.NONE },
       other: { btc: 0, source: FinancialSource.NONE },
     },
-    income: {
-      pool: { btc: 0, source: FinancialSource.NONE },
+    incomes: {
+      mining: { btc: 0, source: FinancialSource.NONE },
       other: { btc: 0, source: FinancialSource.NONE },
     },
     revenue: { btc: 0, source: FinancialSource.NONE },
@@ -114,8 +114,8 @@ export function getDailyMiningReportFromPool(
       operator: operator,
       other: otherOut,
     },
-    income: {
-      pool: incomePool,
+    incomes: {
+      mining: incomePool,
       other: otherIn,
     },
     revenue: revenue,
@@ -208,13 +208,13 @@ function mergeMultisourceDayStatmentsMiningReports(
     dayReports[1].expenses.other
   );
   const sumPool = addSourceFinancialAmount(
-    dayReports[0].income.pool,
-    dayReports[1].income.pool
+    dayReports[0].incomes.mining,
+    dayReports[1].incomes.mining
   );
 
   const sumOtherIncome = addSourceFinancialAmount(
-    dayReports[0].income.other,
-    dayReports[1].income.other
+    dayReports[0].incomes.other,
+    dayReports[1].incomes.other
   );
 
   const income = addFinancialAmounts([sumPool, sumOtherIncome]);
@@ -237,8 +237,8 @@ function mergeMultisourceDayStatmentsMiningReports(
       operator: sumOperator,
       other: sumOtherExpenses,
     },
-    income: {
-      pool: sumPool,
+    incomes: {
+      mining: sumPool,
       other: sumOtherIncome,
     },
     revenue: revenue,
@@ -351,13 +351,13 @@ export function mergeDayMiningReport(
     dayReports[1].expenses.other
   );
   const sumPool = addFinancialAmount(
-    dayReports[0].income.pool,
-    dayReports[1].income.pool
+    dayReports[0].incomes.mining,
+    dayReports[1].incomes.mining
   );
 
   const sumOtherIncome = addFinancialAmount(
-    dayReports[0].income.other,
-    dayReports[1].income.other
+    dayReports[0].incomes.other,
+    dayReports[1].incomes.other
   );
 
   const income = addFinancialAmounts([sumPool, sumOtherIncome]);
@@ -381,8 +381,8 @@ export function mergeDayMiningReport(
       operator: sumOperator,
       other: sumOtherExpenses,
     },
-    income: {
-      pool: sumPool,
+    incomes: {
+      mining: sumPool,
       other: sumOtherIncome,
     },
     revenue: revenue,

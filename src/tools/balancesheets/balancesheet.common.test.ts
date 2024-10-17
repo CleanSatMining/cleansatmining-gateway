@@ -19,8 +19,8 @@ const data: DailyMiningReport[] = [
       operator: { btc: 0.02, source: FinancialSource.NONE },
       other: { btc: 0, source: FinancialSource.NONE },
     },
-    income: {
-      pool: { btc: 0.5, source: FinancialSource.NONE },
+    incomes: {
+      mining: { btc: 0.5, source: FinancialSource.NONE },
       other: { btc: 0.1, source: FinancialSource.NONE },
     },
   },
@@ -36,8 +36,8 @@ const data: DailyMiningReport[] = [
       operator: { btc: 0.03, source: FinancialSource.NONE },
       other: { btc: 0, source: FinancialSource.NONE },
     },
-    income: {
-      pool: { btc: 0.55, source: FinancialSource.NONE },
+    incomes: {
+      mining: { btc: 0.55, source: FinancialSource.NONE },
       other: { btc: 0.15, source: FinancialSource.NONE },
     },
   },
