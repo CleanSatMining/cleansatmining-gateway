@@ -1,7 +1,11 @@
 import {
+  addFinancialFlow,
   DailyFinancialStatement,
+  DailyPartnaireFinancialStatement,
   FinancialFlow,
+  FinancialPartnaire,
   FinancialStatementAmount,
+  FinancialStatementFlow,
 } from "@/types/FinancialSatement";
 import { FinancialSource } from "@/types/MiningReport";
 import { Database } from "@/types/supabase";
@@ -19,8 +23,8 @@ export function aggregateSiteFinancialStatementsByDay(
   site: Site,
   financialStatements: Database["public"]["Tables"]["financialStatements"]["Row"][],
   miningHistory: Database["public"]["Tables"]["mining"]["Row"][]
-): Map<string, DailyFinancialStatement[]> {
-  const dailyFinancialStatements: Map<string, DailyFinancialStatement[]> =
+): Map<string, DailyFinancialStatement> {
+  const dailyFinancialStatements: Map<string, DailyFinancialStatement> =
     new Map();
   for (const financialStatement of financialStatements) {
     const dailyFinancialStatement = convertSiteFinancialStatementInDailyPeriod(
@@ -29,24 +33,122 @@ export function aggregateSiteFinancialStatementsByDay(
       miningHistory
     );
     for (const key of dailyFinancialStatement.keys()) {
-      const statements = dailyFinancialStatements.get(key);
-      const statement = dailyFinancialStatement.get(key);
+      const partenaireStatement = dailyFinancialStatement.get(key);
       if (dailyFinancialStatements.has(key)) {
-        statements?.push(statement!);
-      } else {
-        dailyFinancialStatements.set(key, [statement!]);
+        const dayStatement = dailyFinancialStatements.get(key);
+        if (dayStatement && partenaireStatement) {
+          // Get the current flow of the partenaire
+          updateDayStatement(dayStatement, partenaireStatement);
+        }
+      } else if (partenaireStatement) {
+        const dayStatement: DailyFinancialStatement =
+          createNewDayFinancialStatement(partenaireStatement);
+
+        dailyFinancialStatements.set(key, dayStatement);
       }
     }
   }
   return dailyFinancialStatements;
 }
+
+function updateDayStatement(
+  dayStatement: DailyFinancialStatement,
+  dayPartenaireStatement: DailyPartnaireFinancialStatement
+) {
+  const currentState = dayStatement.flows[dayPartenaireStatement.partnaire];
+  const currentPartenaireFlow: FinancialStatementFlow = {
+    btc: currentState.amount.btc,
+    flow: currentState.flow,
+    source: currentState.amount.source,
+    usd: currentState.amount.usd,
+  };
+  const newPartenaireFlow: FinancialStatementFlow = {
+    btc: dayPartenaireStatement.amount.btc,
+    flow: dayPartenaireStatement.flow,
+    source: dayPartenaireStatement.amount.source,
+    usd: dayPartenaireStatement.amount.usd,
+  };
+  const newFlow = addFinancialFlow(currentPartenaireFlow, newPartenaireFlow);
+  // Update the flow of the partenaire
+  dayStatement.flows[dayPartenaireStatement.partnaire] = {
+    amount: {
+      btc: newFlow.btc,
+      usd: newFlow.usd,
+      source: newFlow.source,
+    },
+    flow: newFlow.flow,
+    partnaire: dayPartenaireStatement.partnaire,
+  };
+}
+
+function createNewDayFinancialStatement(
+  partenaireStatement: DailyPartnaireFinancialStatement
+): DailyFinancialStatement {
+  const dayStatement = {
+    day: partenaireStatement.day,
+    hashrateTHs: partenaireStatement.hashrateTHs,
+    hashrateTHsMax: partenaireStatement.hashrateTHsMax,
+    uptime: partenaireStatement.uptime,
+    flows: {
+      [FinancialPartnaire.OPERATOR]: {
+        flow: FinancialFlow.OUT,
+        partnaire: FinancialPartnaire.OPERATOR,
+        amount: {
+          btc: 0,
+          source: FinancialSource.NONE,
+        },
+      },
+      [FinancialPartnaire.CSM]: {
+        flow: FinancialFlow.OUT,
+        partnaire: FinancialPartnaire.CSM,
+        amount: {
+          btc: 0,
+          source: FinancialSource.NONE,
+        },
+      },
+      [FinancialPartnaire.ELECTRICITY]: {
+        flow: FinancialFlow.OUT,
+        partnaire: FinancialPartnaire.ELECTRICITY,
+        amount: {
+          btc: 0,
+          source: FinancialSource.NONE,
+        },
+      },
+      [FinancialPartnaire.POOL]: {
+        flow: FinancialFlow.IN,
+        partnaire: FinancialPartnaire.POOL,
+        amount: {
+          btc: 0,
+          source: FinancialSource.NONE,
+        },
+      },
+      [FinancialPartnaire.OTHER]: {
+        flow: FinancialFlow.IN,
+        partnaire: FinancialPartnaire.OTHER,
+        amount: {
+          btc: 0,
+          source: FinancialSource.NONE,
+        },
+      },
+    },
+  };
+  dayStatement.flows[partenaireStatement.partnaire] = {
+    amount: partenaireStatement.amount,
+    flow: partenaireStatement.flow,
+    partnaire: partenaireStatement.partnaire,
+  };
+
+  return dayStatement;
+}
+
 export function convertSiteFinancialStatementInDailyPeriod(
   site: Site,
   financialStatement: Database["public"]["Tables"]["financialStatements"]["Row"],
   miningHistory: Database["public"]["Tables"]["mining"]["Row"][]
-): Map<string, DailyFinancialStatement> {
+): Map<string, DailyPartnaireFinancialStatement> {
   //const dailyFinancialStatement: DailyFinancialStatement[] = [];
-  const dailyStatementMap: Map<string, DailyFinancialStatement> = new Map();
+  const dailyStatementMap: Map<string, DailyPartnaireFinancialStatement> =
+    new Map();
 
   // get the flow of the financial statement
   const flow =
@@ -129,7 +231,7 @@ export function convertSiteFinancialStatementInDailyPeriod(
         0
       );
 
-      const financialStatementOfTheDay: DailyFinancialStatement = {
+      const financialStatementOfTheDay: DailyPartnaireFinancialStatement = {
         day: day,
         uptime: uptime,
         hashrateTHs: hashrateTHs,
@@ -143,7 +245,7 @@ export function convertSiteFinancialStatementInDailyPeriod(
       dailyStatementMap.set(key, financialStatementOfTheDay);
     } else if (daysInHistory === 0) {
       // no mining history data for the day : set the uptime to 0.9 and the amount to the total amount divided by the total number of days
-      const financialStatementOfTheDay: DailyFinancialStatement = {
+      const financialStatementOfTheDay: DailyPartnaireFinancialStatement = {
         day: day,
         uptime: 0.9,
         hashrateTHs: 0,

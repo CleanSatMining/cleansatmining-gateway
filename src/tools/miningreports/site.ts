@@ -1,5 +1,6 @@
 import {
   DailyFinancialStatement,
+  DailyPartnaireFinancialStatement,
   FinancialPartnaire,
   FinancialStatementAmount,
 } from "@/types/FinancialSatement";
@@ -12,24 +13,33 @@ import { DailyMiningReport } from "@/types/MiningReport";
 import { Database } from "@/types/supabase";
 import { Site } from "@/types/supabase.extend";
 import {
-  getYesterdayDate,
-  convertToUTCStartOfDay,
   calculateDaysBetweenDates,
   convertDateToKey,
   getTodayDate,
 } from "../date";
 import { getFinancialStatementsPeriod } from "../financialstatements/financialstatement.commons";
 import { aggregateSiteFinancialStatementsByDay } from "../financialstatements/site";
-import { getMiningHistoryPeriod } from "../mininghistory/mininghistory.common";
-import { getSiteMiningHistoryByDay } from "../mininghistory/site";
+import {
+  calculateMinedBtc,
+  getMiningHistoryPeriod,
+} from "../mininghistory/mininghistory.common";
+import {
+  calculateSiteElectricityCost,
+  getSiteMiningHistoryByDay,
+} from "../mininghistory/site";
 import {
   filterMiningReportsByDay,
   getDailyMiningReportFromPool,
-  mergeDayStatementsIntoMiningReport,
+  convertDayFinancialStatementsToMiningReport,
   getEmptyDailyMiningReport,
+  getMiningReportByDay,
 } from "./miningreport";
 import { calculateSiteGrossIncome } from "../site";
 import { getSiteEquipments } from "../equipment/site";
+import { calculateSiteRevenue } from "../simulator/site";
+import { SimulationResult } from "@/types/Simulator";
+import BigNumber from "bignumber.js";
+import { get } from "http";
 
 export function getSiteDailyMiningReports(
   financialStatements: Database["public"]["Tables"]["financialStatements"]["Row"][],
@@ -37,7 +47,8 @@ export function getSiteDailyMiningReports(
   site: Site,
   btcPrice: number,
   startDay: Date | undefined = undefined,
-  endDay: Date = getTodayDate()
+  endDay: Date = getTodayDate(),
+  depreciationDuration: number
 ): DailyMiningReport[] {
   if (site.started_at === undefined || site.started_at === null) {
     return [];
@@ -49,7 +60,8 @@ export function getSiteDailyMiningReports(
     site,
     btcPrice,
     startDay,
-    endDay
+    endDay,
+    depreciationDuration
   );
 
   const dailyMiningReport: DailyMiningReport[] = Array.from(
@@ -77,6 +89,7 @@ export function getSiteMiningReportsByDay(
   btcPrice: number,
   start_param: Date | undefined = undefined,
   end_param: Date | undefined = undefined,
+  depreciationDuration: number,
   withDetails: boolean = false
 ): Map<string, DailyMiningReport> {
   const miningReportByDay: Map<string, DailyMiningReport> = new Map();
@@ -86,7 +99,7 @@ export function getSiteMiningReportsByDay(
     return miningReportByDay;
   }
 
-  const miningHistory = _miningHistory.filter(
+  const siteMiningHistory = _miningHistory.filter(
     (history) => history.siteSlug === site.slug
   );
   const financialStatements = _financialStatements.filter(
@@ -94,11 +107,11 @@ export function getSiteMiningReportsByDay(
   );
 
   // get the mining history data by day
-  const miningHistoryByDay = getSiteMiningHistoryByDay(miningHistory, site);
+  const miningHistoryByDay = getSiteMiningHistoryByDay(siteMiningHistory, site);
 
   // get the period of the financial statements and the mining history
   const { start: starthistory, end: endhistory } =
-    getMiningHistoryPeriod(miningHistory);
+    getMiningHistoryPeriod(siteMiningHistory);
   const { start: startstatement, end: endstatement } =
     getFinancialStatementsPeriod(financialStatements);
 
@@ -149,11 +162,24 @@ export function getSiteMiningReportsByDay(
   // get the total number of days between the start and end of the data
   const totalDays = calculateDaysBetweenDates(extendedStart, extentedEnd);
 
+  // get mining reports from the mining history
+  const miningReportsFromMiningHistory =
+    convertSiteMiningHistoryToMiningReports(
+      site,
+      siteMiningHistory,
+      btcPrice,
+      depreciationDuration
+    );
+
+  const miningReportsFromMiningHistoryByDay = getMiningReportByDay(
+    miningReportsFromMiningHistory
+  );
+
   // aggregate the daily financial statement for each day of the financial statements
   const financialStatementsByDay = aggregateSiteFinancialStatementsByDay(
     site,
     financialStatements,
-    miningHistory
+    siteMiningHistory
   );
 
   // get the daily financial statement for each day of the financial statements
@@ -161,29 +187,29 @@ export function getSiteMiningReportsByDay(
     const day = new Date(extendedStart);
     day.setUTCDate(day.getUTCDate() + dayIndex);
     const dayKey = convertDateToKey(day);
-
-    // get the mining history if exists
-    const dayMiningHistory = miningHistoryByDay.get(dayKey);
+    const dayMiningReport =
+      miningReportsFromMiningHistoryByDay.get(dayKey) ??
+      getEmptyDailyMiningReport(day, getSiteEquipments(site, day), btcPrice);
 
     // get the financial statements if exists
-    const dayStatements = financialStatementsByDay.get(dayKey) ?? [];
+    const dayStatement = financialStatementsByDay.get(dayKey);
 
-    // aggregate the data from the mining history and the financial statements
-    const miningReportOfTheDay = aggregateSiteDayMiningReportData(
-      dayStatements,
-      dayMiningHistory,
-      day,
+    // get the mining report if exists
+    const aggregatedReport = aggregateSiteMiningData(
       site,
-      btcPrice
+      day,
+      btcPrice,
+      dayMiningReport,
+      dayStatement
     );
 
     if (withDetails) {
-      miningReportOfTheDay.site = site.slug;
+      aggregatedReport.site = site.slug;
     } else {
-      miningReportOfTheDay.site = undefined;
+      aggregatedReport.site = undefined;
     }
 
-    miningReportByDay.set(dayKey, miningReportOfTheDay);
+    miningReportByDay.set(dayKey, aggregatedReport);
   }
 
   // filter the daily accounting by date
@@ -196,156 +222,225 @@ export function getSiteMiningReportsByDay(
   return miningReportByDay;
 }
 
-export function getSiteDayMiningReportFromPool(
+function aggregateSiteMiningData(
   site: Site,
-  miningHistoryOfDay: Database["public"]["Tables"]["mining"]["Row"],
-  btcPrice: number,
   day: Date,
-  electricityCost?: FinancialStatementAmount
-) {
-  const simulationResult = calculateSiteGrossIncome(
-    site,
-    miningHistoryOfDay,
-    btcPrice,
-    electricityCost?.btc
-  );
+  btcPrice: number,
+  _dayMiningReport: DailyMiningReport | undefined,
+  dayFinancialStatement: DailyFinancialStatement | undefined
+): DailyMiningReport {
+  const dayMiningReport =
+    _dayMiningReport ??
+    getEmptyDailyMiningReport(day, getSiteEquipments(site, day), btcPrice);
 
-  const equipements = getSiteEquipments(site, day);
+  // check the date are the same day
+  if (dayMiningReport.day.getTime() !== day.getTime()) {
+    console.error(
+      "=> WARN dayMiningReport day is not the same as the day",
+      dayMiningReport.day.toISOString(),
+      day.toISOString()
+    );
+    throw new Error("dayMiningReport day is not the same as the day");
+  }
+  if (
+    dayFinancialStatement !== undefined &&
+    dayFinancialStatement.day.getTime() !== day.getTime()
+  ) {
+    console.error(
+      "=> WARN dayFinancialStatement day is not the same as the day",
+      dayFinancialStatement.day.toISOString(),
+      day.toISOString()
+    );
+    throw new Error("dayFinancialStatement day is not the same as the day");
+  }
 
-  const dayReportFromPool = getDailyMiningReportFromPool(
-    day,
-    miningHistoryOfDay.uptime,
-    miningHistoryOfDay.hashrateTHs,
-    miningHistoryOfDay.mined,
-    btcPrice,
-    equipements,
-    {
-      btc: simulationResult.cost.electricity.total.btc,
-      usd: simulationResult.cost.electricity.total.usd,
-      source: FinancialSource.SIMULATOR,
-    },
-    {
-      btc: simulationResult.cost.csm.btc,
-      usd: simulationResult.cost.csm.usd,
-      source: FinancialSource.SIMULATOR,
-    },
-    {
-      btc: simulationResult.cost.operator.btc,
-      usd: simulationResult.cost.operator.usd,
-      source: FinancialSource.SIMULATOR,
+  // update the mining report with the financial statements
+  if (dayFinancialStatement !== undefined) {
+    if (
+      dayFinancialStatement.flows["csm sa"].amount.source ===
+      FinancialSource.STATEMENT
+    ) {
+      dayMiningReport.expenses.csm =
+        dayFinancialStatement.flows["csm sa"].amount;
     }
-  );
-  return dayReportFromPool;
+    if (
+      dayFinancialStatement.flows["electricity"].amount.source ===
+      FinancialSource.STATEMENT
+    ) {
+      dayMiningReport.expenses.electricity =
+        dayFinancialStatement.flows["electricity"].amount;
+    }
+    if (
+      dayFinancialStatement.flows["operator"].amount.source ===
+      FinancialSource.STATEMENT
+    ) {
+      dayMiningReport.expenses.operator =
+        dayFinancialStatement.flows["operator"].amount;
+    }
+    if (
+      dayFinancialStatement.flows["pool"].amount.source ===
+      FinancialSource.STATEMENT
+    ) {
+      dayMiningReport.incomes.mining =
+        dayFinancialStatement.flows["pool"].amount;
+    }
+    if (
+      dayFinancialStatement.flows["other"].amount.source ===
+      FinancialSource.STATEMENT
+    ) {
+      if (dayFinancialStatement.flows["other"].flow === "in") {
+        dayMiningReport.incomes.other =
+          dayFinancialStatement.flows["other"].amount;
+      } else {
+        dayMiningReport.expenses.other =
+          dayFinancialStatement.flows["other"].amount;
+      }
+    }
+  }
+
+  return dayMiningReport;
 }
 
 /**
- * Aggregate the data from the financial statements and the mining history of a given day
- * @param dayStatements financial statements of the day
- * @param dayMiningHistory mining history of the day
- * @param day date of the day
- * @param site site of the data
- * @param btcPrice price of bitcoin
+ *
+ * @param site
+ * @param miningHistory
+ * @param btcPrice
+ * @param depreciationDuration
  * @returns
  */
-function aggregateSiteDayMiningReportData(
-  dayStatements: DailyFinancialStatement[],
-  dayMiningHistory: Database["public"]["Tables"]["mining"]["Row"] | undefined,
-  day: Date,
+export function convertSiteMiningHistoryToMiningReports(
   site: Site,
-  btcPrice: number
-): DailyMiningReport {
-  const equipements = getSiteEquipments(site, day);
+  miningHistory: Database["public"]["Tables"]["mining"]["Row"][],
+  btcPrice: number,
+  depreciationDuration: number
+): DailyMiningReport[] {
+  if (site.started_at === undefined || site.started_at === null) {
+    return [];
+  }
 
-  const dayMiningReportFromDayStatements = mergeDayStatementsIntoMiningReport(
-    dayStatements,
-    equipements,
-    dayMiningHistory?.uptime,
-    dayMiningHistory?.hashrateTHs
+  const siteMiningHistory = miningHistory.filter(
+    (history) => history.siteSlug === site.slug
   );
 
-  if (dayMiningReportFromDayStatements !== undefined) {
-    // verify that the statements of the day are complete (one per provider)
-    const providers: string[] = Object.values(FinancialPartnaire);
-    const dayStatementsProviders = dayStatements.map((statement) =>
-      statement.partnaire.toString()
-    );
+  // get the period of the financial statements and the mining history
+  const { start: starthistory, end: endhistory } =
+    getMiningHistoryPeriod(siteMiningHistory);
 
-    //get all the provider not in the statements
-    const missingProviders = providers.filter(
-      (provider) => !dayStatementsProviders.includes(provider)
-    );
-
-    if (missingProviders.length > 0 && dayMiningHistory !== undefined) {
-      // the statements are incomplete : use the mining report from the pool
-
-      console.log(
-        "=> WARN Statements " +
-          site.slug +
-          " missing providers for day " +
-          day.toISOString(),
-        JSON.stringify(missingProviders, null, 2)
-      );
-
-      const dayReportFromPool = mapDailyMiningReportToSiteMiningReport(
-        getSiteDayMiningReportFromPool(
-          site,
-          dayMiningHistory,
-          btcPrice,
-          day,
-          dayMiningReportFromDayStatements.expenses.electricity
-        ),
-        site.slug
-      );
-      // console.log(
-      //   "=> dayReportFromPool BEFORE",
-      //   JSON.stringify(dayMiningReportFromDayStatements, null, 2)
-      // );
-
-      if (
-        missingProviders.includes(FinancialPartnaire.ELECTRICITY.toString())
-      ) {
-        // the electricity cost is missing : clompensate with the pool report
-        console.log(" - ", site.slug, day.toISOString(), "update electricity");
-        dayMiningReportFromDayStatements.expenses.electricity =
-          dayReportFromPool.expenses.electricity;
-      }
-
-      if (missingProviders.includes(FinancialPartnaire.CSM.toString())) {
-        // the csm cost is missing : clompensate with the pool report
-        console.log(" - ", site.slug, day.toISOString(), "update csm");
-        dayMiningReportFromDayStatements.expenses.csm =
-          dayReportFromPool.expenses.csm;
-      }
-
-      if (missingProviders.includes(FinancialPartnaire.OPERATOR.toString())) {
-        // the operator cost is missing : clompensate with the pool report
-        console.log(" - ", site.slug, day.toISOString(), "update operator");
-        dayMiningReportFromDayStatements.expenses.operator =
-          dayReportFromPool.expenses.operator;
-      }
-
-      if (missingProviders.includes(FinancialPartnaire.POOL.toString())) {
-        // the pool income is missing : clompensate with the pool report
-        console.log(" - ", site.slug, day.toISOString(), "update pool");
-        dayMiningReportFromDayStatements.incomes.mining =
-          dayReportFromPool.incomes.mining;
-      }
-    }
-    // console.log(
-    //   "=> dayReportFromPool AFTER",
-    //   JSON.stringify(dayMiningReportFromDayStatements, null, 2)
-    // );
-    return dayMiningReportFromDayStatements;
-  } else if (dayMiningHistory !== undefined) {
-    // day has no financial statements : use the mining report from the pool
-    const dayReportFromPool = mapDailyMiningReportToSiteMiningReport(
-      getSiteDayMiningReportFromPool(site, dayMiningHistory, btcPrice, day),
-      site.slug
-    );
-
-    return dayReportFromPool;
-  } else {
-    // no data for the day
-    return getEmptyDailyMiningReport(day, equipements, btcPrice);
+  if (starthistory === undefined || endhistory === undefined) {
+    return [];
   }
+
+  const totalSimulationElectricityCost = calculateSiteElectricityCost(
+    siteMiningHistory,
+    site
+  );
+  const totalSimulationBtcMined = calculateMinedBtc(siteMiningHistory);
+  const totalRevenue = calculateSiteRevenue(
+    site,
+    starthistory,
+    endhistory,
+    totalSimulationBtcMined,
+    totalSimulationElectricityCost,
+    btcPrice,
+    depreciationDuration
+  );
+
+  const totalhashrateTHs = siteMiningHistory.reduce((acc, history) => {
+    return new BigNumber(acc).plus(history.hashrateTHs).toNumber();
+  }, 0);
+  const reports: DailyMiningReport[] = siteMiningHistory.map((history) => {
+    const weight = new BigNumber(history.hashrateTHs).div(totalhashrateTHs);
+
+    const electricityCostBtc = new BigNumber(
+      totalRevenue.cost.electricity.total.btc
+    ).times(weight);
+    const csmCostBtc = new BigNumber(totalRevenue.cost.csm.btc).times(weight);
+    const operatorCostBtc = new BigNumber(totalRevenue.cost.operator.btc).times(
+      weight
+    );
+    const otherCostBtc = new BigNumber(totalRevenue.cost.other.btc).times(
+      weight
+    );
+    const depreciation = new BigNumber(
+      totalRevenue.cost.depreciation.equipment.btc
+    ).times(weight);
+
+    const otherIncomeBtc = new BigNumber(totalRevenue.income.other.btc).times(
+      weight
+    );
+
+    const report: DailyMiningReport = {
+      site: site.slug,
+      btcSellPrice: totalRevenue.btcSellPrice,
+      day: new Date(history.day),
+      uptime: history.uptime,
+      hashrateTHs: history.hashrateTHs,
+      equipements: getSiteEquipments(site, new Date(history.day)),
+      expenses: {
+        electricity: {
+          btc: electricityCostBtc.toNumber(),
+          usd: electricityCostBtc.times(btcPrice).toNumber(),
+          source: FinancialSource.SIMULATOR,
+        },
+        csm: {
+          btc: csmCostBtc.toNumber(),
+          usd: csmCostBtc.times(btcPrice).toNumber(),
+          source: FinancialSource.SIMULATOR,
+        },
+        operator: {
+          btc: operatorCostBtc.toNumber(),
+          usd: operatorCostBtc.times(btcPrice).toNumber(),
+          source: FinancialSource.SIMULATOR,
+        },
+        other: {
+          btc: otherCostBtc.toNumber(),
+          usd: otherCostBtc.times(btcPrice).toNumber(),
+          source: FinancialSource.SIMULATOR,
+        },
+        depreciation: {
+          btc: depreciation.toNumber(),
+          usd: depreciation.times(btcPrice).toNumber(),
+          source: FinancialSource.SIMULATOR,
+        },
+      },
+      incomes: {
+        mining: {
+          btc: new BigNumber(history.mined).toNumber(),
+          usd: new BigNumber(history.mined).times(btcPrice).toNumber(),
+          source: FinancialSource.SIMULATOR,
+        },
+        other: {
+          btc: otherIncomeBtc.toNumber(),
+          usd: otherIncomeBtc.times(btcPrice).toNumber(),
+          source: FinancialSource.NONE,
+        },
+      },
+      revenue: {
+        gross: {
+          btc: new BigNumber(totalRevenue.revenue.gross.btc)
+            .times(weight)
+            .toNumber(),
+          usd: new BigNumber(totalRevenue.revenue.gross.btc)
+            .times(weight)
+            .times(btcPrice)
+            .toNumber(),
+          source: FinancialSource.SIMULATOR,
+        },
+        net: {
+          btc: new BigNumber(totalRevenue.revenue.net.btc)
+            .times(weight)
+            .toNumber(),
+          usd: new BigNumber(totalRevenue.revenue.net.btc)
+            .times(weight)
+            .times(btcPrice)
+            .toNumber(),
+          source: FinancialSource.SIMULATOR,
+        },
+      },
+    };
+    return report;
+  });
+
+  return reports;
 }

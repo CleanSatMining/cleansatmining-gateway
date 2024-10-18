@@ -1,5 +1,5 @@
 import { Site } from "@/types/supabase.extend";
-import { calculateDailyGrossIncome } from "@/tools/simulator";
+import { calculate24hRevenue } from "@/tools/simulator/simulator";
 import { Database } from "@/types/supabase";
 import { SimulationResult } from "@/types/Simulator";
 import { calculateSitePower } from "./equipment/site";
@@ -8,7 +8,7 @@ export function calculateSiteGrossIncome(
   site: Site,
   miningDay: Database["public"]["Tables"]["mining"]["Row"],
   btcPrice: number,
-  dailyElectricityBtcCost?: number
+  dailyElectricityBtcCost: number
 ): SimulationResult {
   // check the farm et the site
   const { farmSlug, siteSlug } = miningDay;
@@ -16,12 +16,9 @@ export function calculateSiteGrossIncome(
     throw new Error("The mining day is not related to the site " + site.slug);
   }
 
-  const { watts, hashrateTHs } = calculateSitePower(
-    site,
-    new Date(miningDay.day)
-  );
+  const { watts } = calculateSitePower(site, new Date(miningDay.day));
 
-  return calculateDailyGrossIncome(
+  return calculate24hRevenue(
     miningDay.mined,
     btcPrice,
     miningDay.uptime,

@@ -8,6 +8,7 @@ export async function fetchSiteDailyMiningReport(
   btc: number,
   start_param: string | undefined,
   end_param: string | undefined,
+  depreciationDuration: number,
   financial_sources?: FinancialSource[]
 ): Promise<{
   report: DailyMiningReport[];
@@ -38,7 +39,8 @@ export async function fetchSiteDailyMiningReport(
     operationalData.siteData,
     btc,
     start_param ? new Date(start_param) : undefined,
-    end_param ? new Date(end_param) : undefined
+    end_param ? new Date(end_param) : undefined,
+    depreciationDuration
   );
   return {
     report: reports,

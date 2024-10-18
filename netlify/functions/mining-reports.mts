@@ -23,6 +23,8 @@ export default async (req: Request, context: Context) => {
   const financial_sources =
     url.searchParams.get("financial_sources") || undefined;
   const detail = url.searchParams.get("detail") || undefined;
+  const depreciationDuration_input =
+    url.searchParams.get("depreciation_duration") || undefined;
 
   const todayUTC = convertToUTCStartOfDay(new Date());
 
@@ -79,12 +81,23 @@ export default async (req: Request, context: Context) => {
     return new Response("Invalid detail", { status: 400 });
   }
 
+  // deprecieation duration is greater than 0
+  if (
+    depreciationDuration_input &&
+    isNaN(Number(depreciationDuration_input)) &&
+    Number(depreciationDuration_input) <= 0
+  ) {
+    return new Response("Invalid depreciation duration", { status: 400 });
+  }
+
   const detailRequested = detail === "true";
   const btc = Number(btc_input);
   const financialSources = financial_sources
     ?.split(",")
     .map((source) => source as FinancialSource);
-
+  const depreciationDuration = depreciationDuration_input
+    ? Number(depreciationDuration_input)
+    : 5;
   try {
     if (site === undefined) {
       // Farm report
@@ -94,6 +107,7 @@ export default async (req: Request, context: Context) => {
         btc,
         start_input,
         end_input,
+        depreciationDuration,
         financialSources,
         detailRequested
       );
@@ -133,6 +147,7 @@ export default async (req: Request, context: Context) => {
         btc,
         start_input,
         end_input,
+        depreciationDuration,
         financialSources
       );
 

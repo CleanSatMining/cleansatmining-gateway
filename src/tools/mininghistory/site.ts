@@ -1,6 +1,8 @@
 import { Database } from "@/types/supabase";
 import { Site } from "@/types/supabase.extend";
 import { convertDateToKey } from "../date";
+import BigNumber from "bignumber.js";
+import { calculateSiteDayElectricityCost } from "../simulator/site";
 
 export function getSiteMiningHistoryByDay(
   miningHistory: Database["public"]["Tables"]["mining"]["Row"][],
@@ -17,4 +19,20 @@ export function getSiteMiningHistoryByDay(
   }
 
   return historyByDay;
+}
+export function calculateSiteElectricityCost(
+  siteMiningHistory: Database["public"]["Tables"]["mining"]["Row"][],
+  site: Site
+) {
+  return siteMiningHistory.reduce((acc, history) => {
+    return new BigNumber(acc)
+      .plus(
+        calculateSiteDayElectricityCost(
+          site,
+          new Date(history.day),
+          history.uptime
+        ).usd
+      )
+      .toNumber();
+  }, 0);
 }

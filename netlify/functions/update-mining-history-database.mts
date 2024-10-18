@@ -1,10 +1,6 @@
 /* eslint-disable import/no-anonymous-default-export */
 import type { Context } from "@netlify/functions";
-import {
-  getSupabaseClient,
-  signIn,
-  signOut,
-} from "../../src/databases/supabase";
+import { getSupabaseClient } from "../../src/databases/supabase";
 
 import {
   updateAllMiningHistory,

@@ -1,13 +1,12 @@
 import {
   DailyFarmMiningReport,
   DailyMiningReport,
-  DailySiteMiningReport,
   SiteMiningReport,
 } from "@/types/MiningReport";
 import { Database } from "@/types/supabase";
 import { Farm } from "@/types/supabase.extend";
 import { getTodayDate } from "../date";
-import { mergeMiningReports } from "./miningreport";
+import { mergeMiningReportsList } from "./miningreport";
 import { getSiteMiningReportsByDay } from "./site";
 
 export function getFarmDailyMiningReports(
@@ -17,6 +16,7 @@ export function getFarmDailyMiningReports(
   btcPrice: number,
   startDay: Date | undefined = undefined,
   endDay: Date = getTodayDate(),
+  depreciationDuration: number,
   withDetails: boolean = false
 ): DailyFarmMiningReport[] {
   const sitesMiningReportsByDay: Map<string, DailyMiningReport>[] = [];
@@ -40,13 +40,14 @@ export function getFarmDailyMiningReports(
       btcPrice,
       inputStartDay,
       endDay,
+      depreciationDuration,
       withDetails
     );
 
     sitesMiningReportsByDay.push(siteMiningReportsByDay);
   });
 
-  const miningReportByDay = mergeMiningReports(sitesMiningReportsByDay);
+  const miningReportByDay = mergeMiningReportsList(sitesMiningReportsByDay);
 
   const dailyMiningReport: DailyMiningReport[] = Array.from(
     miningReportByDay.values()

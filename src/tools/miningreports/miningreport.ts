@@ -2,18 +2,23 @@ import {
   addFinancialAmount,
   addFinancialAmounts,
   addSourceFinancialAmount,
-  DailyFinancialStatement,
+  DailyPartnaireFinancialStatement,
   FinancialStatementAmount,
   substractFinancialAmount,
 } from "@/types/FinancialSatement";
-import { FinancialSource, MiningEquipment } from "@/types/MiningReport";
-import { convertDailyFinancialStatementToMiningReport } from "@/types/MiningReport";
+import {
+  FinancialSource,
+  MiningEquipment,
+  MiningReport,
+} from "@/types/MiningReport";
+import { convertDailyFinancialStatementToMiningReport as convertDayFinancialStatementToMiningReport } from "@/types/MiningReport";
 import { DailyMiningReport } from "@/types/MiningReport";
 import { Database } from "@/types/supabase";
 
-import { convertToUTCStartOfDay } from "../date";
+import { convertDateToKey, convertToUTCStartOfDay } from "../date";
 import BigNumber from "bignumber.js";
 import { concatUniqueAsics } from "../equipment/asics";
+import { SimulationResult } from "@/types/Simulator";
 
 export function filterMiningReportsByDay(
   miningReportByDay: Map<string, DailyMiningReport>,
@@ -36,6 +41,7 @@ export function getEmptyDailyMiningReport(
     hashrateTHsMax: 0,
     powerWMax: 0,
     asics: [],
+    totalCost: 0,
   };
   return {
     day: convertToUTCStartOfDay(day),
@@ -47,12 +53,16 @@ export function getEmptyDailyMiningReport(
       csm: { btc: 0, source: FinancialSource.NONE },
       operator: { btc: 0, source: FinancialSource.NONE },
       other: { btc: 0, source: FinancialSource.NONE },
+      depreciation: { btc: 0, source: FinancialSource.NONE },
     },
     incomes: {
       mining: { btc: 0, source: FinancialSource.NONE },
       other: { btc: 0, source: FinancialSource.NONE },
     },
-    revenue: { btc: 0, source: FinancialSource.NONE },
+    revenue: {
+      gross: { btc: 0, source: FinancialSource.NONE },
+      net: { btc: 0, source: FinancialSource.NONE },
+    },
     equipements: dayEquipements ?? emptyEquipements,
   };
 }
@@ -113,12 +123,16 @@ export function getDailyMiningReportFromPool(
       csm: csm,
       operator: operator,
       other: otherOut,
+      depreciation: { btc: 0, source: FinancialSource.NONE, usd: 0 },
     },
     incomes: {
       mining: incomePool,
       other: otherIn,
     },
-    revenue: revenue,
+    revenue: {
+      gross: income,
+      net: revenue,
+    },
     equipements: equipements,
   };
 }
@@ -131,14 +145,14 @@ export function getDailyMiningReportFromPool(
  * @param dayEquipements
  * @returns
  */
-export function mergeDayStatementsIntoMiningReport(
-  dayStatements: DailyFinancialStatement[],
+export function convertDayFinancialStatementsToMiningReport(
+  dayStatements: DailyPartnaireFinancialStatement[],
   dayEquipements: MiningEquipment,
   uptime?: number,
   hashrateTHs?: number
 ): DailyMiningReport | undefined {
   const dayStatementMiningReports = dayStatements.map((statement) => {
-    return convertDailyFinancialStatementToMiningReport(
+    return convertDayFinancialStatementToMiningReport(
       statement,
       dayEquipements
     );
@@ -148,17 +162,26 @@ export function mergeDayStatementsIntoMiningReport(
     // No financial statements for the day
     return undefined;
   } else {
-    const miningReportFromStatement = mergeMultisourceDayStatmentsMiningReports(
-      dayStatementMiningReports,
-      dayEquipements,
-      uptime,
-      hashrateTHs
-    );
+    const miningReportFromStatement =
+      mergeMultisourceDayStatmentsIntoMiningReports(
+        dayStatementMiningReports,
+        dayEquipements,
+        uptime,
+        hashrateTHs
+      );
     return miningReportFromStatement;
   }
 }
 
-function mergeMultisourceDayStatmentsMiningReports(
+/**
+ * Merge and convert daily financial statements into a mining report of the day
+ * @param dayReports
+ * @param dayEquipements
+ * @param dayUptime
+ * @param dayHashrateTHs
+ * @returns
+ */
+function mergeMultisourceDayStatmentsIntoMiningReports(
   dayReports: DailyMiningReport[],
   dayEquipements: MiningEquipment,
   dayUptime?: number,
@@ -217,14 +240,28 @@ function mergeMultisourceDayStatmentsMiningReports(
     dayReports[1].incomes.other
   );
 
+  const sumDepreciation = addSourceFinancialAmount(
+    dayReports[0].expenses.depreciation,
+    dayReports[1].expenses.depreciation
+  );
+
   const income = addFinancialAmounts([sumPool, sumOtherIncome]);
   const expenses = addFinancialAmounts([
     sumElec,
     sumCsm,
     sumOperator,
     sumOtherExpenses,
+    sumDepreciation,
   ]);
-  const revenue = substractFinancialAmount(income, expenses);
+  //const revenue = substractFinancialAmount(income, expenses);
+  const grossRevenue = addFinancialAmounts([
+    dayReports[0].revenue.gross,
+    dayReports[1].revenue.gross,
+  ]);
+  const netRevenue = addFinancialAmounts([
+    dayReports[0].revenue.net,
+    dayReports[1].revenue.net,
+  ]);
 
   const sum: DailyMiningReport = {
     day: dayReports[0].day, // Assuming the day is the same for both accounts
@@ -236,19 +273,23 @@ function mergeMultisourceDayStatmentsMiningReports(
       csm: sumCsm,
       operator: sumOperator,
       other: sumOtherExpenses,
+      depreciation: sumDepreciation,
     },
     incomes: {
       mining: sumPool,
       other: sumOtherIncome,
     },
-    revenue: revenue,
+    revenue: {
+      gross: grossRevenue,
+      net: netRevenue,
+    },
     equipements: dayEquipements,
   };
 
   if (dayReports.length === 2) {
     return sum;
   } else {
-    return mergeMultisourceDayStatmentsMiningReports(
+    return mergeMultisourceDayStatmentsIntoMiningReports(
       [sum, ...dayReports.slice(2)],
       dayEquipements,
       dayUptime,
@@ -331,6 +372,8 @@ export function mergeDayMiningReport(
     powerWMax:
       dayReports[0].equipements.powerWMax + dayReports[1].equipements.powerWMax,
     asics: asics,
+    totalCost:
+      dayReports[0].equipements.totalCost + dayReports[1].equipements.totalCost,
   };
 
   const sumElec = addFinancialAmount(
@@ -350,6 +393,10 @@ export function mergeDayMiningReport(
     dayReports[0].expenses.other,
     dayReports[1].expenses.other
   );
+  const sumDepreciation = addFinancialAmount(
+    dayReports[0].expenses.depreciation,
+    dayReports[1].expenses.depreciation
+  );
   const sumPool = addFinancialAmount(
     dayReports[0].incomes.mining,
     dayReports[1].incomes.mining
@@ -367,7 +414,15 @@ export function mergeDayMiningReport(
     sumOperator,
     sumOtherExpenses,
   ]);
-  const revenue = substractFinancialAmount(income, expenses);
+  const grossRevenue = addFinancialAmount(
+    dayReports[0].revenue.gross,
+    dayReports[1].revenue.gross
+  );
+
+  const netRevenue = addFinancialAmount(
+    dayReports[0].revenue.net,
+    dayReports[1].revenue.net
+  );
 
   const sum: DailyMiningReport = {
     day: dayReports[0].day, // Assuming the day is the same for both accounts
@@ -380,12 +435,16 @@ export function mergeDayMiningReport(
       csm: sumCsm,
       operator: sumOperator,
       other: sumOtherExpenses,
+      depreciation: sumDepreciation,
     },
     incomes: {
       mining: sumPool,
       other: sumOtherIncome,
     },
-    revenue: revenue,
+    revenue: {
+      gross: grossRevenue,
+      net: netRevenue,
+    },
     bySite: bySite,
     equipements: equipements,
   };
@@ -404,7 +463,7 @@ export function mergeDayMiningReport(
  * @param miningReports list of maps of daily mining reports to be merged
  * @returns
  */
-export function mergeMiningReports(
+export function mergeMiningReportsList(
   miningReports: Map<string, DailyMiningReport>[]
 ): Map<string, DailyMiningReport> {
   if (miningReports.length === 0) {
@@ -468,4 +527,14 @@ export function getDailyMiningReportsPeriod(reports: DailyMiningReport[]): {
   end.setDate(end.getDate() + 1);
 
   return { start, end };
+}
+
+export function getMiningReportByDay(
+  dailyReports: DailyMiningReport[]
+): Map<string, DailyMiningReport> {
+  const reportByDay: Map<string, DailyMiningReport> = new Map();
+  for (const report of dailyReports) {
+    reportByDay.set(convertDateToKey(report.day), report);
+  }
+  return reportByDay;
 }

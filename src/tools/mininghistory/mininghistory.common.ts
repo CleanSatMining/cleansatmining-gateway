@@ -1,7 +1,8 @@
 import { Farm } from "@/types/supabase.extend";
 import { Database } from "@/types/supabase";
-import { getTodayDate } from "@/tools/date";
+import { calculateDaysBetweenDates, getTodayDate } from "@/tools/date";
 import { get } from "http";
+import BigNumber from "bignumber.js";
 
 export function filterMiningHistoryWithFinancialStatementPeriod(
   financialStatement: Database["public"]["Tables"]["financialStatements"]["Row"],
@@ -49,4 +50,12 @@ export function getMiningHistoryPeriod(
   end.setDate(end.getDate() + 1);
 
   return { start, end };
+}
+
+export function calculateMinedBtc(
+  siteMiningHistory: Database["public"]["Tables"]["mining"]["Row"][]
+) {
+  return siteMiningHistory.reduce((acc, history) => {
+    return new BigNumber(acc).plus(history.mined).toNumber();
+  }, 0);
 }

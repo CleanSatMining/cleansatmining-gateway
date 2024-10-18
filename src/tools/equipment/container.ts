@@ -160,7 +160,7 @@ export function getActiveContainersOnPeriod(
   sortedContainers: Container[],
   startDate: Date,
   endDate: Date
-) {
+): Container[] {
   return sortedContainers
     .filter((container) => {
       // Check if the container is active
@@ -195,4 +195,25 @@ export function getActiveContainersOnPeriod(
       const dateB = b.start ? new Date(b.start).getTime() : 0;
       return dateA - dateB;
     });
+}
+
+export function getContainerActivesDays(
+  container: Container,
+  startDate: Date,
+  endDate: Date
+): number {
+  if (container.start === null || container.start === undefined) {
+    console.warn("The container has no start date", container);
+    return 0;
+  }
+
+  const containerStartDate = new Date(container.start);
+  const containerEndDate = container.end
+    ? new Date(container.end)
+    : getTodayDate();
+
+  const start = startDate < containerStartDate ? containerStartDate : startDate;
+  const end = endDate < containerEndDate ? endDate : containerEndDate;
+
+  return calculateDaysBetweenDates(start, end);
 }

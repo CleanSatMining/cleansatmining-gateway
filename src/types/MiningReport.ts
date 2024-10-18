@@ -1,6 +1,6 @@
 import { convertToUTCStartOfDay } from "@/tools/date";
 import {
-  DailyFinancialStatement,
+  DailyPartnaireFinancialStatement,
   FinancialPartnaire,
   FinancialStatementAmount,
 } from "./FinancialSatement";
@@ -16,6 +16,7 @@ export type MiningReport = {
 export type MiningEquipment = {
   hashrateTHsMax: number;
   powerWMax: number;
+  totalCost: number;
   asics: Miners[];
 };
 
@@ -26,6 +27,7 @@ export type Miners = {
   model: string;
   hashrateTHs: number;
   powerW: number;
+  cost: number;
 };
 
 export type MiningBalance = {
@@ -35,12 +37,16 @@ export type MiningBalance = {
     csm: FinancialStatementAmount;
     operator: FinancialStatementAmount;
     other: FinancialStatementAmount;
+    depreciation: FinancialStatementAmount;
   };
   incomes: {
     mining: FinancialStatementAmount;
     other: FinancialStatementAmount;
   };
-  revenue: FinancialStatementAmount;
+  revenue: {
+    gross: FinancialStatementAmount;
+    net: FinancialStatementAmount;
+  };
 };
 
 export type SiteMiningReport = {
@@ -76,6 +82,7 @@ export function mapDailyMiningReportToSiteMiningReport(
       csm: report.expenses.csm,
       operator: report.expenses.operator,
       other: report.expenses.other,
+      depreciation: report.expenses.depreciation,
     },
     incomes: {
       mining: report.incomes.mining,
@@ -100,6 +107,7 @@ export function mapSiteMiningReportToMiningReport(
       csm: report.expenses.csm,
       operator: report.expenses.operator,
       other: report.expenses.other,
+      depreciation: report.expenses.depreciation,
     },
     incomes: {
       mining: report.incomes.mining,
@@ -113,7 +121,7 @@ export function mapSiteMiningReportToMiningReport(
 }
 
 export function convertDailyFinancialStatementToMiningReport(
-  dayStatement: DailyFinancialStatement,
+  dayStatement: DailyPartnaireFinancialStatement,
   dayEquipements: MiningEquipment
 ): DailyMiningReport {
   return {
@@ -138,6 +146,7 @@ export function convertDailyFinancialStatementToMiningReport(
         dayStatement.partnaire === FinancialPartnaire.OTHER
           ? dayStatement.amount
           : { btc: 0, source: FinancialSource.NONE },
+      depreciation: { btc: 0, source: FinancialSource.NONE },
     },
     incomes: {
       mining:
@@ -150,8 +159,8 @@ export function convertDailyFinancialStatementToMiningReport(
           : { btc: 0, source: FinancialSource.NONE },
     },
     revenue: {
-      btc: 0,
-      source: FinancialSource.NONE,
+      gross: { btc: 0, source: FinancialSource.NONE },
+      net: { btc: 0, source: FinancialSource.NONE },
     },
     equipements: dayEquipements,
   };
@@ -165,7 +174,8 @@ export function convertMiningHistoryToMiningReport(
   csmCost?: FinancialStatementAmount,
   operatorCost?: FinancialStatementAmount,
   otherCost?: FinancialStatementAmount,
-  otherIncome?: FinancialStatementAmount
+  otherIncome?: FinancialStatementAmount,
+  depreciation?: FinancialStatementAmount
 ): DailyMiningReport {
   const electricity = electricityCost ?? {
     btc: 0,
@@ -175,6 +185,10 @@ export function convertMiningHistoryToMiningReport(
   const operator = operatorCost ?? { btc: 0, source: FinancialSource.NONE };
   const otherOut = otherCost ?? { btc: 0, source: FinancialSource.NONE };
   const otherIn = otherIncome ?? { btc: 0, source: FinancialSource.NONE };
+  const depreciationCost = depreciation ?? {
+    btc: 0,
+    source: FinancialSource.NONE,
+  };
   return {
     day: convertToUTCStartOfDay(new Date(miningDay.day)),
     uptime: miningDay.uptime,
@@ -185,20 +199,34 @@ export function convertMiningHistoryToMiningReport(
       csm: csm,
       operator: operator,
       other: otherOut,
+      depreciation: depreciationCost,
     },
     incomes: {
       mining: { btc: miningDay.mined, source: FinancialSource.STATEMENT },
       other: otherIn,
     },
     revenue: {
-      btc: new BigNumber(miningDay.mined)
-        .plus(otherIn.btc)
-        .minus(electricity.btc)
-        .minus(csm.btc)
-        .minus(operator.btc)
-        .minus(otherOut.btc)
-        .toNumber(),
-      source: FinancialSource.STATEMENT,
+      gross: {
+        btc: new BigNumber(miningDay.mined)
+          .plus(otherIn.btc)
+          .minus(electricity.btc)
+          .minus(csm.btc)
+          .minus(operator.btc)
+          .minus(otherOut.btc)
+          .toNumber(),
+        source: FinancialSource.STATEMENT,
+      },
+      net: {
+        btc: new BigNumber(miningDay.mined)
+          .plus(otherIn.btc)
+          .minus(electricity.btc)
+          .minus(csm.btc)
+          .minus(operator.btc)
+          .minus(otherOut.btc)
+          .minus(depreciationCost.btc)
+          .toNumber(),
+        source: FinancialSource.NONE,
+      },
     },
     equipements: dayEquipements,
   };

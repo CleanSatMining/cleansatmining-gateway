@@ -8,7 +8,7 @@ import {
 } from "../equipment/site";
 import { calculateBalanceSheet } from "./balancesheet.common";
 import { calculateDaysBetweenDates } from "../date";
-import { calculateGrossIncome } from "../simulator";
+import { calculateRevenue } from "../simulator/simulator";
 import { FeeRates } from "@/types/Simulator";
 import BigNumber from "bignumber.js";
 
@@ -113,7 +113,7 @@ function updateSheetBalanceTaxes(
   };
 
   // set real tax values
-  const grossIncome = calculateGrossIncome(
+  const grossIncome = calculateRevenue(
     sheet.balance.incomes.mining.btc,
     sheet.balance.expenses.electricity.btc,
     site.contract.electricityPrice,

@@ -1,7 +1,7 @@
 import { Database } from "@/types/supabase";
 import { calculateDaysBetweenDates } from "../date";
 import {
-  DailyFinancialStatement,
+  DailyPartnaireFinancialStatement,
   FinancialFlow,
   FinancialPartnaire,
 } from "@/types/FinancialSatement";
@@ -11,7 +11,7 @@ export function getEmptyDailyFinancialStatement(
   day: Date,
   flow: FinancialFlow,
   partnaire: FinancialPartnaire
-): DailyFinancialStatement {
+): DailyPartnaireFinancialStatement {
   return {
     day: day,
     uptime: 0,

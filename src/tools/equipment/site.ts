@@ -121,20 +121,25 @@ export function getSiteEquipments(site: Site, day: Date): MiningEquipment {
         model: asics.model,
         hashrateTHs: asics.hashrateTHs,
         powerW: asics.powerW,
+        cost: container.cost,
       };
-      return {
+      const equipment: MiningEquipment = {
         hashrateTHsMax: new BigNumber(acc.hashrateTHsMax)
           .plus(new BigNumber(asics.hashrateTHs).times(container.units))
           .toNumber(),
         powerWMax: new BigNumber(acc.powerWMax)
           .plus(new BigNumber(asics.powerW).times(container.units))
           .toNumber(),
+        totalCost: new BigNumber(acc.totalCost).plus(container.cost).toNumber(),
         asics: acc.asics.concat(miners),
       };
+
+      return equipment;
     },
     {
       hashrateTHsMax: 0,
       powerWMax: 0,
+      totalCost: 0,
       asics: [] as Miners[],
     } as MiningEquipment
   );

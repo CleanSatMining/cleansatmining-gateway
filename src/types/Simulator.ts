@@ -18,9 +18,25 @@ interface Cost {
   };
   csm: CurrencyDetail;
   operator: CurrencyDetail;
+  depreciation: {
+    equipment: CurrencyDetail;
+  };
+  other: CurrencyDetail;
+}
+
+interface Income {
+  mining: CurrencyDetail;
+  other: CurrencyDetail;
+}
+
+interface Revenue {
+  gross: CurrencyDetail;
+  net: CurrencyDetail;
 }
 
 export interface SimulationResult {
+  btcSellPrice: number;
   cost: Cost;
-  income: CurrencyDetail;
+  income: Income;
+  revenue: Revenue;
 }

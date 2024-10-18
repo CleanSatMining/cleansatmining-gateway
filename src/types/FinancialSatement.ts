@@ -1,6 +1,7 @@
+import BigNumber from "bignumber.js";
 import { FinancialSource } from "./MiningReport";
 
-export type DailyFinancialStatement = {
+export type DailyPartnaireFinancialStatement = {
   day: Date;
   uptime: number;
   hashrateTHs: number;
@@ -11,10 +12,28 @@ export type DailyFinancialStatement = {
   btcPrice: number;
 };
 
+export type DailyFinancialStatement = {
+  day: Date;
+  uptime: number;
+  hashrateTHs: number;
+  hashrateTHsMax: number;
+  flows: {
+    [key in FinancialPartnaire]: {
+      flow: FinancialFlow;
+      partnaire: FinancialPartnaire;
+      amount: FinancialStatementAmount;
+    };
+  };
+};
+
 export type FinancialStatementAmount = {
   btc: number;
   usd?: number;
   source: FinancialSource;
+};
+
+export type FinancialStatementFlow = FinancialStatementAmount & {
+  flow: FinancialFlow;
 };
 
 export enum FinancialFlow {
@@ -151,6 +170,35 @@ export function substractFinancialAmount(
   return {
     btc: btc,
     usd: usd,
+    source: source,
+  };
+}
+
+export function addFinancialFlow(
+  flow1: FinancialStatementFlow,
+  flow2: FinancialStatementFlow
+): FinancialStatementFlow {
+  const source = resolveFinancialSource(flow1.source, flow2.source);
+  const sign1 = flow1.flow === FinancialFlow.IN ? 1 : -1;
+  const sign2 = flow2.flow === FinancialFlow.IN ? 1 : -1;
+  const btc = new BigNumber(flow1.btc)
+    .times(sign1)
+    .plus(new BigNumber(flow2.btc).times(sign2))
+    .toNumber();
+  const usd =
+    flow1.usd && flow2.usd
+      ? new BigNumber(flow1.usd)
+          .times(sign1)
+          .plus(new BigNumber(flow2.usd).times(sign2))
+          .toNumber()
+      : undefined;
+
+  const flow: FinancialFlow = btc >= 0 ? FinancialFlow.IN : FinancialFlow.OUT;
+
+  return {
+    btc: btc,
+    usd: usd,
+    flow: flow,
     source: source,
   };
 }
