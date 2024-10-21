@@ -5,10 +5,10 @@ export type BalanceSheet = {
   end: Date;
   days: number;
   balance: MiningBalance;
-  equipments: EquippmentPerformance;
+  equipments: EquipmentPerformance;
 };
 
-export type EquippmentPerformance = {
+export type EquipmentPerformance = {
   uptime: number;
   hashrateTHs: number;
 } & MiningEquipment;
