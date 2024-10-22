@@ -190,13 +190,14 @@ export function addFinancialFlow(
       ? new BigNumber(flow1.usd)
           .times(sign1)
           .plus(new BigNumber(flow2.usd).times(sign2))
+          .abs()
           .toNumber()
       : undefined;
 
   const flow: FinancialFlow = btc >= 0 ? FinancialFlow.IN : FinancialFlow.OUT;
 
   return {
-    btc: btc,
+    btc: Math.abs(btc),
     usd: usd,
     flow: flow,
     source: source,
