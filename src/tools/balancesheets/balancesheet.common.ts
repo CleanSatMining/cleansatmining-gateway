@@ -513,6 +513,12 @@ export function mergeBalanceSheets(sheets: BalanceSheet[]): BalanceSheet {
     return acc;
   }, getEmptyBalanceSheet(sheets[0].balance.btcSellPrice, start, end));
 
+  mergedSheets.equipments.uptime = new BigNumber(
+    mergedSheets.equipments.hashrateTHs
+  )
+    .dividedBy(mergedSheets.equipments.hashrateTHsMax)
+    .toNumber();
+
   // compute usd values
   mergedSheets.balance.expenses.csm.usd = new BigNumber(
     mergedSheets.balance.expenses.csm.btc
