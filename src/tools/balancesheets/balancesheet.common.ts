@@ -17,10 +17,10 @@ export function calculateBalanceSheet(
   endDay?: Date
 ): BalanceSheet {
   console.log(
-    "    => calculateBalanceSheet START",
-    data.length,
-    startDay,
-    endDay
+    "    => calculateBalanceSheet START param",
+    "startDay: " + startDay?.toISOString().split("T")[0],
+    "endDay: " + endDay?.toISOString().split("T")[0],
+    "days: " + data.length
   );
   const filteredData = data.filter((report) => {
     return (
@@ -34,9 +34,9 @@ export function calculateBalanceSheet(
   const { start: startDayReport, end: endDayReport } =
     getDailyMiningReportsPeriod(filteredData);
   console.log(
-    "    => calculateBalanceSheet START",
-    startDayReport,
-    endDayReport
+    "    => calculateBalanceSheet START filter",
+    "startDayReport: " + startDayReport?.toISOString().split("T")[0],
+    "endDayReport: " + endDayReport?.toISOString().split("T")[0]
   );
   if (startDayReport === undefined || endDayReport === undefined) {
     console.log(

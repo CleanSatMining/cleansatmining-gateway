@@ -35,7 +35,7 @@ export function calculateFarmBalanceSheet(
   }
 
   const powerHistory = calculateFarmPowerHistory(farm, startDay, endDay);
-  console.log("=> powerHistory", JSON.stringify(powerHistory, null, 2));
+  //console.log("=> powerHistory", JSON.stringify(powerHistory, null, 2));
 
   let details: BalanceSheet[] = [];
   let sheet: BalanceSheet;
@@ -122,23 +122,6 @@ export function calculateFarmBalanceSheet(
       const periodDetails: BalanceSheet[] = [];
 
       for (let siteIndex = 0; siteIndex < farm.sites.length; siteIndex++) {
-        console.log(
-          "=> detail sheets site ",
-          "number of site " + sheetsDetailsBySite.length,
-          "current " + (siteIndex + 1) + "/" + farm.sites.length
-        );
-
-        console.log(
-          "=> detail sheets period ",
-          "nomber of period " + sheetsDetailsBySite[siteIndex].length,
-          "current " +
-            (detailIndex + 1) +
-            "/" +
-            sheetsDetailsBySite.length +
-            "(" +
-            detailsLength +
-            ")"
-        );
         // get the balance sheet of each site for the detail period
         periodDetails.push(sheetsDetailsBySite[siteIndex][detailIndex]);
       }
