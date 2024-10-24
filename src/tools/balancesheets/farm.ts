@@ -113,10 +113,6 @@ export function calculateFarmBalanceSheet(
     // );
 
     // merge all site sheets
-    console.log(
-      "=> §§§§§§§§§§§§§§§§§§§§§§ mergeBalanceSheets",
-      sheets.map((s) => s.end)
-    );
     sheet = mergeBalanceSheets(sheets);
 
     const detailsLength = powerHistory.length;
