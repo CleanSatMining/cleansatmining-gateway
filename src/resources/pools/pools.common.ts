@@ -2,6 +2,7 @@ import { Site } from "@/types/supabase.extend";
 import { antpoolHistory } from "./entities/antpool";
 import { foundryHistory } from "./entities/foundry";
 import { luxorHistory } from "./entities/luxor";
+import { luxorLegacyHistory } from "./entities/luxor.legacy";
 import { APIMiningPoolResponse, DayPoolData } from "@/types/Pool";
 
 import { Pool } from "@/types/Pool";
@@ -53,6 +54,15 @@ export async function fetchPoolData(
     case Pool.Luxor:
       console.log("FETCH POOL DATA", "LUXOR", site.slug, "first : " + first);
       data = await luxorHistory(first, site);
+      break;
+    case Pool.LuxorLegacy:
+      console.log(
+        "FETCH POOL DATA",
+        "LUXOR LEGACY",
+        site.slug,
+        "first : " + first
+      );
+      data = await luxorLegacyHistory(first, site);
       break;
     default:
       throw new Error("Pool not supported");

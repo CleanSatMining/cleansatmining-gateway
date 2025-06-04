@@ -13,6 +13,7 @@ export enum Pool {
   Antpool = 1,
   Foundry = 2,
   Luxor = 3,
+  LuxorLegacy = 4,
 }
 
 export type APIMiningPoolQuery = {

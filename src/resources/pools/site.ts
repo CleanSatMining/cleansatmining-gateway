@@ -21,5 +21,6 @@ export async function fetchSitePoolData(
   const site = siteResponse.siteData;
 
   //fatch pool data
+  console.log("FETCH SITE POOL DATA", site.slug, "first : " + first);
   return await fetchPoolData(site, first);
 }

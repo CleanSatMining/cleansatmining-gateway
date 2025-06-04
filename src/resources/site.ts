@@ -43,7 +43,7 @@ export async function fetchSite(
       siteData: data,
     };
   } catch (error) {
-    console.error("Error api financial statements " + error);
-    throw new Error("Error api financial statements " + error);
+    console.error("Error api get supabase site" + error);
+    throw new Error("Error api get supabase site" + error);
   }
 }
