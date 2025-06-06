@@ -193,16 +193,23 @@ export async function updateAllMiningHistory(
   }
 
   const farms = farmsData as Database["public"]["Tables"]["farms"]["Row"][];
+  console.info("Farms to update", farms.length);
   for (const farm of farms) {
-    const response = await updateFarmMiningHistory(supabase, farm.slug);
-    if (!response.ok || response.data === undefined) {
-      console.error("UPDATING mining Error farm", farm.slug);
-      statusText =
-        statusText + "; " + farm.slug + " KO : " + response.statusText;
-      partialResponse = true;
-    } else {
-      console.log("UPDATING mining success farm", farm.slug);
-      returnData.push(...response.data);
+    console.info("UPDATING mining farm", farm.slug);
+    try {
+      const response = await updateFarmMiningHistory(supabase, farm.slug);
+      if (!response.ok || response.data === undefined) {
+        console.error("UPDATING mining Error farm", farm.slug);
+        statusText =
+          statusText + "; " + farm.slug + " KO : " + response.statusText;
+        partialResponse = true;
+      } else {
+        console.log("UPDATING mining success farm", farm.slug);
+        returnData.push(...response.data);
+      }
+    } catch (e) {
+      console.error("ERROR on updating farm", farm.slug);
+      console.error(e);
     }
   }
 
@@ -425,100 +432,6 @@ function searchDaysToUpdate(miningData: MiningData[], site?: Site) {
   }
 
   return { updateAll, daysBeforeUpdate, lastUpdate };
-}
-
-async function insertPoolDataInMiningTable(
-  supabase: SupabaseClient,
-  farm: string,
-  data: DayPoolData[],
-  retry: number = 0
-) {
-  if (data.length === 0) {
-    console.warn(farm + ": No data to insert in mining table");
-    return;
-  }
-
-  const row: Database["public"]["Tables"]["mining"]["Insert"][] = data.map(
-    (d) => {
-      //console.log("Inserting mining data", d.date);
-      return {
-        farmSlug: farm,
-        hashrateTHs: d.hashrateTHs,
-        mined: d.revenue,
-        uptime: d.efficiency,
-        siteSlug: d.site,
-        day: d.date,
-      };
-    }
-  );
-
-  const username = process.env.SUPABASE_ADMIN_USER ?? "";
-  const password = process.env.SUPABASE_ADMIN_PASSWORD ?? "";
-  console.log("UPDATING mining history : sign in");
-  try {
-    const { data: signData, error: signError } = await signIn(
-      supabase,
-      username,
-      password
-    );
-    console.log(
-      "UPDATING mining history : sign in result",
-      JSON.stringify({ signData, signError })
-    );
-    if (signError) {
-      throw new Error("Error while signing in. " + signError);
-    }
-    const token = signData.session?.access_token;
-
-    if (!token) {
-      console.error("No access token found");
-      await signOut(supabase);
-      throw new Error("No access token found");
-    }
-  } catch (e) {
-    console.error("Error while signing in. " + e);
-    throw new Error("Error while signing in. " + e);
-  }
-
-  try {
-    console.log("UPDATING mining history : inserting data");
-    var { error } = await supabase.from("mining").insert(row).select();
-    console.log(
-      "UPDATING mining history result:",
-      JSON.stringify({
-        error,
-      })
-    );
-  } catch (e) {
-    console.error("Error while inserting mining data. " + e);
-    error = e;
-  }
-
-  //console.log("UPDATING mining history : sign out");
-  //await signOut(supabase);
-
-  if (error) {
-    console.error(
-      "Retry:" +
-        retry +
-        ". Error while inserting mining data. " +
-        JSON.stringify(row),
-      error
-    );
-
-    if (retry < RETRY_MAX) {
-      //wait 100ms before retry
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      await insertPoolDataInMiningTable(supabase, farm, data, retry + 1);
-    } else {
-      throw new Error(
-        "Error while inserting mining data " +
-          JSON.stringify(row) +
-          ". " +
-          error
-      );
-    }
-  }
 }
 
 async function insertPoolDataInMiningTableByApi(
