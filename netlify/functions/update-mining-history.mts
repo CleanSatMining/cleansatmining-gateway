@@ -194,22 +194,76 @@ export async function updateAllMiningHistory(
 
   const farms = farmsData as Database["public"]["Tables"]["farms"]["Row"][];
   console.info("Farms to update", farms.length);
-  for (const farm of farms) {
+  // for (const farm of farms) {
+  //   console.info("UPDATING mining farm", farm.slug);
+  //   try {
+  //     const response = await updateFarmMiningHistory(supabase, farm.slug);
+  //     if (!response.ok || response.data === undefined) {
+  //       console.error("UPDATING mining Error farm", farm.slug);
+  //       statusText =
+  //         statusText + "; " + farm.slug + " KO : " + response.statusText;
+  //       partialResponse = true;
+  //     } else {
+  //       console.log("UPDATING mining success farm", farm.slug);
+  //       returnData.push(...response.data);
+  //     }
+  //   } catch (e) {
+  //     console.error("ERROR on updating farm", farm.slug);
+  //     console.error(e);
+  //   }
+  // }
+
+  // Lance tous les appels en parallèle
+  const farmPromises: Promise<{
+    farm: {
+      created_at: string;
+      id: number;
+      imageLink: string;
+      locationSlug: string;
+      name: string;
+      shortName: string;
+      slug: string;
+      status: string;
+      updated_at: string;
+    };
+    response: {
+      ok: boolean;
+      status: number;
+      statusText: string;
+      partial: boolean;
+      data?: UpdateResponse[];
+    };
+  }>[] = farms.map(async (farm) => {
     console.info("UPDATING mining farm", farm.slug);
     try {
       const response = await updateFarmMiningHistory(supabase, farm.slug);
-      if (!response.ok || response.data === undefined) {
-        console.error("UPDATING mining Error farm", farm.slug);
-        statusText =
-          statusText + "; " + farm.slug + " KO : " + response.statusText;
-        partialResponse = true;
-      } else {
-        console.log("UPDATING mining success farm", farm.slug);
-        returnData.push(...response.data);
-      }
+      return { farm, response };
     } catch (e) {
       console.error("ERROR on updating farm", farm.slug);
       console.error(e);
+      return {
+        farm,
+        response: {
+          ok: false,
+          status: 1,
+          partial: false,
+          statusText: String(e),
+        },
+      };
+    }
+  });
+
+  const farmResults = await Promise.all(farmPromises);
+
+  for (const { farm, response } of farmResults) {
+    if (!response.ok || response.data === undefined) {
+      console.error("UPDATING mining Error farm", farm.slug);
+      statusText =
+        statusText + "; " + farm.slug + " KO : " + response.statusText;
+      partialResponse = true;
+    } else {
+      console.log("UPDATING mining success farm", farm.slug);
+      returnData.push(...response.data);
     }
   }
 
