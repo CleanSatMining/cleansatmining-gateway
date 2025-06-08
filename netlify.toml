@@ -5,3 +5,6 @@
 
 [functions."update-mining-history"]
 schedule = "0 2,5 * * *"
+
+[functions."update-mining-history-delta"]
+schedule = "0 1,4 * * *"
