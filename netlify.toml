@@ -4,7 +4,7 @@
   functions = "netlify/functions"
 
 [functions."update-mining-history"]
-schedule = "0 2,5 * * *"
+schedule = "0 2,5,7,9 * * *"
 
 [functions."update-mining-history-delta"]
-schedule = "0 1,4 * * *"
+schedule = "0 1,4,6,8,10 * * *"
